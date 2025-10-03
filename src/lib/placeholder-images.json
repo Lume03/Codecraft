@@ -1,0 +1,28 @@
+{
+  "placeholderImages": [
+    {
+      "id": "user-avatar",
+      "description": "Default user avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1590086782792-42dd2350140d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTk1MDY2MzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "js-course",
+      "description": "JavaScript course cover",
+      "imageUrl": "https://images.unsplash.com/photo-1642310291199-29ed2129064e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxKYXZhU2NyaXB0JTIwbG9nb3xlbnwwfHx8fDE3NTk1MTAyNTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "JavaScript logo"
+    },
+    {
+      "id": "python-course",
+      "description": "Python course cover",
+      "imageUrl": "https://images.unsplash.com/photo-1758782362573-433518d5132c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8UHl0aG9uJTIwbG9nb3xlbnwwfHx8fDE3NTk1MTAyNTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "Python logo"
+    },
+    {
+      "id": "cpp-course",
+      "description": "C++ course cover",
+      "imageUrl": "https://images.unsplash.com/photo-1708191638915-6cd171bc7226?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxDJTIwJTIwJTIwbG9nb3xlbnwwfHx8fDE3NTk1MTAyNTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "C++ logo"
+    }
+  ]
+}
