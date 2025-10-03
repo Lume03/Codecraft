@@ -70,8 +70,7 @@ export default function AuthPage() {
             <>
               <h1 className="text-3xl font-bold">Crear tu cuenta</h1>
               <p className="text-muted-foreground px-4">
-                Completa tu perfil para personalizar tu aprendizaje. Este es el
-                paso siguiente tras presionar &quot;Crear cuenta&quot;.
+                Completa tu perfil para personalizar tu aprendizaje.
               </p>
             </>
           )}
