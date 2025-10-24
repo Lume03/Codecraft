@@ -1,9 +1,9 @@
 
 'use client';
 
+import * as React from 'react';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { theoryContent } from '@/lib/data.tsx';
 import Link from 'next/link';
 import { notFound, useSearchParams, useParams } from 'next/navigation';
@@ -78,8 +78,6 @@ export default function TheoryPage() {
   if (!pageContent) {
     notFound();
   }
-
-  const progress = (currentPage / totalPages) * 100;
 
   const hasPrev = currentPage > 1;
   const hasNext = currentPage < totalPages;
