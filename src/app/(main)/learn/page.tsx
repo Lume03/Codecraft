@@ -7,10 +7,6 @@ import { CodeXml } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LearnPage() {
-  const handleCardClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-  };
-
   return (
     <div>
       <Header
@@ -23,11 +19,7 @@ export default function LearnPage() {
       />
       <div className="container space-y-4 px-4 py-6 md:px-6">
         {courses.map((course) => (
-          <CourseCard
-            key={course.id}
-            course={course}
-            onClick={handleCardClick}
-          />
+          <CourseCard key={course.id} course={course} />
         ))}
       </div>
     </div>

@@ -18,7 +18,7 @@ const practiceModes = [
     subtitle: 'Rápido',
     description: '5 preguntas · 3 min',
     icon: BookCheck,
-    href: '#',
+    href: '/quiz/js-quiz-1',
   },
   {
     title: 'Reto de Código',
@@ -79,7 +79,6 @@ const PracticeTile = ({
     tabIndex={0}
     aria-label={`Iniciar modo de práctica: ${mode.title}`}
     className="group relative flex h-[112px] min-h-full flex-col justify-between rounded-2xl border border-border bg-secondary p-4 text-foreground transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-lg focus-visible:scale-105 focus-visible:shadow-lg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-    onClick={(e) => e.preventDefault()}
   >
     <div className="flex items-start gap-3">
       <mode.icon className="h-7 w-7 text-primary" />
@@ -133,7 +132,6 @@ export default function PracticePage() {
                 tabIndex={0}
                 aria-label={`Iniciar desafío: ${challenge.title}`}
                 className="group flex items-center gap-4 rounded-xl border border-border bg-secondary p-4 transition-transform hover:scale-[1.02] focus-visible:scale-[1.02] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-                onClick={(e) => e.preventDefault()}
               >
                 <challenge.icon className="h-6 w-6 text-muted-foreground" />
                 <div className="flex-1">
@@ -146,7 +144,7 @@ export default function PracticePage() {
               </Link>
             ))}
           </div>
-          <button disabled className="mt-4 flex h-12 w-full items-center justify-center rounded-full border border-border bg-transparent text-foreground transition-colors hover:bg-secondary disabled:opacity-50 disabled:pointer-events-none">
+          <button className="mt-4 flex h-12 w-full items-center justify-center rounded-full border border-border bg-transparent text-foreground transition-colors hover:bg-secondary disabled:opacity-50 disabled:pointer-events-none">
             Ver historial de práctica
           </button>
         </div>

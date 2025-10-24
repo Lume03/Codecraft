@@ -4,13 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import type { Course } from '@/lib/data.tsx';
 import { cn } from '@/lib/utils';
 
-export function CourseCard({
-  course,
-  onClick,
-}: {
-  course: Course;
-  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
-}) {
+export function CourseCard({ course }: { course: Course }) {
   const accentVariants = {
     'js-101': {
       ring: 'group-hover:ring-yellow-400/50 group-focus-visible:ring-yellow-400/50',
@@ -32,7 +26,6 @@ export function CourseCard({
   return (
     <Link
       href={`/course/${course.id}`}
-      onClick={onClick}
       className="group block"
       aria-label={`Abrir curso: ${course.title}`}
     >
