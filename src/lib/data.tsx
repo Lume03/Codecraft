@@ -138,9 +138,9 @@ export const courses: Course[] = [
     image: findImage('python-course'),
     progress: 75,
     modules: [
-        { id: 'py-m1', title: 'Getting Started', type: 'theory', contentId: 'py-intro' },
-        { id: 'py-m2', title: 'Syntax Basics', type: 'theory', contentId: 'py-syntax' },
-        { id: 'py-m3', title: 'First Quiz', type: 'quiz', contentId: 'py-quiz-1' },
+        { id: 'py-m1', title: 'Introducción', type: 'theory', contentId: 'py-intro' },
+        { id: 'py-m2', title: 'Sintaxis básica', type: 'theory', contentId: 'py-syntax' },
+        { id: 'py-m3', title: 'Primer Quiz', type: 'quiz', contentId: 'py-quiz-1' },
     ],
   },
   {
@@ -151,9 +151,9 @@ export const courses: Course[] = [
     image: findImage('js-course'),
     progress: 40,
     modules: [
-      { id: 'js-m1', title: 'Introduction', type: 'theory', contentId: 'js-intro' },
-      { id: 'js-m2', title: 'Variables Quiz', type: 'quiz', contentId: 'js-quiz-1' },
-      { id: 'js-m3', title: 'Data Types', type: 'theory', contentId: 'js-data-types' },
+      { id: 'js-m1', title: 'Introducción', type: 'theory', contentId: 'js-intro' },
+      { id: 'js-m2', title: 'Quiz de variables', type: 'quiz', contentId: 'js-quiz-1' },
+      { id: 'js-m3', title: 'Tipos de datos', type: 'theory', contentId: 'js-data-types' },
     ],
   },
   {
@@ -164,26 +164,26 @@ export const courses: Course[] = [
     image: findImage('cpp-course'),
     progress: 10,
     modules: [
-        { id: 'cpp-m1', title: 'C++ Foundations', type: 'theory', contentId: 'cpp-intro' },
-        { id: 'cpp-m2', title: 'First Steps Quiz', type: 'quiz', contentId: 'cpp-quiz-1' },
+        { id: 'cpp-m1', title: 'Fundamentos de C++', type: 'theory', contentId: 'cpp-intro' },
+        { id: 'cpp-m2', title: 'Quiz de primeros pasos', type: 'quiz', contentId: 'cpp-quiz-1' },
     ],
   },
 ];
 
 export const theoryContent: Record<string, { title: string; pages: string[] }> = {
   'js-intro': {
-    title: 'Introduction to JavaScript',
+    title: 'Introducción a JavaScript',
     pages: [
-      'JavaScript is a high-level, interpreted programming language. It is a language which is also characterized as dynamic, weakly typed, prototype-based and multi-paradigm.',
-      'Alongside HTML and CSS, JavaScript is one of the three core technologies of the World Wide Web. JavaScript enables interactive web pages and thus is an essential part of web applications.',
+      'JavaScript es un lenguaje de programación interpretado y de alto nivel. Es un lenguaje que también se caracteriza por ser dinámico, débilmente tipado, basado en prototipos y multiparadigma.',
+      'Junto con HTML y CSS, JavaScript es una de las tres tecnologías principales de la World Wide Web. JavaScript permite páginas web interactivas y, por lo tanto, es una parte esencial de las aplicaciones web.',
     ],
   },
    'js-data-types': {
-    title: 'JavaScript Data Types',
+    title: 'Tipos de datos en JavaScript',
     pages: [
-      'JavaScript has several primitive data types: `String`, `Number`, `BigInt`, `Boolean`, `Undefined`, `Null`, and `Symbol`.',
-      'There is also a complex data type: `Object`. Arrays and Functions are specialized objects.',
-      'Example of declaring variables:\n```javascript\nlet name = "CodeCraft";\nconst score = 100;\nlet isComplete = false;\n```'
+      'JavaScript tiene varios tipos de datos primitivos: `String`, `Number`, `BigInt`, `Boolean`, `Undefined`, `Null` y `Symbol`.',
+      'También existe un tipo de dato complejo: `Object`. Los arrays y las funciones son objetos especializados.',
+      'Ejemplo de declaración de variables:\n```javascript\nlet name = "CodeCraft";\nconst score = 100;\nlet isComplete = false;\n```'
     ],
    },
   // Add other theory content here...

@@ -80,20 +80,20 @@ export default function TheoryPage() {
           <div className="flex items-center justify-between">
             <Button variant="outline" disabled={!hasPrev} asChild>
               <Link href={`?page=${currentPage - 1}`}>
-                <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+                <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
               </Link>
             </Button>
             <span className="text-sm text-muted-foreground">
-              Page {currentPage} of {totalPages}
+              Página {currentPage} de {totalPages}
             </span>
             {isLastPage ? (
               <Button asChild>
-                <Link href={`/course/${courseId}`}>Finish Lesson</Link>
+                <Link href={`/course/${courseId}`}>Finalizar lección</Link>
               </Button>
             ) : (
               <Button disabled={!hasNext} asChild>
                 <Link href={`?page=${currentPage + 1}`}>
-                  Next <ChevronRight className="ml-2 h-4 w-4" />
+                  Siguiente <ChevronRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             )}

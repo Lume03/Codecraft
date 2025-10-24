@@ -64,7 +64,7 @@ export default function ReorderQuestion({
         ))}
       </div>
       <Button onClick={handleSubmit} className="w-full">
-        Confirm Order
+        Confirmar orden
       </Button>
     </div>
   );

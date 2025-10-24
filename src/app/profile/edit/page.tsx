@@ -17,11 +17,11 @@ import { Camera } from 'lucide-react';
 export default function ProfileEditPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <Header title="Edit Profile" showBackButton />
+      <Header title="Editar Perfil" showBackButton />
       <main className="flex flex-1 items-center justify-center p-4">
         <Card className="w-full max-w-lg">
           <CardHeader>
-            <CardTitle>Update Your Information</CardTitle>
+            <CardTitle>Actualiza tu información</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center gap-4">
@@ -38,22 +38,22 @@ export default function ProfileEditPage() {
                   className="absolute bottom-0 right-0 h-8 w-8 rounded-full"
                 >
                   <Camera className="h-4 w-4" />
-                  <span className="sr-only">Change picture</span>
+                  <span className="sr-only">Cambiar foto</span>
                 </Button>
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">Display Name</Label>
+              <Label htmlFor="name">Nombre de usuario</Label>
               <Input id="name" defaultValue={user.name} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">Nombre de pila</Label>
               <Input id="username" defaultValue={user.username} />
             </div>
           </CardContent>
           <CardFooter>
             <Button className="w-full" asChild>
-              <Link href="/profile">Save Changes</Link>
+              <Link href="/profile">Guardar cambios</Link>
             </Button>
           </CardFooter>
         </Card>

@@ -16,31 +16,31 @@ import Link from 'next/link';
 export default function ProfileSetupPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <Header title="Complete Your Profile" />
+      <Header title="Completa tu perfil" />
       <main className="flex flex-1 items-center justify-center p-4">
         <Card className="w-full max-w-lg">
           <CardHeader>
-            <CardTitle>One last step...</CardTitle>
+            <CardTitle>Un último paso...</CardTitle>
             <CardDescription>
-              Set up your profile to personalize your learning experience.
+              Configura tu perfil para personalizar tu experiencia de aprendizaje.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name">Display Name</Label>
+              <Label htmlFor="name">Nombre de pila</Label>
               <Input id="name" placeholder="John Doe" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">Nombre de usuario</Label>
               <Input id="username" placeholder="johndoe" />
             </div>
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <Label htmlFor="reminders" className="text-base">
-                  Learning Reminders
+                  Recordatorios de aprendizaje
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Get daily notifications to keep your streak going.
+                  Recibe notificaciones diarias para mantener tu racha.
                 </p>
               </div>
               <Switch id="reminders" />
@@ -48,7 +48,7 @@ export default function ProfileSetupPage() {
           </CardContent>
           <CardFooter>
             <Button className="w-full" asChild>
-              <Link href="/learn">Save and Continue</Link>
+              <Link href="/learn">Guardar y continuar</Link>
             </Button>
           </CardFooter>
         </Card>

@@ -29,13 +29,13 @@ export default function ResultsPage({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header title="Quiz Results" />
+      <Header title="Resultados del Quiz" />
       <main className="flex-1 p-4 md:p-6">
         <div className="mx-auto max-w-2xl space-y-6">
           <Card className="text-center">
             <CardHeader>
               <CardTitle className="text-2xl">
-                {percentage > 70 ? 'Great Job!' : 'Keep Practicing!'}
+                {percentage > 70 ? '¡Buen trabajo!' : '¡Sigue practicando!'}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -44,17 +44,17 @@ export default function ResultsPage({
               </p>
               <Progress value={percentage} className="h-4" />
               <p className="text-muted-foreground">
-                You answered {score} questions correctly.
+                Respondiste {score} preguntas correctamente.
               </p>
               <div className="flex justify-center gap-4 pt-4">
                 <Button variant="outline" asChild>
                   <Link href={`/quiz/${quiz.id}`}>
-                    <RefreshCw className="mr-2 h-4 w-4" /> Retry
+                    <RefreshCw className="mr-2 h-4 w-4" /> Reintentar
                   </Link>
                 </Button>
                 <Button asChild>
                   <Link href="/learn">
-                    <Home className="mr-2 h-4 w-4" /> Go Home
+                    <Home className="mr-2 h-4 w-4" /> Ir al inicio
                   </Link>
                 </Button>
               </div>
@@ -63,7 +63,7 @@ export default function ResultsPage({
 
           <Card>
             <CardHeader>
-              <CardTitle>Review Your Answers</CardTitle>
+              <CardTitle>Revisa tus respuestas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {quiz.questions.map((q, index) => {
@@ -81,9 +81,9 @@ export default function ResultsPage({
                       )}
                     </div>
                     <div className="mt-2 text-sm">
-                      <p><span className="font-medium text-muted-foreground">Your answer:</span> {JSON.stringify(userAnswer)}</p>
+                      <p><span className="font-medium text-muted-foreground">Tu respuesta:</span> {JSON.stringify(userAnswer)}</p>
                       {!isCorrect && (
-                         <p className="text-green-500"><span className="font-medium">Correct answer:</span> {JSON.stringify(q.correctAnswer)}</p>
+                         <p className="text-green-500"><span className="font-medium">Respuesta correcta:</span> {JSON.stringify(q.correctAnswer)}</p>
                       )}
                     </div>
                   </div>

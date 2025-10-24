@@ -38,7 +38,7 @@ export default function Recommendations() {
         setRecommendations(result);
       } catch (e) {
         console.error(e);
-        setError('Failed to get recommendations. Please try again.');
+        setError('No se pudieron obtener recomendaciones. Por favor, inténtalo de nuevo.');
       }
     });
   };
@@ -46,15 +46,15 @@ export default function Recommendations() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Suggested Session</CardTitle>
+        <CardTitle>Sesión sugerida</CardTitle>
         <CardDescription>
-          Get course recommendations based on your progress.
+          Obtén recomendaciones de cursos según tu progreso.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {recommendations ? (
           <div className="space-y-2">
-            <p className="font-semibold">Here are some courses you might like:</p>
+            <p className="font-semibold">Aquí tienes algunos cursos que te podrían gustar:</p>
             <ul className="list-disc space-y-1 pl-5">
               {recommendations.courseRecommendations.map((courseId) => {
                 const course = courses.find((c) => c.id === courseId);
@@ -68,7 +68,7 @@ export default function Recommendations() {
               })}
             </ul>
              <Button variant="outline" onClick={() => setRecommendations(null)} className="mt-4">
-              Clear
+              Limpiar
             </Button>
           </div>
         ) : (
@@ -80,10 +80,10 @@ export default function Recommendations() {
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
+                Generando...
               </>
             ) : (
-              'Get Recommendations'
+              'Obtener recomendaciones'
             )}
           </Button>
         )}

@@ -57,7 +57,7 @@ export default function CourseDetailPage() {
       <div className="p-4 md:p-6">
         <div className="mb-4 space-y-2">
           <div className="flex justify-between text-sm text-muted-foreground">
-            <span>Overall Progress</span>
+            <span>Progreso general</span>
             <span>{course.progress}%</span>
           </div>
           <Progress value={course.progress} />
@@ -66,13 +66,13 @@ export default function CourseDetailPage() {
               <Link
                 href={`/course/${course.id}/${continueModule.type}/${continueModule.contentId}`}
               >
-                Continue
+                Continuar
               </Link>
             </Button>
           )}
         </div>
 
-        <h3 className="mb-4 text-xl font-bold">Modules</h3>
+        <h3 className="mb-4 text-xl font-bold">Módulos</h3>
         <div className="space-y-2">
           {course.modules.map((module, index) => (
             <Link

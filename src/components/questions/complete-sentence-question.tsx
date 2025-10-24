@@ -28,11 +28,11 @@ export default function CompleteSentenceQuestion({
       <Input
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Type your answer here"
+        placeholder="Escribe tu respuesta aquí"
         className="text-lg"
       />
       <Button type="submit" className="w-full" disabled={!value.trim()}>
-        Submit Answer
+        Enviar respuesta
       </Button>
     </form>
   );
