@@ -17,38 +17,49 @@ export default function CodeBlocksQuestion({
   const { codeSnippet = '', blocks = [] } = question;
   const numBlanks = (codeSnippet.match(/___/g) || []).length;
 
-  const [selectedAnswers, setSelectedAnswers] = useState<(string | null)[]>(
+  // Use an object to track used indices of blocks for correct replacement
+  const initialAvailableBlocks = blocks.map((block, index) => ({
+    text: block,
+    originalIndex: index,
+  }));
+
+  const [selectedAnswers, setSelectedAnswers] = useState<(typeof initialAvailableBlocks[0] | null)[]>(
     Array(numBlanks).fill(null)
   );
-  const [availableBlocks, setAvailableBlocks] = useState<string[]>(blocks);
+  const [availableBlocks, setAvailableBlocks] = useState(initialAvailableBlocks);
   const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
     setIsComplete(selectedAnswers.every((ans) => ans !== null));
   }, [selectedAnswers]);
 
-  const handleBlockClick = (block: string) => {
+  const handleBlockClick = (block: typeof initialAvailableBlocks[0]) => {
     const nextBlankIndex = selectedAnswers.findIndex((ans) => ans === null);
     if (nextBlankIndex !== -1) {
       const newAnswers = [...selectedAnswers];
       newAnswers[nextBlankIndex] = block;
       setSelectedAnswers(newAnswers);
-      setAvailableBlocks(availableBlocks.filter((b) => b !== block));
+      setAvailableBlocks(availableBlocks.filter((b) => b.originalIndex !== block.originalIndex));
     }
   };
 
-  const handleAnswerClick = (answer: string | null, index: number) => {
+  const handleAnswerClick = (answer: typeof initialAvailableBlocks[0] | null, index: number) => {
     if (answer) {
       const newAnswers = [...selectedAnswers];
       newAnswers[index] = null;
       setSelectedAnswers(newAnswers);
-      setAvailableBlocks([...availableBlocks, answer].sort()); // Keep order consistent
+      // Add the block back and sort it to keep a consistent order
+      setAvailableBlocks(
+        [...availableBlocks, answer].sort(
+          (a, b) => a.originalIndex - b.originalIndex
+        )
+      );
     }
   };
 
   const handleSubmit = () => {
     if (isComplete) {
-      onAnswer(selectedAnswers as string[]);
+      onAnswer(selectedAnswers.map(ans => ans!.text));
     }
   };
 
@@ -69,7 +80,7 @@ export default function CodeBlocksQuestion({
               handleAnswerClick(selectedAnswers[partIndex], partIndex)
             }
           >
-            {selectedAnswers[partIndex] || '___'}
+            {selectedAnswers[partIndex]?.text || '___'}
           </Button>
         )}
         {(partIndex = i + 1)}
@@ -86,12 +97,12 @@ export default function CodeBlocksQuestion({
         <div className="flex flex-wrap gap-2">
           {availableBlocks.map((block) => (
             <Button
-              key={block}
+              key={block.originalIndex}
               variant="outline"
               className="font-code"
               onClick={() => handleBlockClick(block)}
             >
-              {block}
+              {block.text}
             </Button>
           ))}
         </div>
