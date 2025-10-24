@@ -17,11 +17,11 @@ export default function CodeBlocksQuestion({
   const { codeSnippet = '', blocks = [] } = question;
   const numBlanks = (codeSnippet.match(/___/g) || []).length;
 
-  const initialBlockOptions = blocks.map((text, index) => ({ text, id: index }));
+  const initialBlockOptions = blocks.map((text, index) => ({ text, id: `${text}-${index}` }));
   
-  const [selectedAnswers, setSelectedAnswers] = useState<(number | null)[]>(Array(numBlanks).fill(null));
+  const [selectedAnswers, setSelectedAnswers] = useState<(string | null)[]>(Array(numBlanks).fill(null));
   
-  const [availableBlockIds, setAvailableBlockIds] = useState<number[]>(initialBlockOptions.map(opt => opt.id));
+  const [availableBlockIds, setAvailableBlockIds] = useState<string[]>(initialBlockOptions.map(opt => opt.id));
 
   const [isComplete, setIsComplete] = useState(false);
 
@@ -29,7 +29,7 @@ export default function CodeBlocksQuestion({
     setIsComplete(selectedAnswers.every(ans => ans !== null));
   }, [selectedAnswers]);
 
-  const handleAvailableBlockClick = (blockId: number) => {
+  const handleAvailableBlockClick = (blockId: string) => {
     const nextBlankIndex = selectedAnswers.indexOf(null);
     if (nextBlankIndex === -1) return;
 
@@ -49,7 +49,7 @@ export default function CodeBlocksQuestion({
       if (blockIdToReturn === null) return prev;
 
       copy[selectedIndex] = null;
-      setAvailableBlockIds(p => [...p, blockIdToReturn].sort((a, b) => a - b));
+      setAvailableBlockIds(p => [...p, blockIdToReturn].sort());
       return copy;
     });
   };
