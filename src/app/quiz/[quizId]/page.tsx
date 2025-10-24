@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState } from 'react';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { quizzes } from '@/lib/data.tsx';
 import { Header } from '@/components/header';
 import { Progress } from '@/components/ui/progress';
@@ -13,9 +14,10 @@ import CompleteSentenceQuestion from '@/components/questions/complete-sentence-q
 import ReorderQuestion from '@/components/questions/reorder-question';
 import CodeBlocksQuestion from '@/components/questions/code-blocks-question';
 
-export default function QuizPage({ params }: { params: { quizId: string } }) {
+export default function QuizPage() {
   const router = useRouter();
-  const { quizId } = params;
+  const params = useParams();
+  const { quizId } = params as { quizId: string };
   const quiz = quizzes.find((q) => q.id === quizId);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -48,17 +50,24 @@ export default function QuizPage({ params }: { params: { quizId: string } }) {
   const renderQuestion = () => {
     switch (question.type) {
       case 'single_choice':
-        return <SingleChoiceQuestion question={question} onAnswer={handleAnswer} />;
+        return (
+          <SingleChoiceQuestion question={question} onAnswer={handleAnswer} />
+        );
       case 'boolean':
         return <BooleanQuestion question={question} onAnswer={handleAnswer} />;
       case 'complete_sentence':
         return (
-          <CompleteSentenceQuestion question={question} onAnswer={handleAnswer} />
+          <CompleteSentenceQuestion
+            question={question}
+            onAnswer={handleAnswer}
+          />
         );
       case 'reorder':
         return <ReorderQuestion question={question} onAnswer={handleAnswer} />;
       case 'code_blocks':
-        return <CodeBlocksQuestion question={question} onAnswer={handleAnswer} />;
+        return (
+          <CodeBlocksQuestion question={question} onAnswer={handleAnswer} />
+        );
       default:
         return <p>Unsupported question type.</p>;
     }
@@ -71,7 +80,9 @@ export default function QuizPage({ params }: { params: { quizId: string } }) {
         <div className="mx-auto max-w-2xl">
           <div className="mb-4">
             <div className="flex justify-between text-sm text-muted-foreground">
-                <span>Question {currentQuestionIndex + 1} of {quiz.questions.length}</span>
+              <span>
+                Question {currentQuestionIndex + 1} of {quiz.questions.length}
+              </span>
             </div>
             <Progress value={progress} className="mt-2 h-2" />
           </div>
@@ -84,7 +95,11 @@ export default function QuizPage({ params }: { params: { quizId: string } }) {
           </Card>
 
           <div className="mt-6 flex justify-end">
-            <Button onClick={handleNext} disabled={!isAnswered} className="w-full md:w-auto">
+            <Button
+              onClick={handleNext}
+              disabled={!isAnswered}
+              className="w-full md:w-auto"
+            >
               {isLastQuestion ? 'Finish Quiz' : 'Next Question'}
             </Button>
           </div>

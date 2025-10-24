@@ -1,19 +1,29 @@
+
+'use client';
+
 import { Header } from '@/components/header';
 import { courses } from '@/lib/data.tsx';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, BookOpen, FileQuestion } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { useEffect, useState } from 'react';
 
-export default function CourseDetailPage({
-  params,
-}: {
-  params: { courseId: string };
-}) {
-  const { courseId } = params;
+export default function CourseDetailPage() {
+  const params = useParams();
+  const { courseId } = params as { courseId: string };
   const course = courses.find((c) => c.id === courseId);
+
+  // Use state to manage client-side randomness to avoid hydration errors
+  const [moduleStatuses, setModuleStatuses] = useState<boolean[]>([]);
+
+  useEffect(() => {
+    if (course) {
+      setModuleStatuses(course.modules.map(() => Math.random() > 0.5));
+    }
+  }, [course]);
 
   if (!course) {
     notFound();
@@ -46,10 +56,10 @@ export default function CourseDetailPage({
       </div>
       <div className="p-4 md:p-6">
         <div className="mb-4 space-y-2">
-            <div className="flex justify-between text-sm text-muted-foreground">
-                <span>Overall Progress</span>
-                <span>{course.progress}%</span>
-            </div>
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>Overall Progress</span>
+            <span>{course.progress}%</span>
+          </div>
           <Progress value={course.progress} />
           {continueModule && (
             <Button asChild className="mt-4 w-full" size="lg">
@@ -64,7 +74,7 @@ export default function CourseDetailPage({
 
         <h3 className="mb-4 text-xl font-bold">Modules</h3>
         <div className="space-y-2">
-          {course.modules.map((module) => (
+          {course.modules.map((module, index) => (
             <Link
               key={module.id}
               href={`/course/${course.id}/${module.type}/${module.contentId}`}
@@ -79,8 +89,7 @@ export default function CourseDetailPage({
                   )}
                   <span className="font-medium">{module.title}</span>
                 </div>
-                {/* A simple logic to show completion, replace with real data */}
-                {Math.random() > 0.5 && (
+                {moduleStatuses[index] && (
                   <CheckCircle className="h-5 w-5 text-green-500" />
                 )}
               </div>
