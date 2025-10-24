@@ -1,3 +1,4 @@
+
 import type { ImagePlaceholder } from './placeholder-images';
 import { placeholderImages } from './placeholder-images';
 import React from 'react';
@@ -55,7 +56,6 @@ export interface Question {
   correctAnswer: string | string[] | boolean;
   codeSnippet?: string;
   blocks?: string[]; // for code_blocks
-  correctOrder?: string[]; // for reorder
 }
 
 export interface Quiz {
@@ -139,7 +139,7 @@ export const courses: Course[] = [
     image: findImage('python-course'),
     progress: 75,
     modules: [
-        { id: 'py-m1', title: 'Introducción', type: 'theory', contentId: 'py-intro', duration: 5 },
+        { id: 'py-m1', title: 'Introducción a Python', type: 'theory', contentId: 'py-intro', duration: 5 },
         { id: 'py-m2', title: 'Sintaxis básica', type: 'theory', contentId: 'py-syntax', duration: 8 },
         { id: 'py-m3', title: 'Primer Quiz', type: 'quiz', contentId: 'py-quiz-1', duration: 4 },
     ],
@@ -173,6 +173,16 @@ export const courses: Course[] = [
 ];
 
 export const theoryContent: Record<string, { title: string; pages: string[] }> = {
+  'py-intro': {
+    title: 'Introducción a Python',
+    pages: [
+      'Python es un **lenguaje de programación moderno, simple y versátil**.\nSe utiliza para crear sitios web, analizar datos, desarrollar inteligencia artificial y automatizar tareas del día a día.\n\nSu sintaxis es clara y fácil de leer, lo que lo hace ideal para **principiantes** y profesionales.\n```python\nprint("¡Hola, Python!")  # Muestra un mensaje en pantalla\n```\nEl nombre *Python* viene del grupo de comedia británico *Monty Python*, no del animal 🐍.',
+      'Python es uno de los lenguajes más demandados del mundo.\nSu facilidad para integrarse con bases de datos, servicios web y herramientas de ciencia de datos lo convierte en una **herramienta poderosa** para cualquier campo tecnológico.\n\n**Ventajas:**\n\n*   Sintaxis fácil de leer 🧠\n*   Amplia comunidad y recursos 🌍\n*   Compatible con Windows, macOS y Linux 💻\n*   Usado por empresas como Google, Netflix y NASA 🚀\n```python\n# Python también se usa en ciencia de datos\nimport math\narea = math.pi * 5**2\nprint(area)  # 78.5398...\n```',
+      'Puedes programar en Python de varias maneras:\n\n*   Descargando el **intérprete oficial** desde [python.org](https://www.python.org)\n*   Usando **entornos en línea** como Replit o Jupyter Notebook\n*   O directamente desde el **terminal o editor VS Code**\n\nEl programa más simple de todos se conoce como *“Hello World”*.\n```python\n# Tu primer programa en Python\nprint("Hello, World!")\n```\n**Resultado:**\n`Hello, World!`\nCada vez que ves `print()`, Python mostrará texto o el valor de una variable en la pantalla.',
+      'Python **lee tu código línea por línea**, de arriba hacia abajo.\nCada instrucción se ejecuta inmediatamente.\nPor eso es ideal para aprender lógica paso a paso sin necesidad de compilar.\n```python\nprint("Inicio")\nprint("Aprendiendo Python...")\nprint("Fin")\n```\n**Salida:**\n`Inicio`\n`Aprendiendo Python...`\n`Fin`\n\nPiensa en tu programa como una serie de pasos que Python sigue uno tras otro.',
+      'Crea tu primer programa que muestre tu nombre y edad en una sola línea.\n```python\nnombre = "Alex"\nedad = 20\nprint(f"Hola, soy {nombre} y tengo {edad} años.")\n```\n**Resultado:**\n`Hola, soy Alex y tengo 20 años.`\n\n🎉 ¡Excelente! Ya sabes ejecutar tu primer código en Python.\nEn la siguiente lección aprenderás su **sintaxis básica**, cómo usar **variables** y cómo **interactuar con los datos**.',
+    ],
+  },
   'js-intro': {
     title: 'Introducción a JavaScript',
     pages: [
@@ -207,14 +217,14 @@ export const quizzes: Quiz[] = [
       {
         id: 'q2',
         type: 'boolean',
-        text: '¿Es `null` un objeto en JavaScript?',
+        text: '¿El valor `null` es de tipo objeto en JavaScript?',
         correctAnswer: true,
       },
       {
         id: 'q3',
         type: 'complete_sentence',
         text: 'El operador `===` en JavaScript comprueba tanto el valor como el ____.',
-        correctAnswer: 'type',
+        correctAnswer: 'tipo',
       },
       {
         id: 'q4',
@@ -226,10 +236,10 @@ export const quizzes: Quiz[] = [
       {
         id: 'q5',
         type: 'code_blocks',
-        text: 'Completa el código para mostrar una alerta con "Hello, World!".',
+        text: 'Completa el código para mostrar una alerta con "Hola, CodeCraft!".',
         codeSnippet: 'alert("___, ___!");',
-        blocks: ['Hello', 'World', 'CodeCraft'],
-        correctAnswer: ['Hello', 'World'],
+        blocks: ['Hola', 'Mundo', 'CodeCraft', 'Web'],
+        correctAnswer: ['Hola', 'CodeCraft'],
       },
     ],
   },

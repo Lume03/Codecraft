@@ -8,10 +8,12 @@ import { theoryContent } from '@/lib/data.tsx';
 import Link from 'next/link';
 import { notFound, useSearchParams, useParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
 
 // A simple component to render markdown-like code blocks
 function CodeBlock({ children }: { children: string }) {
-  const code = children.replace(/```javascript\n|```/g, '');
+  const code = children.replace(/```(python|javascript)\n|```/g, '');
   return (
     <pre className="my-4 rounded-md bg-card p-4 overflow-x-auto">
       <code className="font-code text-sm">{code}</code>
@@ -20,17 +22,28 @@ function CodeBlock({ children }: { children: string }) {
 }
 
 function ContentRenderer({ content }: { content: string }) {
-  const parts = content.split(/(```javascript\n[\s\S]*?```)/g);
+  const parts = content.split(/(```(?:python|javascript)\n[\s\S]*?```)/g);
   return (
     <>
       {parts.map((part, index) => {
-        if (part.startsWith('```javascript')) {
+        if (part.startsWith('```')) {
           return <CodeBlock key={index}>{part}</CodeBlock>;
         }
+        // Replace markdown-like bold and italics
+        const formattedPart = part
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/`([^`]+)`/g, '<code class="font-code bg-secondary px-1.5 py-0.5 rounded-md">$1</code>');
+          
+        const lines = formattedPart.split('\n').map((line, lineIndex) => (
+          <React.Fragment key={lineIndex}>
+            {line}
+            {lineIndex < formattedPart.split('\n').length - 1 && <br />}
+          </React.Fragment>
+        ));
+
         return (
-          <p key={index} className="leading-relaxed">
-            {part}
-          </p>
+          <p key={index} className="leading-relaxed my-2" dangerouslySetInnerHTML={{ __html: part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/`([^`]+)`/g, '<code class="font-code bg-secondary px-1.5 py-0.5 rounded-md">$1</code>').replace(/\n/g, '<br />') }} />
         );
       })}
     </>
@@ -50,8 +63,16 @@ export default function TheoryPage() {
     notFound();
   }
 
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const [currentPage, setCurrentPage] = useState(1);
   const totalPages = content.pages.length;
+
+  useEffect(() => {
+    const pageFromQuery = parseInt(searchParams.get('page') || '1', 10);
+    if (!isNaN(pageFromQuery) && pageFromQuery > 0 && pageFromQuery <= totalPages) {
+      setCurrentPage(pageFromQuery);
+    }
+  }, [searchParams, totalPages]);
+
   const pageContent = content.pages[currentPage - 1];
 
   if (!pageContent) {
@@ -64,35 +85,47 @@ export default function TheoryPage() {
   const hasNext = currentPage < totalPages;
   const isLastPage = currentPage === totalPages;
 
+  const basePath = `/course/${courseId}/theory/${moduleId}`;
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header title={content.title} showBackButton />
-
-      <div className="p-4 md:p-6 flex-1">
-        <div className="prose prose-invert mx-auto max-w-3xl text-foreground">
-          <ContentRenderer>{pageContent}</ContentRenderer>
+      
+      <div className="flex-1 p-4 md:p-6 pb-40">
+        <div className="mx-auto max-w-3xl text-foreground">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <Link key={index} href={`${basePath}?page=${index + 1}`}>
+                <div
+                  className={cn(
+                    'h-1.5 flex-1 rounded-full bg-secondary',
+                    index < currentPage && 'bg-primary'
+                  )}
+                  style={{ width: `${(100 / totalPages) - 2}%` }}
+                />
+              </Link>
+            ))}
+          </div>
+          <ContentRenderer content={pageContent} />
         </div>
       </div>
 
-      <footer className="sticky bottom-0 border-t bg-background p-4">
+      <footer className="fixed bottom-0 inset-x-0 border-t bg-background/80 p-4 backdrop-blur-sm pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <div className="mx-auto max-w-3xl">
-          <Progress value={progress} className="mb-4 h-2" />
           <div className="flex items-center justify-between">
             <Button variant="outline" disabled={!hasPrev} asChild>
-              <Link href={`?page=${currentPage - 1}`}>
+              <Link href={`${basePath}?page=${currentPage - 1}`}>
                 <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
               </Link>
             </Button>
-            <span className="text-sm text-muted-foreground">
-              Página {currentPage} de {totalPages}
-            </span>
+            
             {isLastPage ? (
               <Button asChild>
                 <Link href={`/course/${courseId}`}>Finalizar lección</Link>
               </Button>
             ) : (
               <Button disabled={!hasNext} asChild>
-                <Link href={`?page=${currentPage + 1}`}>
+                <Link href={`${basePath}?page=${currentPage + 1}`}>
                   Siguiente <ChevronRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
