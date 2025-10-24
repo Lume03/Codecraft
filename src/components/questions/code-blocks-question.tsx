@@ -21,13 +21,11 @@ export default function CodeBlocksQuestion({
     Array(numBlanks).fill(null)
   );
   const [availableBlocks, setAvailableBlocks] = useState<string[]>(blocks);
+  const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-    const isComplete = selectedAnswers.every((ans) => ans !== null);
-    if (isComplete) {
-      onAnswer(selectedAnswers as string[]);
-    }
-  }, [selectedAnswers, onAnswer]);
+    setIsComplete(selectedAnswers.every((ans) => ans !== null));
+  }, [selectedAnswers]);
 
   const handleBlockClick = (block: string) => {
     const nextBlankIndex = selectedAnswers.findIndex((ans) => ans === null);
@@ -48,6 +46,12 @@ export default function CodeBlocksQuestion({
     }
   };
 
+  const handleSubmit = () => {
+    if (isComplete) {
+      onAnswer(selectedAnswers as string[]);
+    }
+  };
+
   const renderCodeSnippet = () => {
     let partIndex = 0;
     const parts = codeSnippet.split('___');
@@ -59,7 +63,7 @@ export default function CodeBlocksQuestion({
             variant="secondary"
             className={cn(
               'mx-1 h-8 min-w-[6rem] px-3 font-code',
-              selectedAnswers[partIndex] && 'text-primary-foreground bg-primary'
+              selectedAnswers[partIndex] && 'bg-primary text-primary-foreground'
             )}
             onClick={() =>
               handleAnswerClick(selectedAnswers[partIndex], partIndex)
@@ -92,6 +96,9 @@ export default function CodeBlocksQuestion({
           ))}
         </div>
       </div>
+       <Button onClick={handleSubmit} className="w-full" disabled={!isComplete}>
+        Confirmar respuesta
+      </Button>
     </div>
   );
 }
