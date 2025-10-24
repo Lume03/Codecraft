@@ -1,5 +1,5 @@
 import { Header } from '@/components/header';
-import { courses } from '@/lib/data';
+import { courses } from '@/lib/data.tsx';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,7 +12,8 @@ export default function CourseDetailPage({
 }: {
   params: { courseId: string };
 }) {
-  const course = courses.find((c) => c.id === params.courseId);
+  const { courseId } = params;
+  const course = courses.find((c) => c.id === courseId);
 
   if (!course) {
     notFound();

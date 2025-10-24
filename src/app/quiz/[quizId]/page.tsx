@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
-import { quizzes } from '@/lib/data';
+import { quizzes } from '@/lib/data.tsx';
 import { Header } from '@/components/header';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,8 @@ import CodeBlocksQuestion from '@/components/questions/code-blocks-question';
 
 export default function QuizPage({ params }: { params: { quizId: string } }) {
   const router = useRouter();
-  const quiz = quizzes.find((q) => q.id === params.quizId);
+  const { quizId } = params;
+  const quiz = quizzes.find((q) => q.id === quizId);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});

@@ -1,7 +1,7 @@
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { theoryContent } from '@/lib/data';
+import { theoryContent } from '@/lib/data.tsx';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -37,7 +37,8 @@ export default function TheoryPage({
   params: { courseId: string; moduleId: string };
   searchParams: { page?: string };
 }) {
-  const content = theoryContent[params.moduleId];
+  const { courseId, moduleId } = params;
+  const content = theoryContent[moduleId];
   if (!content) {
     notFound();
   }
@@ -80,7 +81,7 @@ export default function TheoryPage({
             </span>
             {isLastPage ? (
                  <Button asChild>
-                    <Link href={`/course/${params.courseId}`}>Finish Lesson</Link>
+                    <Link href={`/course/${courseId}`}>Finish Lesson</Link>
                 </Button>
             ) : (
                 <Button disabled={!hasNext} asChild>
