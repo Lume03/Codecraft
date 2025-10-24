@@ -1,8 +1,8 @@
 'use client';
 
-import type { Question } from '@/lib/data';
+import type { Question } from '@/lib/data.tsx';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 interface CodeBlocksQuestionProps {
@@ -17,13 +17,20 @@ export default function CodeBlocksQuestion({
   const { codeSnippet = '', blocks = [] } = question;
   const numBlanks = (codeSnippet.match(/___/g) || []).length;
 
-  const [selectedAnswers, setSelectedAnswers] = useState<string[]>(
-    Array(numBlanks).fill('')
+  const [selectedAnswers, setSelectedAnswers] = useState<(string | null)[]>(
+    Array(numBlanks).fill(null)
   );
   const [availableBlocks, setAvailableBlocks] = useState<string[]>(blocks);
 
+  useEffect(() => {
+    const isComplete = selectedAnswers.every((ans) => ans !== null);
+    if (isComplete) {
+      onAnswer(selectedAnswers as string[]);
+    }
+  }, [selectedAnswers, onAnswer]);
+
   const handleBlockClick = (block: string) => {
-    const nextBlankIndex = selectedAnswers.findIndex((ans) => ans === '');
+    const nextBlankIndex = selectedAnswers.findIndex((ans) => ans === null);
     if (nextBlankIndex !== -1) {
       const newAnswers = [...selectedAnswers];
       newAnswers[nextBlankIndex] = block;
@@ -32,12 +39,12 @@ export default function CodeBlocksQuestion({
     }
   };
 
-  const handleAnswerClick = (answer: string, index: number) => {
+  const handleAnswerClick = (answer: string | null, index: number) => {
     if (answer) {
       const newAnswers = [...selectedAnswers];
-      newAnswers[index] = '';
+      newAnswers[index] = null;
       setSelectedAnswers(newAnswers);
-      setAvailableBlocks([...availableBlocks, answer]);
+      setAvailableBlocks([...availableBlocks, answer].sort()); // Keep order consistent
     }
   };
 
@@ -51,10 +58,12 @@ export default function CodeBlocksQuestion({
           <Button
             variant="secondary"
             className={cn(
-              'mx-1 h-8 px-3 font-code',
-              !selectedAnswers[partIndex] && 'w-20'
+              'mx-1 h-8 min-w-[6rem] px-3 font-code',
+              selectedAnswers[partIndex] && 'text-primary-foreground bg-primary'
             )}
-            onClick={() => handleAnswerClick(selectedAnswers[partIndex], partIndex)}
+            onClick={() =>
+              handleAnswerClick(selectedAnswers[partIndex], partIndex)
+            }
           >
             {selectedAnswers[partIndex] || '___'}
           </Button>
@@ -63,20 +72,13 @@ export default function CodeBlocksQuestion({
       </span>
     ));
   };
-  
-  const handleSubmit = () => {
-    if(selectedAnswers.every(ans => ans !== '')) {
-      onAnswer(selectedAnswers);
-    }
-  }
 
   return (
     <div className="space-y-6">
-      <div className="rounded-md bg-card p-4 font-code text-sm">
+      <div className="min-h-[4rem] rounded-md bg-card p-4 font-code text-base flex items-center">
         {renderCodeSnippet()}
       </div>
-      <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">Available blocks:</p>
+      <div className="space-y-2 pt-4">
         <div className="flex flex-wrap gap-2">
           {availableBlocks.map((block) => (
             <Button
@@ -90,9 +92,6 @@ export default function CodeBlocksQuestion({
           ))}
         </div>
       </div>
-      <Button onClick={handleSubmit} disabled={selectedAnswers.some(ans => ans === '')} className="w-full">
-        Check Answer
-      </Button>
     </div>
   );
 }

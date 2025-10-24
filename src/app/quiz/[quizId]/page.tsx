@@ -81,7 +81,7 @@ export default function QuizPage() {
           <div className="mb-4">
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>
-                Question {currentQuestionIndex + 1} of {quiz.questions.length}
+                Pregunta {currentQuestionIndex + 1} de {quiz.questions.length}
               </span>
             </div>
             <Progress value={progress} className="mt-2 h-2" />
@@ -100,7 +100,7 @@ export default function QuizPage() {
               disabled={!isAnswered}
               className="w-full md:w-auto"
             >
-              {isLastQuestion ? 'Finish Quiz' : 'Next Question'}
+              {isLastQuestion ? 'Finalizar Quiz' : 'Siguiente Pregunta'}
             </Button>
           </div>
         </div>

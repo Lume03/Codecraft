@@ -113,6 +113,7 @@ function JavaScriptIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+
 function CppIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
      <svg
@@ -191,39 +192,39 @@ export const theoryContent: Record<string, { title: string; pages: string[] }> =
 export const quizzes: Quiz[] = [
   {
     id: 'js-quiz-1',
-    title: 'JavaScript Variables Quiz',
+    title: 'Quiz de Variables en JavaScript',
     courseId: 'js-101',
     questions: [
       {
         id: 'q1',
         type: 'single_choice',
-        text: 'Which keyword is used to declare a variable that cannot be reassigned?',
+        text: '¿Qué palabra clave se utiliza para declarar una variable que no se puede reasignar?',
         options: ['let', 'var', 'const', 'static'],
         correctAnswer: 'const',
       },
       {
         id: 'q2',
         type: 'boolean',
-        text: 'Is `null` an object in JavaScript?',
+        text: '¿Es `null` un objeto en JavaScript?',
         correctAnswer: true,
       },
       {
         id: 'q3',
         type: 'complete_sentence',
-        text: 'The `===` operator in JavaScript checks for both value and ____.',
+        text: 'El operador `===` en JavaScript comprueba tanto el valor como el ____.',
         correctAnswer: 'type',
       },
       {
         id: 'q4',
         type: 'reorder',
-        text: 'Reorder the lines to correctly declare a variable `x` and assign it the value `10`.',
+        text: 'Reordena las líneas para declarar correctamente una variable `x` y asignarle el valor `10`.',
         options: ['x = 10;', 'let x;'],
         correctAnswer: ['let x;', 'x = 10;'],
       },
       {
         id: 'q5',
         type: 'code_blocks',
-        text: 'Complete the code to alert "Hello, World!".',
+        text: 'Completa el código para mostrar una alerta con "Hello, World!".',
         codeSnippet: 'alert("___, ___!");',
         blocks: ['Hello', 'World', 'CodeCraft'],
         correctAnswer: ['Hello', 'World'],
