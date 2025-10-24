@@ -37,6 +37,7 @@ export interface Module {
   title: string;
   type: 'theory' | 'quiz';
   contentId: string;
+  duration: number; // Duration in minutes
 }
 
 export type QuestionType =
@@ -138,9 +139,9 @@ export const courses: Course[] = [
     image: findImage('python-course'),
     progress: 75,
     modules: [
-        { id: 'py-m1', title: 'Introducción', type: 'theory', contentId: 'py-intro' },
-        { id: 'py-m2', title: 'Sintaxis básica', type: 'theory', contentId: 'py-syntax' },
-        { id: 'py-m3', title: 'Primer Quiz', type: 'quiz', contentId: 'py-quiz-1' },
+        { id: 'py-m1', title: 'Introducción', type: 'theory', contentId: 'py-intro', duration: 5 },
+        { id: 'py-m2', title: 'Sintaxis básica', type: 'theory', contentId: 'py-syntax', duration: 8 },
+        { id: 'py-m3', title: 'Primer Quiz', type: 'quiz', contentId: 'py-quiz-1', duration: 4 },
     ],
   },
   {
@@ -151,9 +152,10 @@ export const courses: Course[] = [
     image: findImage('js-course'),
     progress: 40,
     modules: [
-      { id: 'js-m1', title: 'Introducción', type: 'theory', contentId: 'js-intro' },
-      { id: 'js-m2', title: 'Quiz de variables', type: 'quiz', contentId: 'js-quiz-1' },
-      { id: 'js-m3', title: 'Tipos de datos', type: 'theory', contentId: 'js-data-types' },
+      { id: 'js-m1', title: 'Introducción a JS', type: 'theory', contentId: 'js-intro', duration: 6 },
+      { id: 'js-m2', title: 'Variables y Tipos', type: 'quiz', contentId: 'js-quiz-1', duration: 9 },
+      { id: 'js-m3', title: 'Funciones', type: 'theory', contentId: 'js-data-types', duration: 12 },
+      { id: 'js-m4', title: 'DOM y Eventos', type: 'theory', contentId: 'js-dom', duration: 10 },
     ],
   },
   {
@@ -164,8 +166,8 @@ export const courses: Course[] = [
     image: findImage('cpp-course'),
     progress: 10,
     modules: [
-        { id: 'cpp-m1', title: 'Fundamentos de C++', type: 'theory', contentId: 'cpp-intro' },
-        { id: 'cpp-m2', title: 'Quiz de primeros pasos', type: 'quiz', contentId: 'cpp-quiz-1' },
+        { id: 'cpp-m1', title: 'Fundamentos de C++', type: 'theory', contentId: 'cpp-intro', duration: 7 },
+        { id: 'cpp-m2', title: 'Quiz de primeros pasos', type: 'quiz', contentId: 'cpp-quiz-1', duration: 5 },
     ],
   },
 ];
