@@ -17,13 +17,10 @@ export default function CodeBlocksQuestion({
   const { codeSnippet = '', blocks = [] } = question;
   const numBlanks = (codeSnippet.match(/___/g) || []).length;
 
-  // Each available block option is an object with its text and original index
   const initialBlockOptions = blocks.map((text, index) => ({ text, id: index }));
   
-  // selectedAnswers stores the `id` of the block from `initialBlockOptions`, or null if empty
   const [selectedAnswers, setSelectedAnswers] = useState<(number | null)[]>(Array(numBlanks).fill(null));
   
-  // availableBlockIds stores the `id`s of blocks that haven't been selected yet
   const [availableBlockIds, setAvailableBlockIds] = useState<number[]>(initialBlockOptions.map(opt => opt.id));
 
   const [isComplete, setIsComplete] = useState(false);
@@ -32,31 +29,29 @@ export default function CodeBlocksQuestion({
     setIsComplete(selectedAnswers.every(ans => ans !== null));
   }, [selectedAnswers]);
 
-
   const handleAvailableBlockClick = (blockId: number) => {
     const nextBlankIndex = selectedAnswers.indexOf(null);
-    if (nextBlankIndex !== -1) {
-      // Place block in the first available answer slot
-      const newSelected = [...selectedAnswers];
-      newSelected[nextBlankIndex] = blockId;
-      setSelectedAnswers(newSelected);
-      
-      // Remove block from available list
-      setAvailableBlockIds(availableBlockIds.filter(id => id !== blockId));
-    }
+    if (nextBlankIndex === -1) return;
+
+    setSelectedAnswers(prev => {
+      const copy = [...prev];
+      copy[nextBlankIndex] = blockId;
+      return copy;
+    });
+
+    setAvailableBlockIds(prev => prev.filter(id => id !== blockId));
   };
 
   const handleSelectedBlockClick = (selectedIndex: number) => {
-    const blockIdToReturn = selectedAnswers[selectedIndex];
-    if (blockIdToReturn !== null) {
-      // Clear the answer slot
-      const newSelected = [...selectedAnswers];
-      newSelected[selectedIndex] = null;
-      setSelectedAnswers(newSelected);
+    setSelectedAnswers(prev => {
+      const copy = [...prev];
+      const blockIdToReturn = copy[selectedIndex];
+      if (blockIdToReturn === null) return prev;
 
-      // Add block back to available list and sort it
-      setAvailableBlockIds(prev => [...prev, blockIdToReturn].sort((a,b) => a - b));
-    }
+      copy[selectedIndex] = null;
+      setAvailableBlockIds(p => [...p, blockIdToReturn].sort((a, b) => a - b));
+      return copy;
+    });
   };
 
   const handleSubmit = () => {
@@ -67,34 +62,42 @@ export default function CodeBlocksQuestion({
   };
 
   const renderCodeSnippet = () => {
-    let partIndex = 0;
     const parts = codeSnippet.split('___');
-    return parts.map((part, i) => (
-      <span key={i}>
-        {part}
-        {i < parts.length - 1 && (
+
+    return parts.flatMap((part, i) => {
+      const out = [
+        <span key={`part-${i}`}>{part}</span>
+      ];
+
+      if (i < parts.length - 1) {
+        const selId = selectedAnswers[i];
+        const selText = selId !== null
+          ? initialBlockOptions.find(opt => opt.id === selId)?.text
+          : '___';
+
+        out.push(
           <Button
+            key={`blank-${i}`}
+            type="button"
             variant="secondary"
             className={cn(
               'mx-1 h-8 min-w-[6rem] px-3 font-code',
-              selectedAnswers[partIndex] !== null && 'bg-primary text-primary-foreground'
+              selId !== null && 'bg-primary text-primary-foreground'
             )}
-            onClick={() => handleSelectedBlockClick(partIndex)}
+            onClick={() => handleSelectedBlockClick(i)}
           >
-            {selectedAnswers[partIndex] !== null
-              ? initialBlockOptions.find(opt => opt.id === selectedAnswers[partIndex])?.text
-              : '___'
-            }
+            {selText}
           </Button>
-        )}
-        {(partIndex = i + 1)}
-      </span>
-    ));
+        );
+      }
+
+      return out;
+    });
   };
   
   return (
     <div className="space-y-6">
-      <div className="min-h-[4rem] rounded-md bg-card p-4 font-code text-base flex items-center">
+      <div className="min-h-[4rem] rounded-md bg-card p-4 font-code text-base flex items-center flex-wrap">
         {renderCodeSnippet()}
       </div>
       <div className="space-y-2 pt-4">
