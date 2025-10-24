@@ -17,49 +17,52 @@ export default function CodeBlocksQuestion({
   const { codeSnippet = '', blocks = [] } = question;
   const numBlanks = (codeSnippet.match(/___/g) || []).length;
 
-  // Use an object to track used indices of blocks for correct replacement
-  const initialAvailableBlocks = blocks.map((block, index) => ({
-    text: block,
-    originalIndex: index,
-  }));
+  // Each available block option is an object with its text and original index
+  const initialBlockOptions = blocks.map((text, index) => ({ text, id: index }));
+  
+  // selectedAnswers stores the `id` of the block from `initialBlockOptions`, or null if empty
+  const [selectedAnswers, setSelectedAnswers] = useState<(number | null)[]>(Array(numBlanks).fill(null));
+  
+  // availableBlockIds stores the `id`s of blocks that haven't been selected yet
+  const [availableBlockIds, setAvailableBlockIds] = useState<number[]>(initialBlockOptions.map(opt => opt.id));
 
-  const [selectedAnswers, setSelectedAnswers] = useState<(typeof initialAvailableBlocks[0] | null)[]>(
-    Array(numBlanks).fill(null)
-  );
-  const [availableBlocks, setAvailableBlocks] = useState(initialAvailableBlocks);
   const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-    setIsComplete(selectedAnswers.every((ans) => ans !== null));
+    setIsComplete(selectedAnswers.every(ans => ans !== null));
   }, [selectedAnswers]);
 
-  const handleBlockClick = (block: typeof initialAvailableBlocks[0]) => {
-    const nextBlankIndex = selectedAnswers.findIndex((ans) => ans === null);
+
+  const handleAvailableBlockClick = (blockId: number) => {
+    const nextBlankIndex = selectedAnswers.indexOf(null);
     if (nextBlankIndex !== -1) {
-      const newAnswers = [...selectedAnswers];
-      newAnswers[nextBlankIndex] = block;
-      setSelectedAnswers(newAnswers);
-      setAvailableBlocks(availableBlocks.filter((b) => b.originalIndex !== block.originalIndex));
+      // Place block in the first available answer slot
+      const newSelected = [...selectedAnswers];
+      newSelected[nextBlankIndex] = blockId;
+      setSelectedAnswers(newSelected);
+      
+      // Remove block from available list
+      setAvailableBlockIds(availableBlockIds.filter(id => id !== blockId));
     }
   };
 
-  const handleAnswerClick = (answer: typeof initialAvailableBlocks[0] | null, index: number) => {
-    if (answer) {
-      const newAnswers = [...selectedAnswers];
-      newAnswers[index] = null;
-      setSelectedAnswers(newAnswers);
-      // Add the block back and sort it to keep a consistent order
-      setAvailableBlocks(
-        [...availableBlocks, answer].sort(
-          (a, b) => a.originalIndex - b.originalIndex
-        )
-      );
+  const handleSelectedBlockClick = (selectedIndex: number) => {
+    const blockIdToReturn = selectedAnswers[selectedIndex];
+    if (blockIdToReturn !== null) {
+      // Clear the answer slot
+      const newSelected = [...selectedAnswers];
+      newSelected[selectedIndex] = null;
+      setSelectedAnswers(newSelected);
+
+      // Add block back to available list and sort it
+      setAvailableBlockIds(prev => [...prev, blockIdToReturn].sort((a,b) => a - b));
     }
   };
 
   const handleSubmit = () => {
     if (isComplete) {
-      onAnswer(selectedAnswers.map(ans => ans!.text));
+      const answerText = selectedAnswers.map(id => initialBlockOptions.find(opt => opt.id === id)!.text);
+      onAnswer(answerText);
     }
   };
 
@@ -74,20 +77,21 @@ export default function CodeBlocksQuestion({
             variant="secondary"
             className={cn(
               'mx-1 h-8 min-w-[6rem] px-3 font-code',
-              selectedAnswers[partIndex] && 'bg-primary text-primary-foreground'
+              selectedAnswers[partIndex] !== null && 'bg-primary text-primary-foreground'
             )}
-            onClick={() =>
-              handleAnswerClick(selectedAnswers[partIndex], partIndex)
-            }
+            onClick={() => handleSelectedBlockClick(partIndex)}
           >
-            {selectedAnswers[partIndex]?.text || '___'}
+            {selectedAnswers[partIndex] !== null
+              ? initialBlockOptions.find(opt => opt.id === selectedAnswers[partIndex])?.text
+              : '___'
+            }
           </Button>
         )}
         {(partIndex = i + 1)}
       </span>
     ));
   };
-
+  
   return (
     <div className="space-y-6">
       <div className="min-h-[4rem] rounded-md bg-card p-4 font-code text-base flex items-center">
@@ -95,16 +99,19 @@ export default function CodeBlocksQuestion({
       </div>
       <div className="space-y-2 pt-4">
         <div className="flex flex-wrap gap-2">
-          {availableBlocks.map((block) => (
-            <Button
-              key={block.originalIndex}
-              variant="outline"
-              className="font-code"
-              onClick={() => handleBlockClick(block)}
-            >
-              {block.text}
-            </Button>
-          ))}
+          {availableBlockIds.map((id) => {
+            const block = initialBlockOptions.find(opt => opt.id === id);
+            return block ? (
+              <Button
+                key={block.id}
+                variant="outline"
+                className="font-code"
+                onClick={() => handleAvailableBlockClick(block.id)}
+              >
+                {block.text}
+              </Button>
+            ) : null;
+          })}
         </div>
       </div>
        <Button onClick={handleSubmit} className="w-full" disabled={!isComplete}>
