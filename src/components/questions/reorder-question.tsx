@@ -2,7 +2,7 @@
 
 import type { Question } from '@/lib/data';
 import { Button } from '@/components/ui/button';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 
 interface ReorderQuestionProps {
