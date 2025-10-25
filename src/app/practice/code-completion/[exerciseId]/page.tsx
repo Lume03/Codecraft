@@ -34,13 +34,16 @@ export default function CodeCompletionPage() {
     return notFound();
   }
 
-  const handlePlaceBlock = (block: string) => {
+  const handlePlaceBlock = (block: string, index: number) => {
     const firstEmptyIndex = placedBlocks.findIndex((b) => b === null);
     if (firstEmptyIndex !== -1) {
       const newPlaced = [...placedBlocks];
       newPlaced[firstEmptyIndex] = block;
       setPlacedBlocks(newPlaced);
-      setAvailableBlocks(availableBlocks.filter((b) => b !== block));
+
+      const newAvailable = [...availableBlocks];
+      newAvailable.splice(index, 1);
+      setAvailableBlocks(newAvailable);
     }
   };
 
@@ -98,12 +101,12 @@ export default function CodeCompletionPage() {
         {/* Available Blocks */}
         <div className="min-h-[6rem] rounded-2xl bg-secondary/50 p-4">
           <div className="flex flex-wrap gap-2">
-            {availableBlocks.map((block) => (
+            {availableBlocks.map((block, index) => (
               <Button
-                key={block}
+                key={`${block}-${index}`}
                 variant="outline"
                 className="h-12 flex-grow basis-24 bg-card font-code text-base"
-                onClick={() => handlePlaceBlock(block)}
+                onClick={() => handlePlaceBlock(block, index)}
               >
                 {block}
               </Button>
