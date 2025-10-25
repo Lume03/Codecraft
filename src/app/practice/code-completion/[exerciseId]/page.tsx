@@ -20,6 +20,7 @@ export default function CodeCompletionPage() {
   const [availableBlocks, setAvailableBlocks] = useState<string[]>([]);
   const [status, setStatus] = useState<'idle' | 'correct' | 'incorrect'>('idle');
   const [showHint, setShowHint] = useState(false);
+  const [userAnswers, setUserAnswers] = useState<Record<string, string[] | null>>({});
 
   useEffect(() => {
     if (exercise) {
@@ -47,8 +48,7 @@ export default function CodeCompletionPage() {
       newPlaced[firstEmptyIndex] = block;
       setPlacedBlocks(newPlaced);
 
-      const newAvailable = [...availableBlocks];
-      newAvailable.splice(index, 1);
+      const newAvailable = availableBlocks.filter((_, i) => i !== index);
       setAvailableBlocks(newAvailable);
     }
   };
@@ -64,6 +64,9 @@ export default function CodeCompletionPage() {
   };
   
   const handleCheck = () => {
+    const currentAnswers = placedBlocks.filter(b => b !== null) as string[];
+    setUserAnswers(prev => ({...prev, [exercise.id]: currentAnswers}));
+
     const isCorrect =
       JSON.stringify(placedBlocks) === JSON.stringify(exercise.correctOrder);
     setStatus(isCorrect ? 'correct' : 'incorrect');
@@ -71,7 +74,8 @@ export default function CodeCompletionPage() {
 
   const handleNext = () => {
     if (isLastExercise) {
-      router.push('/practice/code-completion/results');
+      const answersQuery = new URLSearchParams(userAnswers as any).toString();
+      router.push(`/practice/code-completion/results?${answersQuery}`);
     } else {
       const nextExercise = codeCompletionExercises[currentIndex + 1];
       if (nextExercise) {
@@ -104,7 +108,7 @@ export default function CodeCompletionPage() {
             <div className="flex flex-wrap gap-2">
               {placedBlocks.map((block, index) => (
                 <Button
-                  key={index}
+                  key={`${block}-${index}`}
                   variant={block ? 'default' : 'secondary'}
                   className={cn('h-12 flex-grow basis-24 font-code text-base', block && 'cursor-pointer')}
                   onClick={() => handleRemoveBlock(index)}
@@ -179,16 +183,16 @@ export default function CodeCompletionPage() {
                           </AlertDescription>
                       </div>
                   </div>
-                  { status === 'correct' && (
+                   <div className="flex items-center gap-2">
+                    { status === 'incorrect' && (
+                      <Button onClick={() => setStatus('idle')} size="sm" variant="outline" className="shrink-0" style={{borderRadius: '9999px'}}>
+                          Reintentar
+                      </Button>
+                    )}
                     <Button onClick={handleNext} size="sm" className="shrink-0" style={{borderRadius: '9999px'}}>
                         Continuar
                     </Button>
-                  )}
-                   { status === 'incorrect' && (
-                    <Button onClick={() => setStatus('idle')} size="sm" variant="outline" className="shrink-0" style={{borderRadius: '9999px'}}>
-                        Reintentar
-                    </Button>
-                  )}
+                  </div>
               </div>
              </Alert>
           )}
