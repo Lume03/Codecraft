@@ -36,7 +36,7 @@ const practiceModes = [
     title: 'Completado de código',
     description: 'Arrastra bloques',
     icon: FileCode,
-    href: '#',
+    href: '/practice/code-completion/py-drag-1',
   },
 ];
 
