@@ -1,3 +1,5 @@
+'use client';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { courses, user } from '@/lib/data.tsx';
@@ -5,6 +7,7 @@ import {
   ChevronRight,
   Flame,
   Moon,
+  Sun,
   PenSquare,
   Settings,
   Bell,
@@ -15,30 +18,46 @@ import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { GoalProgress } from '@/components/goal-progress';
 import { AchievementBadge } from '@/components/achievement-badge';
+import { useTheme } from 'next-themes';
 
 const QuickSettingTile = ({
   icon: Icon,
   label,
   href,
+  onClick,
 }: {
   icon: React.ElementType;
   label: string;
-  href: string;
-}) => (
-  <Link
-    href={href}
-    role="button"
-    aria-label={`Ir a ${label}`}
-    className="group flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-2xl border bg-secondary/60 transition-transform hover:scale-105 focus-visible:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:h-28 md:w-28"
-  >
-    <Icon className="h-7 w-7 text-muted-foreground transition-colors group-hover:text-foreground" />
-    <span className="text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
-      {label}
-    </span>
-  </Link>
-);
+  href?: string;
+  onClick?: () => void;
+}) => {
+  const content = (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={`Action: ${label}`}
+      className="group flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-2xl border bg-secondary/60 transition-transform hover:scale-105 focus-visible:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:h-28 md:w-28"
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') onClick?.();
+      }}
+    >
+      <Icon className="h-7 w-7 text-muted-foreground transition-colors group-hover:text-foreground" />
+      <span className="text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
+        {label}
+      </span>
+    </div>
+  );
+
+  if (href) {
+    return <Link href={href}>{content}</Link>;
+  }
+
+  return content;
+};
 
 export default function ProfilePage() {
+  const { theme, setTheme } = useTheme();
   const currentCourse = courses[0]; // Example: current course is Python
   const goals = [
     {
@@ -57,6 +76,10 @@ export default function ProfilePage() {
       icon: Flame,
     },
   ];
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   return (
     <div className="flex flex-col">
@@ -77,7 +100,7 @@ export default function ProfilePage() {
 
       <main className="mx-auto w-full max-w-[420px] flex-1 space-y-4 px-4 pb-28 md:max-w-[720px] md:space-y-6 md:px-6 md:pb-32 xl:max-w-[960px]">
         {/* Profile Card */}
-        <div className="flex items-center gap-4 rounded-2xl border bg-card p-4 md:gap-5 md:p-5 lg:p-6">
+        <div className="flex items-center gap-4 rounded-2xl border bg-card p-4 md:gap-5 md:p-6 lg:p-6">
           <Avatar className="h-16 w-16 border-2 border-primary">
             <AvatarImage
               src={user.avatar.imageUrl}
@@ -135,7 +158,11 @@ export default function ProfilePage() {
         
         {/* Quick Settings */}
         <div className="grid grid-cols-3 justify-items-center gap-3 text-center md:gap-4">
-            <QuickSettingTile icon={Moon} label="Tema" href="/settings" />
+            <QuickSettingTile 
+              icon={theme === 'dark' ? Moon : Sun} 
+              label="Tema" 
+              onClick={toggleTheme} 
+            />
             <QuickSettingTile icon={PenSquare} label="Editar Perfil" href="/profile/edit" />
             <QuickSettingTile icon={Bell} label="Notificaciones" href="/settings" />
         </div>

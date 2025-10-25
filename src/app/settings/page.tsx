@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { Header } from '@/components/header';
 import {
-  Brush,
+  Sun,
+  Moon,
   Languages,
   Bell,
   Mail,
@@ -13,17 +15,33 @@ import {
   Sparkles,
   BookOpen,
   CalendarClock,
-  ChevronRight,
 } from 'lucide-react';
 import { SettingsSection } from '@/components/settings/settings-section';
 import { SettingsRow } from '@/components/settings/settings-row';
 
 export default function SettingsPage() {
-  const [theme, setTheme] = useState(true); // true for dark
+  const { theme, setTheme } = useTheme();
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
   const [didacticMode, setDidacticMode] = useState(false);
   const [dailyChallenge, setDailyChallenge] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setIsDarkTheme(theme === 'dark');
+  }, [theme]);
+
+  const handleThemeChange = (checked: boolean) => {
+    setTheme(checked ? 'dark' : 'light');
+    setIsDarkTheme(checked);
+  };
+  
+  if (!mounted) {
+    return null; // or a loading spinner
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -31,10 +49,10 @@ export default function SettingsPage() {
       <main className="mx-auto w-full max-w-[420px] flex-1 space-y-4 px-4 pb-28 md:max-w-[720px] md:space-y-6 md:px-6 md:pb-32">
         <SettingsSection title="General">
           <SettingsRow
-            icon={Brush}
+            icon={isDarkTheme ? Moon : Sun}
             title="Tema"
-            subtitle="Oscuro (recomendado para lectura prolongada)"
-            trailing={{ type: 'toggle', checked: theme, onCheckedChange: setTheme }}
+            subtitle={isDarkTheme ? 'Oscuro' : 'Claro'}
+            trailing={{ type: 'toggle', checked: isDarkTheme, onCheckedChange: handleThemeChange }}
           />
           <SettingsRow
             icon={Languages}
