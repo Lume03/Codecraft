@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 interface HeaderProps {
   title: string;
@@ -33,10 +34,12 @@ export function Header({
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={() => router.back()}
+            asChild
           >
-            <ChevronLeft className="h-5 w-5" />
-            <span className="sr-only">Back</span>
+            <Link href="/learn">
+              <ChevronLeft className="h-5 w-5" />
+              <span className="sr-only">Volver a Aprender</span>
+            </Link>
           </Button>
         )}
         <h1 className="text-xl font-bold">{title}</h1>
