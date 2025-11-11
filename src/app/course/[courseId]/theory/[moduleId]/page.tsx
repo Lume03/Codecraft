@@ -10,36 +10,37 @@ import { cn } from '@/lib/utils';
 import { useEffect, useState, useMemo } from 'react';
 import { useDoc, useCollection, useFirestore } from '@/firebase';
 import { doc, collection, query, orderBy } from 'firebase/firestore';
-
-// A simple component to render markdown-like code blocks
-function CodeBlock({ children }: { children: string }) {
-  const code = children.replace(/```(python|javascript)\n|```/g, '');
-  return (
-    <pre className="my-4 rounded-xl bg-card p-4 overflow-x-auto">
-      <code className="font-code text-sm">{code}</code>
-    </pre>
-  );
-}
+import ReactMarkdown from 'react-markdown';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function ContentRenderer({ content }: { content: string }) {
-  const parts = content.split(/(```(?:python|javascript)\n[\s\S]*?```)/g);
   return (
-    <>
-      {parts.map((part, index) => {
-        if (part.startsWith('```')) {
-          return <CodeBlock key={index}>{part}</CodeBlock>;
-        }
-        // Replace markdown-like bold and italics
-        const formattedPart = part
-          .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-foreground">$1</strong>')
-          .replace(/\*(.*?)\*/g, '<em>$1</em>')
-          .replace(/`([^`]+)`/g, '<code class="font-code bg-secondary px-1.5 py-0.5 rounded-md">$1</code>');
-          
-        return (
-          <p key={index} className="text-base leading-relaxed my-2 text-foreground/90" dangerouslySetInnerHTML={{ __html: formattedPart.replace(/\n/g, '<br />') }} />
-        );
-      })}
-    </>
+    <div className="prose prose-invert max-w-none text-foreground/90">
+      <ReactMarkdown
+        components={{
+          h1: ({ node, ...props }) => <h1 className="text-3xl font-bold my-4 text-foreground" {...props} />,
+          h2: ({ node, ...props }) => <h2 className="text-2xl font-bold my-3 border-b border-border pb-2 text-foreground" {...props} />,
+          p: ({ node, ...props }) => <p className="text-base leading-relaxed my-4" {...props} />,
+          code: ({ node, className, children, ...props }) => {
+            const match = /language-(\w+)/.exec(className || '');
+            return match ? (
+              <pre className="my-4 rounded-xl bg-card p-4 overflow-x-auto"><code className="font-code text-sm">{children}</code></pre>
+            ) : (
+              <code className="font-code bg-secondary px-1.5 py-0.5 rounded-md text-primary" {...props}>{children}</code>
+            );
+          },
+          table: ({node, ...props}) => <table className="w-full my-4 border-collapse border border-border" {...props} />,
+          th: ({node, ...props}) => <th className="border border-border px-4 py-2 bg-secondary text-left font-semibold" {...props} />,
+          td: ({node, ...props}) => <td className="border border-border px-4 py-2" {...props} />,
+          ul: ({node, ...props}) => <ul className="list-disc pl-5 my-4 space-y-2" {...props} />,
+          ol: ({node, ...props}) => <ol className="list-decimal pl-5 my-4 space-y-2" {...props} />,
+          li: ({node, ...props}) => <li className="leading-relaxed" {...props} />,
+          strong: ({node, ...props}) => <strong className="font-bold text-foreground" {...props} />,
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
   );
 }
 
@@ -65,21 +66,37 @@ export default function TheoryPage() {
     const pageFromQuery = parseInt(searchParams.get('page') || '1', 10);
     if (!isNaN(pageFromQuery) && pageFromQuery > 0 && totalPages > 0 && pageFromQuery <= totalPages) {
       setCurrentPage(pageFromQuery);
+    } else if (totalPages > 0) {
+      setCurrentPage(1);
     }
   }, [searchParams, totalPages]);
   
   if (theoryLoading || pagesLoading) {
-    return <div>Cargando contenido...</div>;
+    return (
+       <div className="flex min-h-screen flex-col">
+        <Header title="..." showBackButton />
+         <div className="flex-1 p-4 md:p-6 pb-40">
+           <div className="mx-auto max-w-3xl space-y-4">
+             <Skeleton className="h-8 w-3/4" />
+             <Skeleton className="h-4 w-full" />
+             <Skeleton className="h-4 w-5/6" />
+             <Skeleton className="h-32 w-full" />
+             <Skeleton className="h-4 w-full" />
+           </div>
+         </div>
+       </div>
+    )
   }
 
   if (!theory || !pages || pages.length === 0) {
-    notFound();
+    // This case will be hit if the theory or pages don't exist in Firestore.
+    return notFound();
   }
 
   const pageContent = pages[currentPage - 1]?.content;
 
   if (!pageContent) {
-    // This can happen briefly while currentPage is being set
+    // This can happen briefly while currentPage is being set, or if a page is missing.
     return <div>Cargando página...</div>;
   }
 
@@ -103,6 +120,7 @@ export default function TheoryPage() {
                     'h-1.5 w-full rounded-full bg-secondary',
                     index < currentPage && 'bg-primary'
                   )}
+                  aria-label={`Ir a la página ${index + 1}`}
                 />
               </Link>
             ))}

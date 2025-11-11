@@ -65,4 +65,19 @@
     min-height: 100vh;
     transition: background-color 0.3s, color 0.3s;
   }
+  .prose table {
+      @apply w-full my-4 border-collapse border border-border;
+  }
+  .prose th {
+      @apply border border-border px-4 py-2 bg-secondary text-left font-semibold;
+  }
+  .prose td {
+      @apply border border-border px-4 py-2;
+  }
+  .prose pre {
+      @apply my-4 rounded-xl bg-card p-4 overflow-x-auto;
+  }
+  .prose code:not(pre > code) {
+      @apply font-code bg-secondary px-1.5 py-0.5 rounded-md text-primary;
+  }
 }

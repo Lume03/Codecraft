@@ -2,9 +2,16 @@ import React from 'react';
 import type { ImagePlaceholder } from './placeholder-images';
 import { placeholderImages } from './placeholder-images';
 
+// Note: This file now primarily serves for local development, fallback data,
+// or for data structures not suited for Firestore like static quiz questions.
+// The main course content is intended to be fetched from Firestore.
+
 const findImage = (id: string): ImagePlaceholder => {
   const image = placeholderImages.find((img) => img.id === id);
   if (!image) {
+    // Return a default or throw an error
+    const defaultImage = placeholderImages.find(p => p.id === 'user-avatar');
+    if (defaultImage) return defaultImage;
     throw new Error(`Image with id "${id}" not found.`);
   }
   return image;
@@ -21,26 +28,25 @@ export interface User {
   achievements: string[];
 }
 
-// This interface is now for type-checking Firestore data
+// This interface is for type-checking Firestore data for a Course
 export interface Course {
   id: string; // Document ID from Firestore
   title: string;
   description: string;
-  icon: string; // Just the name of the icon
+  icon: string; // Name of the icon component
   imageId: string;
-  progress?: number; // Progress will be stored separately per user
+  progress?: number; // User-specific progress, not stored on the course doc
 }
 
-// This interface is now for type-checking Firestore data
+// This interface is for type-checking Firestore data for a Module
 export interface Module {
   id: string; // Document ID from Firestore
   title: string;
   type: 'theory' | 'quiz';
-  contentId: string;
+  contentId: string; // ID for the corresponding Theory or Quiz document
   duration: number; // Duration in minutes
   order: number;
 }
-
 
 export type QuestionType =
   | 'single_choice'
@@ -60,7 +66,7 @@ export interface Question {
 }
 
 export interface Quiz {
-  id: string;
+  id:string;
   title: string;
   courseId: string;
   questions: Question[];
@@ -87,6 +93,8 @@ export const user: User = {
   streak: 2,
   achievements: ['Primer quiz', 'Code Novice', 'Quiz Master', 'Racha de 3 días'],
 };
+
+// --- Icon Components ---
 
 export function PythonIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -141,35 +149,7 @@ export function CppIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-// This data is now only for local development or as a backup.
-// The main app will fetch data from Firestore.
-
-export const courses: Course[] = [
-  {
-    id: 'py-101',
-    title: 'Python',
-    description: 'Comienza tu viaje en la programación con Python, ideal para principiantes.',
-    icon: 'PythonIcon',
-    imageId: 'python-course',
-    progress: 75,
-  },
-  {
-    id: 'js-101',
-    title: 'JavaScript',
-    description: 'Domina los conceptos básicos de JavaScript, el lenguaje esencial de la web.',
-    icon: 'JavaScriptIcon',
-    imageId: 'js-course',
-    progress: 40,
-  },
-  {
-    id: 'cpp-101',
-    title: 'C++',
-    description: 'Aprende el poder de C++ para aplicaciones de alto rendimiento y sistemas.',
-    icon: 'CppIcon',
-    imageId: 'cpp-course',
-    progress: 10,
-  },
-];
+// --- Static Data (Quizzes, Exercises) ---
 
 export const quizzes: Quiz[] = [
   {
@@ -213,7 +193,6 @@ export const quizzes: Quiz[] = [
       },
     ],
   },
-  // Add other quizzes here...
 ];
 
 
@@ -278,4 +257,32 @@ export const codeCompletionExercises: CodeCompletionExercise[] = [
     difficulty: 'Fácil',
     language: 'Python',
   }
+];
+
+// Deprecated course data, kept for reference during transition
+export const courses: Course[] = [
+  {
+    id: 'py-101',
+    title: 'Python',
+    description: 'Comienza tu viaje en la programación con Python, ideal para principiantes.',
+    icon: 'PythonIcon',
+    imageId: 'python-course',
+    progress: 75,
+  },
+  {
+    id: 'js-101',
+    title: 'JavaScript',
+    description: 'Domina los conceptos básicos de JavaScript, el lenguaje esencial de la web.',
+    icon: 'JavaScriptIcon',
+    imageId: 'js-course',
+    progress: 40,
+  },
+  {
+    id: 'cpp-101',
+    title: 'C++',
+    description: 'Aprende el poder de C++ para aplicaciones de alto rendimiento y sistemas.',
+    icon: 'CppIcon',
+    imageId: 'cpp-course',
+    progress: 10,
+  },
 ];

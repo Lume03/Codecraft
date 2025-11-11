@@ -123,6 +123,10 @@
                 "order": {
                     "type": "number",
                     "description": "The order of the page within the lesson."
+                },
+                "title": {
+                    "type": "string",
+                    "description": "The title of the page within the lesson."
                 }
             }
         }
