@@ -1,31 +1,17 @@
 'use client';
 
-import {
-  createContext,
-  useContext,
-  ReactNode,
-  useState,
-  useEffect,
-} from 'react';
-import { initializeFirebase } from '.';
+import { createContext, useContext, ReactNode } from 'react';
 import type { FirebaseServices } from './types';
 
 const FirebaseContext = createContext<FirebaseServices | null>(null);
 
-export const FirebaseProvider = ({ children }: { children: ReactNode }) => {
-  const [services, setServices] = useState<FirebaseServices | null>(null);
-
-  useEffect(() => {
-    // Initialize Firebase on the client
-    const firebaseServices = initializeFirebase();
-    setServices(firebaseServices);
-  }, []);
-
-  // Use a conditional rendering to avoid rendering children until Firebase is initialized.
-  if (!services) {
-    return null; // Or a loading indicator
-  }
-
+export const FirebaseProvider = ({
+  children,
+  services,
+}: {
+  children: ReactNode;
+  services: FirebaseServices;
+}) => {
   return (
     <FirebaseContext.Provider value={services}>
       {children}
