@@ -21,6 +21,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   getAdditionalUserInfo,
+  User,
 } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useAuth, useFirestore } from '@/firebase/client-provider';
@@ -65,29 +66,53 @@ export default function AuthPage() {
 
   const router = useRouter();
   const auth = useAuth();
-  const firestore = useFirestore();
+  // Firestore no es necesario en esta página, pero lo obtendremos para la creación del documento después del registro
+  const firestore = useFirestore(); 
   const { toast } = useToast();
   
   useEffect(() => {
-    if(auth && firestore) {
+    // La página está lista si `auth` está disponible.
+    if(auth) {
       setIsFirebaseReady(true);
     }
-  }, [auth, firestore])
+  }, [auth])
+
+  const createFirestoreUserDocument = async (user: User) => {
+    if (!firestore) {
+      // Si firestore no está listo (porque no se ha creado en la consola),
+      // podemos manejarlo aquí, quizás redirigiendo con una advertencia.
+      // Por ahora, solo lo intentaremos. La creación de la BD es necesaria para que funcione.
+      toast({
+        variant: 'destructive',
+        title: 'Error de base de datos',
+        description: 'Firestore no está disponible. Por favor, crea la base de datos en la consola de Firebase.',
+      });
+      return;
+    }
+    const userRef = doc(firestore, 'users', user.uid);
+    const userData = {
+        displayName: user.displayName || fullname,
+        email: user.email,
+        photoURL: user.photoURL,
+        level: 1,
+        xp: 0,
+        streak: 0,
+        achievements: [],
+    };
+    await setDoc(userRef, userData, { merge: true });
+  }
 
   const handleAuthAction = async () => {
-    if (!auth || !firestore) return;
+    if (!auth) return;
     try {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
         router.push('/learn');
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        const userRef = doc(firestore, 'users', user.uid);
-        await setDoc(userRef, { 
-          displayName: fullname,
-          email: user.email,
-        }, { merge: true });
+        // El documento de Firestore se crea después, en el flujo de setup
+        // Pero para asegurar que el perfil básico existe, lo creamos aquí.
+        await createFirestoreUserDocument(userCredential.user);
         router.push('/profile/setup');
       }
     } catch (error: any) {
@@ -100,23 +125,14 @@ export default function AuthPage() {
   };
 
   const handleGoogleSignIn = async () => {
-    if (!auth || !firestore) return;
+    if (!auth) return;
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
       const additionalInfo = getAdditionalUserInfo(result);
+      // Si es un usuario nuevo, creamos su perfil en Firestore
       if (additionalInfo?.isNewUser) {
-        const user = result.user;
-        const userRef = doc(firestore, 'users', user.uid);
-        await setDoc(userRef, {
-          displayName: user.displayName,
-          email: user.email,
-          photoURL: user.photoURL,
-          level: 1,
-          xp: 0,
-          streak: 0,
-          achievements: [],
-        }, { merge: true });
+        await createFirestoreUserDocument(result.user);
       }
       router.push('/learn');
     } catch (error: any) {
