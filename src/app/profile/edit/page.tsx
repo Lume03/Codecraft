@@ -33,10 +33,10 @@ export default function ProfileEditPage() {
   
   useEffect(() => {
     if (userProfile) {
-      setDisplayName(userProfile.displayName || user?.displayName || '');
+      setDisplayName(userProfile.displayName || '');
       setUsername(userProfile.username || '');
-    } else if (user && !loading) {
-        setDisplayName(user.displayName || '');
+    } else if (user && !loading && !userProfile) {
+      setDisplayName(user.displayName || '');
     }
   }, [userProfile, user, loading]);
 
@@ -55,6 +55,7 @@ export default function ProfileEditPage() {
   };
   
   const userAvatar = placeholderImages.find(p => p.id === 'user-avatar');
+  const avatarSrc = userProfile?.photoURL || user?.photoURL || userAvatar?.imageUrl;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -69,7 +70,7 @@ export default function ProfileEditPage() {
               <div className="relative">
                 <Avatar className="h-24 w-24 border-2 border-primary">
                   <AvatarImage
-                    src={user?.photoURL ?? userAvatar?.imageUrl}
+                    src={avatarSrc}
                     alt={user?.displayName ?? 'User avatar'}
                   />
                   <AvatarFallback>
@@ -91,6 +92,7 @@ export default function ProfileEditPage() {
                 id="name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Tu nombre para mostrar"
               />
             </div>
             <div className="space-y-2">
@@ -99,6 +101,7 @@ export default function ProfileEditPage() {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                placeholder="Tu @usuario"
               />
             </div>
           </CardContent>
@@ -112,3 +115,5 @@ export default function ProfileEditPage() {
     </div>
   );
 }
+
+    

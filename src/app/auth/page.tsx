@@ -119,8 +119,12 @@ export default function AuthPage() {
       const additionalInfo = getAdditionalUserInfo(result);
       if (additionalInfo?.isNewUser) {
         await createFirestoreUserDocument(result.user);
+        router.push('/profile/setup');
+      } else {
+        // If existing user, still update their profile in case photoURL changed
+        await createFirestoreUserDocument(result.user);
+        router.push('/learn');
       }
-      router.push('/learn');
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -308,3 +312,5 @@ export default function AuthPage() {
       </main>
     </div>
   );
+
+    
