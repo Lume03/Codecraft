@@ -92,7 +92,7 @@ export default function AuthPage() {
   }
 
   const handleAuthAction = async () => {
-    if (!auth) return;
+    if (!auth || !firestore) return;
     try {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
@@ -112,7 +112,7 @@ export default function AuthPage() {
   };
 
   const handleGoogleSignIn = async () => {
-    if (!auth) return;
+    if (!auth || !firestore) return;
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
