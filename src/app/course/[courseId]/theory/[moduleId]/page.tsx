@@ -18,24 +18,63 @@ function ContentRenderer({ content }: { content: string }) {
     <div className="prose prose-invert max-w-none text-foreground/90">
       <ReactMarkdown
         components={{
-          h1: ({ node, ...props }) => <h1 className="text-3xl font-bold my-4 text-foreground" {...props} />,
-          h2: ({ node, ...props }) => <h2 className="text-2xl font-bold my-3 border-b border-border pb-2 text-foreground" {...props} />,
-          p: ({ node, ...props }) => <p className="text-base leading-relaxed my-4" {...props} />,
+          h1: ({ node, ...props }) => (
+            <h1
+              className="my-4 text-3xl font-bold text-foreground"
+              {...props}
+            />
+          ),
+          h2: ({ node, ...props }) => (
+            <h2
+              className="my-3 border-b border-border pb-2 text-2xl font-bold text-foreground"
+              {...props}
+            />
+          ),
+          p: ({ node, ...props }) => (
+            <p className="my-4 text-base leading-relaxed" {...props} />
+          ),
           code: ({ node, className, children, ...props }) => {
             const match = /language-(\w+)/.exec(className || '');
             return match ? (
-              <pre className="my-4 rounded-xl bg-card p-4 overflow-x-auto"><code className="font-code text-sm">{children}</code></pre>
+              <pre className="my-4 overflow-x-auto rounded-xl bg-card p-4">
+                <code className="font-code text-sm">{children}</code>
+              </pre>
             ) : (
-              <code className="font-code bg-secondary px-1.5 py-0.5 rounded-md text-primary" {...props}>{children}</code>
+              <code
+                className="font-code rounded-md bg-secondary px-1.5 py-0.5 text-primary"
+                {...props}
+              >
+                {children}
+              </code>
             );
           },
-          table: ({node, ...props}) => <table className="w-full my-4 border-collapse border border-border" {...props} />,
-          th: ({node, ...props}) => <th className="border border-border px-4 py-2 bg-secondary text-left font-semibold" {...props} />,
-          td: ({node, ...props}) => <td className="border border-border px-4 py-2" {...props} />,
-          ul: ({node, ...props}) => <ul className="list-disc pl-5 my-4 space-y-2" {...props} />,
-          ol: ({node, ...props}) => <ol className="list-decimal pl-5 my-4 space-y-2" {...props} />,
-          li: ({node, ...props}) => <li className="leading-relaxed" {...props} />,
-          strong: ({node, ...props}) => <strong className="font-bold text-foreground" {...props} />,
+          table: ({ node, ...props }) => (
+            <table
+              className="my-4 w-full border-collapse border border-border"
+              {...props}
+            />
+          ),
+          th: ({ node, ...props }) => (
+            <th
+              className="border border-border bg-secondary px-4 py-2 text-left font-semibold"
+              {...props}
+            />
+          ),
+          td: ({ node, ...props }) => (
+            <td className="border border-border px-4 py-2" {...props} />
+          ),
+          ul: ({ node, ...props }) => (
+            <ul className="my-4 ml-5 list-disc space-y-2" {...props} />
+          ),
+          ol: ({ node, ...props }) => (
+            <ol className="my-4 ml-5 list-decimal space-y-2" {...props} />
+          ),
+          li: ({ node, ...props }) => (
+            <li className="leading-relaxed" {...props} />
+          ),
+          strong: ({ node, ...props }) => (
+            <strong className="font-bold text-foreground" {...props} />
+          ),
         }}
       >
         {content}
@@ -53,10 +92,22 @@ export default function TheoryPage() {
     moduleId: string;
   };
 
-  const theoryRef = useMemo(() => firestore ? doc(firestore, `theories/${moduleId}`) : null, [firestore, moduleId]);
+  const theoryRef = useMemo(
+    () => firestore ? doc(firestore, `theories/${moduleId}`) : null,
+    [firestore, moduleId]
+  );
   const { data: theory, loading: theoryLoading } = useDoc(theoryRef);
 
-  const pagesQuery = useMemo(() => firestore ? query(collection(firestore, `theories/${moduleId}/pages`), orderBy('order')) : null, [firestore, moduleId]);
+  const pagesQuery = useMemo(
+    () =>
+      firestore
+        ? query(
+            collection(firestore, `theories/${moduleId}/pages`),
+            orderBy('order')
+          )
+        : null,
+    [firestore, moduleId]
+  );
   const { data: pages, loading: pagesLoading } = useCollection(pagesQuery);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,32 +115,36 @@ export default function TheoryPage() {
 
   useEffect(() => {
     const pageFromQuery = parseInt(searchParams.get('page') || '1', 10);
-    if (!isNaN(pageFromQuery) && pageFromQuery > 0 && totalPages > 0 && pageFromQuery <= totalPages) {
+    if (
+      !isNaN(pageFromQuery) &&
+      pageFromQuery > 0 &&
+      totalPages > 0 &&
+      pageFromQuery <= totalPages
+    ) {
       setCurrentPage(pageFromQuery);
     } else if (totalPages > 0) {
       setCurrentPage(1);
     }
   }, [searchParams, totalPages]);
-  
+
   if (theoryLoading || pagesLoading) {
     return (
-       <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col">
         <Header title="..." showBackButton />
-         <div className="flex-1 p-4 md:p-6 pb-40">
-           <div className="mx-auto max-w-3xl space-y-4">
-             <Skeleton className="h-8 w-3/4" />
-             <Skeleton className="h-4 w-full" />
-             <Skeleton className="h-4 w-5/6" />
-             <Skeleton className="h-32 w-full" />
-             <Skeleton className="h-4 w-full" />
-           </div>
-         </div>
-       </div>
-    )
+        <div className="flex-1 p-4 pb-40 md:p-6">
+          <div className="mx-auto max-w-3xl space-y-4">
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-4 w-full" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!theory || !pages || pages.length === 0) {
-    // This case will be hit if the theory or pages don't exist in Firestore.
     return notFound();
   }
 
@@ -109,12 +164,16 @@ export default function TheoryPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header title={theory.title} showBackButton />
-      
-      <div className="flex-1 p-4 md:p-6 pb-40">
+
+      <div className="flex-1 p-4 pb-40 md:p-6">
         <div className="mx-auto max-w-3xl">
-          <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="mb-8 flex items-center justify-center gap-2">
             {Array.from({ length: totalPages }).map((_, index) => (
-              <Link key={index} href={`${basePath}?page=${index + 1}`} className="flex-1">
+              <Link
+                key={index}
+                href={`${basePath}?page=${index + 1}`}
+                className="flex-1"
+              >
                 <div
                   className={cn(
                     'h-1.5 w-full rounded-full bg-secondary',
@@ -126,26 +185,46 @@ export default function TheoryPage() {
             ))}
           </div>
           <div className="space-y-4">
-             <ContentRenderer content={pageContent} />
+            <ContentRenderer content={pageContent} />
           </div>
         </div>
       </div>
 
-      <footer className="fixed bottom-0 inset-x-0 border-t bg-background/80 p-4 backdrop-blur-sm pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <footer className="fixed inset-x-0 bottom-0 border-t bg-background/80 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm">
         <div className="mx-auto max-w-3xl">
           <div className="flex items-center justify-between gap-4">
-            <Button variant="outline" disabled={!hasPrev} asChild className="flex-1">
+            <Button
+              variant="outline"
+              disabled={!hasPrev}
+              asChild
+              className="flex-1"
+            >
               <Link href={`${basePath}?page=${currentPage - 1}`}>
                 <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
               </Link>
             </Button>
-            
+
             {isLastPage ? (
-              <Button asChild className="flex-1" style={{ borderRadius: '9999px', boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)' }}>
+              <Button
+                asChild
+                className="flex-1"
+                style={{
+                  borderRadius: '9999px',
+                  boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
+                }}
+              >
                 <Link href={`/course/${courseId}`}>Finalizar lección</Link>
               </Button>
             ) : (
-              <Button disabled={!hasNext} asChild className="flex-1" style={{ borderRadius: '9999px', boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)' }}>
+              <Button
+                disabled={!hasNext}
+                asChild
+                className="flex-1"
+                style={{
+                  borderRadius: '9999px',
+                  boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
+                }}
+              >
                 <Link href={`${basePath}?page=${currentPage + 1}`}>
                   Siguiente <ChevronRight className="ml-2 h-4 w-4" />
                 </Link>

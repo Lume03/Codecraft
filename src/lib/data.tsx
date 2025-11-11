@@ -10,7 +10,7 @@ const findImage = (id: string): ImagePlaceholder => {
   const image = placeholderImages.find((img) => img.id === id);
   if (!image) {
     // Return a default or throw an error
-    const defaultImage = placeholderImages.find(p => p.id === 'user-avatar');
+    const defaultImage = placeholderImages.find((p) => p.id === 'user-avatar');
     if (defaultImage) return defaultImage;
     throw new Error(`Image with id "${id}" not found.`);
   }
@@ -33,7 +33,6 @@ export interface Course {
   id: string; // Document ID from Firestore
   title: string;
   description: string;
-  icon: string; // Name of the icon component
   imageId: string;
   progress?: number; // User-specific progress, not stored on the course doc
 }
@@ -66,7 +65,7 @@ export interface Question {
 }
 
 export interface Quiz {
-  id:string;
+  id: string;
   title: string;
   courseId: string;
   questions: Question[];
@@ -95,7 +94,7 @@ export const user: User = {
 };
 
 // --- Icon Components ---
-
+// Icons are not stored in Firestore, so they remain here.
 export function PythonIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -126,17 +125,28 @@ export function JavaScriptIcon(props: React.SVGProps<SVGSVGElement>) {
       fill="none"
       {...props}
     >
-      <rect width="24" height="24" rx="3" fill="#FACC15"/>
-      <path d="M7.5 16.5V7.5H12C13.6569 7.5 15 8.84315 15 10.5V10.5C15 12.1569 13.6569 13.5 12 13.5H9" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M10.5 13.5H7.5" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <rect width="24" height="24" rx="3" fill="#FACC15" />
+      <path
+        d="M7.5 16.5V7.5H12C13.6569 7.5 15 8.84315 15 10.5V10.5C15 12.1569 13.6569 13.5 12 13.5H9"
+        stroke="black"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M10.5 13.5H7.5"
+        stroke="black"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
-
 export function CppIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-     <svg
+    <svg
       xmlns="http://www.w3.org/2000/svg"
       width="24"
       height="24"
@@ -144,7 +154,7 @@ export function CppIcon(props: React.SVGProps<SVGSVGElement>) {
       fill="#60A5FA"
       {...props}
     >
-      <path d="M24.3 12.3c-2.3-2.2-5.1-3.3-8.4-3.3-3.1 0-5.7 1-7.9 3l3.1 3.1c1.5-1.3 3.1-2 4.8-2 2.7 0 4.7 1.3 4.7 3.8 0 1.2-.5 2.2-1.4 3.1-1 .9-2.5 1.7-4.6 2.4-3 .9-4.8 2-5.6 3.1-.7 1.1-1.1 2.5-1.1 4.2 0 3.3 1.1 5.9 3.4 7.6 2.3 1.8 5.1 2.7 8.5 2.7 3.1 0 5.8-1 8-3.1l-3-3.1c-1.5 1.4-3.1 2.1-4.9 2.1-2.9 0-4.8-1.5-4.8-4.3 0-1.8.8-3 2.3-3.9 1.5-.9 3.9-1.9 6.9-2.9 3.1-1.1 5-2.4 5.9-4.1.9-1.7 1.4-3.5 1.4-5.5 0-3.3-1.2-5.9-3.5-7.7zm13.5 13.5h-6v-6h-6v6h-6v6h6v6h6v-6h6v-6z"/>
+      <path d="M24.3 12.3c-2.3-2.2-5.1-3.3-8.4-3.3-3.1 0-5.7 1-7.9 3l3.1 3.1c1.5-1.3 3.1-2 4.8-2 2.7 0 4.7 1.3 4.7 3.8 0 1.2-.5 2.2-1.4 3.1-1 .9-2.5 1.7-4.6 2.4-3 .9-4.8 2-5.6 3.1-.7 1.1-1.1 2.5-1.1 4.2 0 3.3 1.1 5.9 3.4 7.6 2.3 1.8 5.1 2.7 8.5 2.7 3.1 0 5.8-1 8-3.1l-3-3.1c-1.5 1.4-3.1 2.1-4.9 2.1-2.9 0-4.8-1.5-4.8-4.3 0-1.8.8-3 2.3-3.9 1.5-.9 3.9-1.9 6.9-2.9 3.1-1.1 5-2.4 5.9-4.1.9-1.7 1.4-3.5 1.4-5.5 0-3.3-1.2-5.9-3.5-7.7zm13.5 13.5h-6v-6h-6v6h-6v6h6v6h6v-6h6v-6z" />
     </svg>
   );
 }
@@ -195,12 +205,12 @@ export const quizzes: Quiz[] = [
   },
 ];
 
-
 export const codeCompletionExercises: CodeCompletionExercise[] = [
   {
     id: 'py-drag-1',
     title: 'Hola, Python',
-    instruction: "Ordena los bloques para mostrar el texto 'Hola, Python' en pantalla.",
+    instruction:
+      "Ordena los bloques para mostrar el texto 'Hola, Python' en pantalla.",
     blocks: ['print', '(', '"Hola, Python"', ')'],
     correctOrder: ['print', '(', '"Hola, Python"', ')'],
     hint: 'Recuerda que la función print() usa paréntesis para mostrar texto.',
@@ -210,7 +220,8 @@ export const codeCompletionExercises: CodeCompletionExercise[] = [
   {
     id: 'py-drag-2',
     title: 'Crea tu primera variable',
-    instruction: 'Arrastra los bloques para crear una variable llamada nombre con tu nombre dentro.',
+    instruction:
+      'Arrastra los bloques para crear una variable llamada nombre con tu nombre dentro.',
     blocks: ['nombre', '=', '"Lucía"'],
     correctOrder: ['nombre', '=', '"Lucía"'],
     hint: 'Una variable se crea con nombre = valor.',
@@ -220,17 +231,19 @@ export const codeCompletionExercises: CodeCompletionExercise[] = [
   {
     id: 'py-drag-3',
     title: 'Usar variable en print()',
-    instruction: 'Ordena los bloques para mostrar el contenido de la variable nombre.',
+    instruction:
+      'Ordena los bloques para mostrar el contenido de la variable nombre.',
     blocks: ['print', '(', 'nombre', ')'],
     correctOrder: ['print', '(', 'nombre', ')'],
     hint: 'No uses comillas al imprimir una variable.',
     difficulty: 'Fácil',
     language: 'Python',
   },
-    {
+  {
     id: 'py-drag-4',
     title: 'Calcula el puntaje final',
-    instruction: 'Arrastra los bloques para crear una variable `puntos_totales` que sea la suma de `puntos` y `bono`.',
+    instruction:
+      'Arrastra los bloques para crear una variable `puntos_totales` que sea la suma de `puntos` y `bono`.',
     blocks: ['puntos_totales', '=', 'puntos', '+', 'bono'],
     correctOrder: ['puntos_totales', '=', 'puntos', '+', 'bono'],
     hint: 'Puedes sumar variables con el operador `+`.',
@@ -240,7 +253,8 @@ export const codeCompletionExercises: CodeCompletionExercise[] = [
   {
     id: 'py-drag-5',
     title: 'Crea una variable numérica y otra de texto',
-    instruction: 'Selecciona y ordena los bloques para crear una variable numérica `edad` y una de texto `nombre`.',
+    instruction:
+      'Selecciona y ordena los bloques para crear una variable numérica `edad` y una de texto `nombre`.',
     blocks: ['nombre', '=', '"Ana"', 'edad', '=', '25'],
     correctOrder: ['nombre', '=', '"Ana"', 'edad', '=', '25'],
     hint: 'Los textos van entre comillas `" "`. Los números no llevan comillas.',
@@ -250,39 +264,37 @@ export const codeCompletionExercises: CodeCompletionExercise[] = [
   {
     id: 'py-drag-6',
     title: 'Un programa sencillo',
-    instruction: 'Ordena los bloques para crear un programa que muestre el nombre y edad del usuario.',
-    blocks: ['nombre', '=', '"Lucas"', 'edad', '=', '21', 'print', '(', 'f"Hola, soy {nombre} y tengo {edad} años."', ')'],
-    correctOrder: ['nombre', '=', '"Lucas"', 'edad', '=', '21', 'print', '(', 'f"Hola, soy {nombre} y tengo {edad} años."', ')'],
+    instruction:
+      'Ordena los bloques para crear un programa que muestre el nombre y edad del usuario.',
+    blocks: [
+      'nombre',
+      '=',
+      '"Lucas"',
+      'edad',
+      '=',
+      '21',
+      'print',
+      '(',
+      'f"Hola, soy {nombre} y tengo {edad} años."',
+      ')',
+    ],
+    correctOrder: [
+      'nombre',
+      '=',
+      '"Lucas"',
+      'edad',
+      '=',
+      '21',
+      'print',
+      '(',
+      'f"Hola, soy {nombre} y tengo {edad} años."',
+      ')',
+    ],
     hint: 'Usa f-strings para insertar variables dentro del texto.',
     difficulty: 'Fácil',
     language: 'Python',
-  }
+  },
 ];
 
-// Deprecated course data, kept for reference during transition
-export const courses: Course[] = [
-  {
-    id: 'py-101',
-    title: 'Python',
-    description: 'Comienza tu viaje en la programación con Python, ideal para principiantes.',
-    icon: 'PythonIcon',
-    imageId: 'python-course',
-    progress: 75,
-  },
-  {
-    id: 'js-101',
-    title: 'JavaScript',
-    description: 'Domina los conceptos básicos de JavaScript, el lenguaje esencial de la web.',
-    icon: 'JavaScriptIcon',
-    imageId: 'js-course',
-    progress: 40,
-  },
-  {
-    id: 'cpp-101',
-    title: 'C++',
-    description: 'Aprende el poder de C++ para aplicaciones de alto rendimiento y sistemas.',
-    icon: 'CppIcon',
-    imageId: 'cpp-course',
-    progress: 10,
-  },
-];
+// No static course data is needed anymore, it will be fetched from firestore.
+export const courses: Course[] = [];
