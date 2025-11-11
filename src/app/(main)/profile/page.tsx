@@ -127,10 +127,10 @@ export default function ProfilePage() {
         <div className="flex items-center gap-4 rounded-2xl border bg-card p-4 md:gap-5 md:p-6 lg:p-6">
           <Avatar className="h-16 w-16 border-2 border-primary">
             <AvatarImage
-              src={user?.photoURL ?? userAvatar?.imageUrl}
-              alt={user?.displayName ?? 'User avatar'}
+              src={userProfile?.photoURL ?? user?.photoURL ?? userAvatar?.imageUrl}
+              alt={userProfile?.displayName ?? user?.displayName ?? 'User avatar'}
             />
-            <AvatarFallback>{user?.displayName?.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{userProfile?.displayName?.charAt(0) ?? user?.displayName?.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-3">
             <div>
