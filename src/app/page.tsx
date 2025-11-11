@@ -11,7 +11,7 @@ export default function OnboardingPage() {
             <CodeXml className="h-14 w-14 text-primary" />
           </div>
           <h1 className="text-4xl font-bold tracking-tighter text-foreground sm:text-5xl">
-            CodeCraft
+            RavenCode
           </h1>
           <p className="max-w-xs text-lg text-muted-foreground">
             Aprende a programar de forma práctica

@@ -19,6 +19,7 @@ import { Progress } from '@/components/ui/progress';
 import { GoalProgress } from '@/components/goal-progress';
 import { AchievementBadge } from '@/components/achievement-badge';
 import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 const QuickSettingTile = ({
   icon: Icon,
@@ -58,6 +59,7 @@ const QuickSettingTile = ({
 
 export default function ProfilePage() {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const currentCourse = courses[0]; // Example: current course is Python
   const goals = [
     {
@@ -76,10 +78,18 @@ export default function ProfilePage() {
       icon: Flame,
     },
   ];
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
+
+  if (!mounted) {
+    return null; 
+  }
 
   return (
     <div className="flex flex-col">
@@ -87,7 +97,7 @@ export default function ProfilePage() {
         <div className="mx-auto flex w-full max-w-[420px] items-center justify-between md:max-w-[720px] xl:max-w-[960px]">
           <Link href="/" className="flex items-center gap-2 font-bold">
             <CodeXml className="h-7 w-7 text-primary" />
-            <span className="text-xl">CodeCraft</span>
+            <span className="text-xl">RavenCode</span>
           </Link>
           <Button variant="ghost" size="icon" asChild>
             <Link href="/settings">

@@ -16,7 +16,7 @@ const fontCode = Source_Code_Pro({
 });
 
 export const metadata: Metadata = {
-  title: 'CodeCraft',
+  title: 'RavenCode',
   description: 'Learn to code by playing.',
 };
 

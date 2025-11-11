@@ -1,6 +1,6 @@
-# CodeCraft
+# RavenCode
 
-Aprende a programar de forma práctica con **CodeCraft**, una aplicación educativa desarrollada con **Next.js**, **Tailwind CSS** y **Typescript**.
+Aprende a programar de forma práctica con **RavenCode**, una aplicación educativa desarrollada con **Next.js**, **Tailwind CSS** y **Typescript**.
 
 El proyecto está diseñado para ofrecer cursos, prácticas interactivas y seguimiento de progreso en un entorno moderno y responsivo.
 

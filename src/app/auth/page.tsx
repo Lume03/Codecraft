@@ -53,7 +53,7 @@ export default function AuthPage() {
       <header className="mb-8 flex justify-center pt-6">
         <Link href="/" className="flex items-center gap-2">
           <CodeXml className="h-8 w-8 text-primary" />
-          <span className="text-2xl font-bold">CodeCraft</span>
+          <span className="text-2xl font-bold">RavenCode</span>
         </Link>
       </header>
 
@@ -201,7 +201,7 @@ export default function AuthPage() {
           </div>
 
           <div className="mt-4 text-center text-sm">
-            {isLogin ? '¿Nuevo en CodeCraft?' : '¿Ya tienes una cuenta?'}
+            {isLogin ? '¿Nuevo en RavenCode?' : '¿Ya tienes una cuenta?'}
             <Button
               variant="link"
               onClick={() => setIsLogin(!isLogin)}

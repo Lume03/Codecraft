@@ -1,6 +1,6 @@
+import React from 'react';
 import type { ImagePlaceholder } from './placeholder-images';
 import { placeholderImages } from './placeholder-images';
-import React from 'react';
 
 const findImage = (id: string): ImagePlaceholder => {
   const image = placeholderImages.find((img) => img.id === id);
@@ -186,7 +186,7 @@ export const theoryContent: Record<string, { title: string; pages: string[] }> =
   'py-intro': {
     title: 'Introducción a Python',
     pages: [
-      '**¿Qué es Python?**\n\nPython es un **lenguaje de programación moderno y sencillo**.\nSe usa para crear páginas web, analizar datos, hacer videojuegos, inteligencia artificial y más.\n\nSu gran ventaja es que **es fácil de leer y aprender**.\n\n```python\nprint("¡Hola, Python!")\n```\n\n🧠 “Si puedes leer inglés simple, puedes leer Python.”',
+      '**¿Qué es Python?**\n\nPython es un **lenguaje de programación moderno, simple y versátil**.\nSe utiliza para crear sitios web, analizar datos, desarrollar inteligencia artificial y automatizar tareas del día a día.\n\nSu sintaxis es clara y fácil de leer, lo que lo hace ideal para **principiantes** y profesionales.\n\n```python\nprint("¡Hola, Python!")\n```\n\n🧠 “Si puedes leer inglés simple, puedes leer Python.”',
       '**¿Por qué aprender Python?**\n\nPython es uno de los lenguajes más usados en el mundo 🌍.\nLo utilizan empresas como **Google, Netflix, Spotify** y hasta la **NASA** 🚀.\n\n**Ventajas clave:**\n\n* 🧩 Sintaxis fácil de entender\n* 📚 Mucha documentación y ayuda en línea\n* 💻 Funciona en cualquier sistema operativo\n* 🤖 Ideal para aprender lógica de programación',
       '**¿Qué puedes hacer con Python?**\n\nCon Python puedes construir casi cualquier cosa:\n\n* Sitios web 🕸️\n* Aplicaciones de escritorio 🧭\n* Videojuegos 🎮\n* Análisis de datos 📊\n* Inteligencia artificial 🤖\n\n```python\n# Un pequeño ejemplo de cálculo\nprecio = 10\nimpuesto = 0.18\ntotal = precio + (precio * impuesto)\nprint(total)  # 11.8\n```\n\n💬 “Python te permite resolver problemas con pocas líneas de código.”',
       '**Cómo funciona Python**\n\nPython lee tu código **línea por línea**, de arriba hacia abajo.\nCada línea es una **instrucción** que se ejecuta al instante.\n\n```python\nprint("Inicio")\nprint("Procesando...")\nprint("Fin")\n```\n\n▶️ “Python ejecuta tu código como si leyera un libro: una línea a la vez.”',
@@ -216,7 +216,7 @@ export const theoryContent: Record<string, { title: string; pages: string[] }> =
     pages: [
       'JavaScript tiene varios tipos de datos primitivos: `String`, `Number`, `BigInt`, `Boolean`, `Undefined`, `Null` y `Symbol`.',
       'También existe un tipo de dato complejo: `Object`. Los arrays y las funciones son objetos especializados.',
-      'Ejemplo de declaración de variables:\n```javascript\nlet name = "CodeCraft";\nconst score = 100;\nlet isComplete = false;\n```'
+      'Ejemplo de declaración de variables:\n```javascript\nlet name = "RavenCode";\nconst score = 100;\nlet isComplete = false;\n```'
     ],
    },
   // Add other theory content here...
@@ -257,10 +257,10 @@ export const quizzes: Quiz[] = [
       {
         id: 'q5',
         type: 'code_blocks',
-        text: 'Completa el código para mostrar una alerta con "Hola, CodeCraft!".',
+        text: 'Completa el código para mostrar una alerta con "Hola, RavenCode!".',
         codeSnippet: 'alert("___, ___!");',
-        blocks: ['Hola', 'Mundo', 'CodeCraft', 'Web'],
-        correctAnswer: ['Hola', 'CodeCraft'],
+        blocks: ['Hola', 'Mundo', 'RavenCode', 'Web'],
+        correctAnswer: ['Hola', 'RavenCode'],
       },
     ],
   },
