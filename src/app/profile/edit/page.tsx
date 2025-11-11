@@ -26,19 +26,19 @@ export default function ProfileEditPage() {
 
   const userProfileRef =
     user && firestore ? doc(firestore, `users/${user.uid}`) : null;
-  const { data: userProfile } = useDoc(userProfileRef);
+  const { data: userProfile, loading } = useDoc(userProfileRef);
 
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
-
+  
   useEffect(() => {
     if (userProfile) {
-      setDisplayName(userProfile.displayName || '');
+      setDisplayName(userProfile.displayName || user?.displayName || '');
       setUsername(userProfile.username || '');
-    } else if (user) {
-      setDisplayName(user.displayName || '');
+    } else if (user && !loading) {
+        setDisplayName(user.displayName || '');
     }
-  }, [userProfile, user]);
+  }, [userProfile, user, loading]);
 
   const handleSaveChanges = async () => {
     if (userProfileRef) {
