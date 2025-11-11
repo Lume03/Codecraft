@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { CodeXml, Github, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -61,10 +61,18 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullname, setFullname] = useState('');
+  const [isFirebaseReady, setIsFirebaseReady] = useState(false);
+
   const router = useRouter();
   const auth = useAuth();
   const firestore = useFirestore();
   const { toast } = useToast();
+  
+  useEffect(() => {
+    if(auth && firestore) {
+      setIsFirebaseReady(true);
+    }
+  }, [auth, firestore])
 
   const handleAuthAction = async () => {
     if (!auth || !firestore) return;
@@ -243,13 +251,14 @@ export default function AuthPage() {
               <Button
                 className="w-full"
                 onClick={handleAuthAction}
+                disabled={!isFirebaseReady}
                 size="lg"
                 style={{
                   borderRadius: '9999px',
                   boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
                 }}
               >
-                {isLogin ? 'Entrar' : 'Verificar y continuar'}
+                {!isFirebaseReady ? "Cargando..." : isLogin ? 'Entrar' : 'Verificar y continuar'}
               </Button>
               {!isLogin && (
                 <Button variant="ghost" className="w-full" onClick={() => setIsLogin(true)}>
@@ -271,10 +280,10 @@ export default function AuthPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" onClick={handleGoogleSignIn}>
+            <Button variant="outline" onClick={handleGoogleSignIn} disabled={!isFirebaseReady}>
               <GoogleIcon /> <span className="ml-2">Google</span>
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" disabled={!isFirebaseReady}>
               <Github /> <span className="ml-2">GitHub</span>
             </Button>
           </div>
