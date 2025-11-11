@@ -70,7 +70,7 @@ export default function CourseDetailPage() {
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">{course.title} para la Web</h2>
+                <h2 className="text-xl font-bold">{course.title}</h2>
                 <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
                   Curso
                 </span>
