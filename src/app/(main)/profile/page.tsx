@@ -64,13 +64,17 @@ export default function ProfilePage() {
   const [mounted, setMounted] = useState(false);
   const user = useUser();
   const firestore = useFirestore();
+
   const userProfileRef = useMemo(() => {
     if (user && firestore) {
       return doc(firestore, `users/${user.uid}`);
     }
     return null;
   }, [user, firestore]);
-  const { data: userProfile } = useDoc(userProfileRef);
+
+  const { data: userProfile } = useDoc(userProfileRef, {
+    revalidate: true,
+  });
 
   const goals = [
     {
@@ -143,9 +147,6 @@ export default function ProfilePage() {
             <div className="flex flex-wrap gap-2 md:gap-3">
               <div className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
                 Nivel {userProfile?.level ?? 1}
-              </div>
-              <div className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
-                {userProfile?.xp ?? 0} XP
               </div>
               <div className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
                 {achievements.length} Logros

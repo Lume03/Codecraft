@@ -35,7 +35,6 @@ export default function ProfileSetupPage() {
         reminders,
         email: user.email,
         level: 1,
-        xp: 0,
         streak: 0,
         achievements: [],
       }, { merge: true });

@@ -27,10 +27,6 @@
                     "type": "number",
                     "description": "The user's current level."
                 },
-                "xp": {
-                    "type": "number",
-                    "description": "The user's experience points."
-                },
                 "streak": {
                     "type": "number",
                     "description": "The user's current practice streak."

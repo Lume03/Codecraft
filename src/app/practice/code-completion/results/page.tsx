@@ -29,7 +29,6 @@ function ResultsDisplay() {
   });
 
   const total = codeCompletionExercises.length;
-  const xpEarned = score * 10;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 text-center">
@@ -47,7 +46,6 @@ function ResultsDisplay() {
           
           <div className="text-lg text-muted-foreground">
             <p>Respondiste {score} de {total} preguntas correctamente.</p>
-            <p className="font-bold text-foreground">¡Ganaste {xpEarned} XP!</p>
           </div>
 
           <div className="flex w-full flex-col gap-3 pt-4 sm:flex-row">

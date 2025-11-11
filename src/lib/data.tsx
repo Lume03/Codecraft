@@ -17,7 +17,6 @@ export interface User {
   email: string;
   avatar: ImagePlaceholder;
   level: number;
-  xp: number;
   streak: number;
   achievements: string[];
 }
@@ -85,7 +84,6 @@ export const user: User = {
   email: 'alex.doe@example.com',
   avatar: findImage('user-avatar'),
   level: 5,
-  xp: 450,
   streak: 2,
   achievements: ['Primer quiz', 'Code Novice', 'Quiz Master', 'Racha de 3 días'],
 };

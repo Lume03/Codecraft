@@ -84,7 +84,6 @@ export default function AuthPage() {
         email: user.email,
         photoURL: user.photoURL,
         level: 1,
-        xp: 0,
         streak: 0,
         achievements: [],
     };
@@ -117,12 +116,12 @@ export default function AuthPage() {
     try {
       const result = await signInWithPopup(auth, provider);
       const additionalInfo = getAdditionalUserInfo(result);
+      // Siempre actualiza/crea el documento para asegurar que la photoURL esté presente
+      await createFirestoreUserDocument(result.user);
+      
       if (additionalInfo?.isNewUser) {
-        await createFirestoreUserDocument(result.user);
         router.push('/profile/setup');
       } else {
-        // If existing user, still update their profile in case photoURL changed
-        await createFirestoreUserDocument(result.user);
         router.push('/learn');
       }
     } catch (error: any) {
@@ -312,5 +311,3 @@ export default function AuthPage() {
       </main>
     </div>
   );
-
-    
