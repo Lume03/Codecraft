@@ -4,10 +4,10 @@ import { FirebaseOptions } from 'firebase/app';
 
 // Your web app's Firebase configuration
 export const firebaseConfig: FirebaseOptions = {
-  apiKey: "AIzaSyBjh8_egzgMzNCbifozE9rYoV1VNC9MlGk",
-  authDomain: "studio-3220804462-a959d.firebaseapp.com",
-  projectId: "studio-3220804462-a959d",
-  storageBucket: "studio-3220804462-a959d.appspot.com",
-  messagingSenderId: "343443135639",
-  appId: "1:343443135639:web:19791dd380c7ae78919dd2",
+  apiKey: "AIzaSyDyzuwWnF29e3uDfAZolx00Xf4pZA-ol5w",
+  authDomain: "studio-3220804462-4f87a.firebaseapp.com",
+  projectId: "studio-3220804462-4f87a",
+  storageBucket: "studio-3220804462-4f87a.appspot.com",
+  messagingSenderId: "81912450805",
+  appId: "1:81912450805:web:ce5ae7e420bebd9b7affbc",
 };
