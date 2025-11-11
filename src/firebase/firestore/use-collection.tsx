@@ -96,7 +96,8 @@ export function useCollection<T = DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [collectionPath, firestore, options]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [collectionPath, firestore, JSON.stringify(options)]);
 
   return { data, loading, error };
 }

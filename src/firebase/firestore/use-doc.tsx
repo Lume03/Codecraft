@@ -43,7 +43,8 @@ export function useDoc<T = DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [docRef, firestore]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typeof docRef === 'string' ? docRef : docRef?.path, firestore]);
 
   return { data, loading, error };
 }
