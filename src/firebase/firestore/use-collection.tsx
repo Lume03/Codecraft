@@ -19,7 +19,7 @@ import {
   type CollectionReference,
   type Query,
 } from 'firebase/firestore';
-import { useFirestore } from '../provider';
+import { useFirestore } from '../client-provider';
 
 interface UseCollectionOptions {
   where?: [string, any, any][];

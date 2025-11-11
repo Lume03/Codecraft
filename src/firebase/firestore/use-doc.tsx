@@ -7,7 +7,7 @@ import {
   type DocumentData,
   type DocumentReference,
 } from 'firebase/firestore';
-import { useFirestore } from '../provider';
+import { useFirestore } from '../client-provider';
 
 export function useDoc<T = DocumentData>(
   docRef: DocumentReference | string | null

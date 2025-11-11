@@ -23,7 +23,7 @@ import {
   getAdditionalUserInfo,
 } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase/client-provider';
 import { useToast } from '@/hooks/use-toast';
 import { doc, setDoc } from 'firebase/firestore';
 

@@ -1,34 +1,67 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { FirebaseProvider } from './provider';
+import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import type { FirebaseServices } from './types';
 import { initializeFirebase } from '.';
+import { FirebaseApp } from 'firebase/app';
+import { Auth } from 'firebase/auth';
+import { Firestore } from 'firebase/firestore';
 
-// This provider is a singleton that ensures Firebase is initialized only once on the client.
-// It should be used inside the root layout.
+// Create a context for the Firebase services
+const FirebaseContext = createContext<{
+  app: FirebaseApp | null;
+  auth: Auth | null;
+  firestore: Firestore | null;
+} | null>(null);
+
+
 export const FirebaseClientProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const [firebaseServices, setFirebaseServices] =
+  const [services, setServices] =
     useState<FirebaseServices | null>(null);
 
   useEffect(() => {
-    // Initialize Firebase on mount and store the services in state.
-    // This ensures that `initializeApp` is only called once.
-    if (!firebaseServices) {
-      setFirebaseServices(initializeFirebase());
+    if (typeof window !== 'undefined') {
+       const firebaseServices = initializeFirebase();
+       setServices(firebaseServices);
     }
-  }, [firebaseServices]);
+  }, []);
 
-  // Render children only after Firebase has been initialized.
-  if (!firebaseServices) {
-    return null; // Or a loading indicator
+  if (!services) {
+    return null; // Or a loading component
   }
 
   return (
-    <FirebaseProvider services={firebaseServices}>{children}</FirebaseProvider>
+    <FirebaseContext.Provider value={services}>
+      {children}
+    </FirebaseContext.Provider>
   );
 };
+
+
+export const useFirebaseApp = () => {
+    const context = useContext(FirebaseContext);
+    if (!context) {
+        throw new Error('useFirebaseApp must be used within a FirebaseClientProvider');
+    }
+    return context.firebaseApp;
+}
+
+export const useAuth = () => {
+    const context = useContext(FirebaseContext);
+    if (!context) {
+        throw new Error('useAuth must be used within a FirebaseClientProvider');
+    }
+    return context.auth;
+}
+
+export const useFirestore = () => {
+    const context = useContext(FirebaseContext);
+    if (!context) {
+        throw new Error('useFirestore must be used within a FirebaseClientProvider');
+    }
+    return context.firestore;
+}

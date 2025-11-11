@@ -1,22 +1,26 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getAuth, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 import type { FirebaseServices } from './types';
 
-export function initializeFirebase(): FirebaseServices {
-  const apps = getApps();
-  const firebaseApp = !apps.length
-    ? initializeApp(firebaseConfig)
-    : apps[0];
+let firebaseApp: FirebaseApp;
+let auth: Auth;
+let firestore: Firestore;
 
-  const auth = getAuth(firebaseApp);
-  const firestore = getFirestore(firebaseApp);
+export function initializeFirebase(): FirebaseServices {
+  if (!getApps().length) {
+    firebaseApp = initializeApp(firebaseConfig);
+  } else {
+    firebaseApp = getApp();
+  }
+  
+  auth = getAuth(firebaseApp);
+  firestore = getFirestore(firebaseApp);
 
   return { firebaseApp, auth, firestore };
 }
 
-export * from './provider';
 export * from './client-provider';
 export * from './auth/use-user';
 export * from './firestore/use-collection';
