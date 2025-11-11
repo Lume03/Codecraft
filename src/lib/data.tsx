@@ -22,23 +22,26 @@ export interface User {
   achievements: string[];
 }
 
+// This interface is now for type-checking Firestore data
 export interface Course {
-  id: string;
+  id: string; // Document ID from Firestore
   title: string;
   description: string;
-  icon: React.ElementType;
-  image: ImagePlaceholder;
-  progress: number;
-  modules: Module[];
+  icon: string; // Just the name of the icon
+  imageId: string;
+  progress?: number; // Progress will be stored separately per user
 }
 
+// This interface is now for type-checking Firestore data
 export interface Module {
-  id: string;
+  id: string; // Document ID from Firestore
   title: string;
   type: 'theory' | 'quiz';
   contentId: string;
   duration: number; // Duration in minutes
+  order: number;
 }
+
 
 export type QuestionType =
   | 'single_choice'
@@ -87,7 +90,7 @@ export const user: User = {
   achievements: ['Primer quiz', 'Code Novice', 'Quiz Master', 'Racha de 3 días'],
 };
 
-function PythonIcon(props: React.SVGProps<SVGSVGElement>) {
+export function PythonIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -107,7 +110,7 @@ function PythonIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-function JavaScriptIcon(props: React.SVGProps<SVGSVGElement>) {
+export function JavaScriptIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -125,7 +128,7 @@ function JavaScriptIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 
-function CppIcon(props: React.SVGProps<SVGSVGElement>) {
+export function CppIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
      <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -140,87 +143,35 @@ function CppIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+// This data is now only for local development or as a backup.
+// The main app will fetch data from Firestore.
+
 export const courses: Course[] = [
   {
     id: 'py-101',
     title: 'Python',
     description: 'Comienza tu viaje en la programación con Python, ideal para principiantes.',
-    icon: PythonIcon,
-    image: findImage('python-course'),
+    icon: 'PythonIcon',
+    imageId: 'python-course',
     progress: 75,
-    modules: [
-        { id: 'py-m1', title: 'Introducción a Python', type: 'theory', contentId: 'py-intro', duration: 5 },
-        { id: 'py-m2', title: 'Sintaxis básica', type: 'theory', contentId: 'py-syntax', duration: 8 },
-        { id: 'py-m3', title: 'Primer Quiz', type: 'quiz', contentId: 'py-quiz-1', duration: 4 },
-    ],
   },
   {
     id: 'js-101',
     title: 'JavaScript',
     description: 'Domina los conceptos básicos de JavaScript, el lenguaje esencial de la web.',
-    icon: JavaScriptIcon,
-    image: findImage('js-course'),
+    icon: 'JavaScriptIcon',
+    imageId: 'js-course',
     progress: 40,
-    modules: [
-      { id: 'js-m1', title: 'Introducción a JS', type: 'theory', contentId: 'js-intro', duration: 6 },
-      { id: 'js-m2', title: 'Variables y Tipos', type: 'quiz', contentId: 'js-quiz-1', duration: 9 },
-      { id: 'js-m3', title: 'Funciones', type: 'theory', contentId: 'js-data-types', duration: 12 },
-      { id: 'js-m4', title: 'DOM y Eventos', type: 'theory', contentId: 'js-dom', duration: 10 },
-    ],
   },
   {
     id: 'cpp-101',
     title: 'C++',
     description: 'Aprende el poder de C++ para aplicaciones de alto rendimiento y sistemas.',
-    icon: CppIcon,
-    image: findImage('cpp-course'),
+    icon: 'CppIcon',
+    imageId: 'cpp-course',
     progress: 10,
-    modules: [
-        { id: 'cpp-m1', title: 'Fundamentos de C++', type: 'theory', contentId: 'cpp-intro', duration: 7 },
-        { id: 'cpp-m2', title: 'Quiz de primeros pasos', type: 'quiz', contentId: 'cpp-quiz-1', duration: 5 },
-    ],
   },
 ];
-
-export const theoryContent: Record<string, { title: string; pages: string[] }> = {
-  'py-intro': {
-    title: 'Introducción a Python',
-    pages: [
-      '**¿Qué es Python?**\n\nPython es un **lenguaje de programación moderno y sencillo**.\nSe usa para crear páginas web, analizar datos, hacer videojuegos, inteligencia artificial y más.\nSu gran ventaja es que **es fácil de leer y aprender**.\n\n```python\nprint("¡Hola, Python!")\n```\n\n🧠 “Si puedes leer inglés simple, puedes leer Python.”',
-      '**¿Por qué es tan popular?**\n\nPython es uno de los lenguajes más usados en el mundo 🌍.\nLo utilizan empresas como **Google, Netflix, Spotify** y hasta la **NASA** 🚀.\n\n**Ventajas clave:**\n\n* 🧩 Sintaxis fácil de entender\n* 📚 Mucha documentación y ayuda en línea\n* 💻 Funciona en cualquier sistema operativo\n* 🤖 Ideal para aprender lógica de programación',
-      '**¿Qué puedes hacer con Python?**\n\nCon Python puedes construir casi cualquier cosa:\n\n* Sitios web 🕸️\n* Aplicaciones de escritorio 🧭\n* Videojuegos 🎮\n* Análisis de datos 📊\n* Inteligencia artificial 🤖\n\n```python\n# Un pequeño ejemplo de cálculo\nprecio = 10\nimpuesto = 0.18\ntotal = precio + (precio * impuesto)\nprint(total)  # 11.8\n```\n\n💬 “Python te permite resolver problemas con pocas líneas de código.”',
-      '**Cómo funciona Python**\n\nPython lee tu código **línea por línea**, de arriba hacia abajo.\nCada línea es una **instrucción** que se ejecuta al instante.\n\n```python\nprint("Inicio")\nprint("Procesando...")\nprint("Fin")\n```\n\n▶️ “Python ejecuta tu código como si leyera un libro: una línea a la vez.”',
-      '**Tu primer vistazo al código**\n\nEl primer programa de todo programador muestra un saludo simple.\nEn Python se escribe así:\n\n```python\nprint("Hello, World!")\n```\n\n🗨️ `print()` sirve para **mostrar texto en pantalla**.\n🔤 El texto va entre comillas `" "`. \n\n🎉 ¡Listo! Ya sabes qué es Python y cómo luce su código.\nEn la próxima lección conocerás su **sintaxis básica** y aprenderás a **usar variables**.',
-    ],
-  },
-  'py-syntax': {
-    title: 'Sintaxis básica',
-    pages: [
-      '**¿Cómo se escribe el código en Python?**\n\nPython es famoso por tener una **sintaxis limpia y natural**.\nNo necesitas escribir muchos signos como `;` o `{}` para que funcione.\n\n```python\n# Esto es un comentario\nprint("Hola, mundo")\nprint("Aprendiendo Python es fácil")\n```\n\n💬 Las líneas se ejecutan **una debajo de otra**.\n💡 El símbolo `#` indica un **comentario**: texto que Python no ejecuta.',
-      '**¿Qué son las variables?**\n\nUna variable es como una **caja con nombre** donde guardas un valor.\nPuedes usarla para almacenar números, texto o resultados.\n\n```python\nnombre = "Lucía"\nedad = 20\nprint(nombre)\nprint(edad)\n```\n\n🧠 `=` se llama **operador de asignación**: guarda el valor en la variable.\n🗂️ Piensa que `nombre` → guarda el texto “Lucía”.',
-      '**Actualizar el valor de una variable**\n\nPuedes **actualizar** el valor de una variable en cualquier momento.\n\n```python\npuntos = 10\npuntos = puntos + 5\nprint(puntos)  # 15\n```\n\n🎯 La nueva línea usa el valor anterior para calcular el nuevo.\n♻️ Python reemplaza el valor viejo por el nuevo automáticamente.',
-      '**Tipos de datos básicos**\n\nPython usa diferentes **tipos de datos** según el valor que guardes.\nAlgunos de los más comunes son:\n\n| Tipo    | Ejemplo          | Descripción    |\n| ------- | ---------------- | -------------- |\n| `int`   | `10`             | Número entero  |\n| `float` | `3.14`           | Número decimal |\n| `str`   | `"Hola"`         | Texto o cadena |\n| `bool`  | `True` / `False` | Valor lógico   |\n\n```python\nnumero = 10\nprecio = 3.99\nnombre = "Sara"\nactivo = True\n```\n\n🔤 No necesitas declarar el tipo, Python lo detecta solo.\n✨ Puedes mezclar tipos en tus programas.',
-      '**Cuida mayúsculas y espacios**\n\nPython distingue entre **mayúsculas y minúsculas**:\n`Nombre` y `nombre` son variables diferentes.\n\nAdemás, usa **espacios (indentación)** para definir bloques de código.\n\n```python\nnombre = "Luna"\n\nif nombre == "Luna":\n    print("¡Hola, Luna!")  # indentado\n```\n\n📏 Cuida los espacios al principio de cada línea.\n🚫 No los pongas al azar: Python los usa para entender tu estructura.',
-      '**Un programa completo**\n\nMira cómo se combinan las variables, los tipos y la impresión en pantalla.\n\n```python\nnombre = "Carlos"\nedad = 25\nactivo = True\n\nprint(f"{nombre} tiene {edad} años. ¿Activo? {activo}")\n```\n\n**Resultado mostrado:**\n\n`Carlos tiene 25 años. ¿Activo? True`\n\n🎉 ¡Listo! Ya entiendes cómo se escribe código Python.\nEn la siguiente lección aprenderás sobre **variables, tipos de datos y operadores** en acción, dentro del apartado **Práctica**.',
-    ],
-  },
-  'js-intro': {
-    title: 'Introducción a JavaScript',
-    pages: [
-      'JavaScript es un lenguaje de programación interpretado y de alto nivel. Es un lenguaje que también se caracteriza por ser dinámico, débilmente tipado, basado en prototipos y multiparadigma.',
-      'Junto con HTML y CSS, JavaScript es una de las tres tecnologías principales de la World Wide Web. JavaScript permite páginas web interactivas y, por lo tanto, es una parte esencial de las aplicaciones web.',
-    ],
-  },
-   'js-data-types': {
-    title: 'Tipos de datos en JavaScript',
-    pages: [
-      'JavaScript tiene varios tipos de datos primitivos: `String`, `Number`, `BigInt`, `Boolean`, `Undefined`, `Null` y `Symbol`.',
-      'También existe un tipo de dato complejo: `Object`. Los arrays y las funciones son objetos especializados.',
-      'Ejemplo de declaración de variables:\n```javascript\nlet name = "RavenCode";\nconst score = 100;\nlet isComplete = false;\n```'
-    ],
-   },
-  // Add other theory content here...
-};
 
 export const quizzes: Quiz[] = [
   {

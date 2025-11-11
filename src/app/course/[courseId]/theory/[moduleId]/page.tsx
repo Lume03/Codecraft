@@ -1,15 +1,15 @@
-
 'use client';
 
 import * as React from 'react';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
-import { theoryContent } from '@/lib/data.tsx';
 import Link from 'next/link';
 import { notFound, useSearchParams, useParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { useDoc, useCollection, useFirestore } from '@/firebase';
+import { doc, collection, query, orderBy } from 'firebase/firestore';
 
 // A simple component to render markdown-like code blocks
 function CodeBlock({ children }: { children: string }) {
@@ -46,30 +46,41 @@ function ContentRenderer({ content }: { content: string }) {
 export default function TheoryPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const firestore = useFirestore();
   const { courseId, moduleId } = params as {
     courseId: string;
     moduleId: string;
   };
 
-  const content = theoryContent[moduleId];
-  if (!content) {
-    notFound();
-  }
+  const theoryRef = useMemo(() => firestore ? doc(firestore, `theories/${moduleId}`) : null, [firestore, moduleId]);
+  const { data: theory, loading: theoryLoading } = useDoc(theoryRef);
+
+  const pagesQuery = useMemo(() => firestore ? query(collection(firestore, `theories/${moduleId}/pages`), orderBy('order')) : null, [firestore, moduleId]);
+  const { data: pages, loading: pagesLoading } = useCollection(pagesQuery);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = content.pages.length;
+  const totalPages = pages?.length ?? 0;
 
   useEffect(() => {
     const pageFromQuery = parseInt(searchParams.get('page') || '1', 10);
-    if (!isNaN(pageFromQuery) && pageFromQuery > 0 && pageFromQuery <= totalPages) {
+    if (!isNaN(pageFromQuery) && pageFromQuery > 0 && totalPages > 0 && pageFromQuery <= totalPages) {
       setCurrentPage(pageFromQuery);
     }
   }, [searchParams, totalPages]);
+  
+  if (theoryLoading || pagesLoading) {
+    return <div>Cargando contenido...</div>;
+  }
 
-  const pageContent = content.pages[currentPage - 1];
+  if (!theory || !pages || pages.length === 0) {
+    notFound();
+  }
+
+  const pageContent = pages[currentPage - 1]?.content;
 
   if (!pageContent) {
-    notFound();
+    // This can happen briefly while currentPage is being set
+    return <div>Cargando página...</div>;
   }
 
   const hasPrev = currentPage > 1;
@@ -80,7 +91,7 @@ export default function TheoryPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header title={content.title} showBackButton />
+      <Header title={theory.title} showBackButton />
       
       <div className="flex-1 p-4 md:p-6 pb-40">
         <div className="mx-auto max-w-3xl">

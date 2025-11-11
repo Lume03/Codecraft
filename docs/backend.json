@@ -45,9 +45,90 @@
                 "reminders": {
                     "type": "boolean",
                     "description": "Whether the user has learning reminders enabled."
+                },
+                "lives": {
+                    "type": "number",
+                    "description": "Number of lives the user has."
+                },
+                "lastLifeUpdate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "The last time a life was regenerated."
                 }
             },
             "required": ["displayName", "email"]
+        },
+        "Course": {
+            "title": "Course",
+            "description": "Represents a course in the learning platform.",
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string",
+                    "description": "Name of the icon component (e.g., 'PythonIcon')."
+                },
+                "imageId": {
+                    "type": "string",
+                    "description": "ID of the placeholder image for the course."
+                }
+            }
+        },
+        "Module": {
+            "title": "Module",
+            "description": "A module within a course, containing lessons.",
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": ["theory", "quiz"]
+                },
+                "contentId": {
+                    "type": "string",
+                    "description": "ID of the corresponding theory or quiz."
+                },
+                "duration": {
+                    "type": "number",
+                    "description": "Duration in minutes."
+                },
+                "order": {
+                    "type": "number",
+                    "description": "Order of the module within the course."
+                }
+            }
+        },
+        "Theory": {
+            "title": "Theory Content",
+            "description": "The content for a theory lesson, composed of pages.",
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "TheoryPage": {
+            "title": "Theory Page",
+            "description": "A single page of content within a theory lesson.",
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "description": "The markdown content of the page."
+                },
+                "order": {
+                    "type": "number",
+                    "description": "The order of the page within the lesson."
+                }
+            }
         }
     },
     "auth": {
@@ -59,6 +140,30 @@
                 "$ref": "#/entities/UserProfile"
             },
             "description": "Stores public profile information for each user."
+        },
+        "/courses": {
+            "schema": {
+                "$ref": "#/entities/Course"
+            },
+            "description": "Top-level collection for all available courses."
+        },
+        "/courses/{courseId}/modules": {
+            "schema": {
+                "$ref": "#/entities/Module"
+            },
+            "description": "Sub-collection for modules within a course."
+        },
+        "/theories/{theoryId}": {
+            "schema": {
+                "$ref": "#/entities/Theory"
+            },
+            "description": "Collection to store theory lesson shells."
+        },
+        "/theories/{theoryId}/pages": {
+            "schema": {
+                "$ref": "#/entities/TheoryPage"
+            },
+            "description": "Sub-collection for individual pages within a theory lesson."
         }
     }
 }

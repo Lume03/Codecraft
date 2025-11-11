@@ -2,7 +2,6 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { courses } from '@/lib/data.tsx';
 import {
   ChevronRight,
   Flame,
@@ -19,7 +18,7 @@ import { Progress } from '@/components/ui/progress';
 import { GoalProgress } from '@/components/goal-progress';
 import { AchievementBadge } from '@/components/achievement-badge';
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { doc } from 'firebase/firestore';
@@ -65,11 +64,14 @@ export default function ProfilePage() {
   const [mounted, setMounted] = useState(false);
   const user = useUser();
   const firestore = useFirestore();
-  const userProfileRef =
-    user && firestore ? doc(firestore, `users/${user.uid}`) : null;
+  const userProfileRef = useMemo(() => {
+    if (user && firestore) {
+      return doc(firestore, `users/${user.uid}`);
+    }
+    return null;
+  }, [user, firestore]);
   const { data: userProfile } = useDoc(userProfileRef);
 
-  const currentCourse = courses[0]; // Example: current course is Python
   const goals = [
     {
       title: 'Practicar 3 días seguidos',
@@ -104,6 +106,7 @@ export default function ProfilePage() {
   }
   
   const userAvatar = placeholderImages.find(p => p.id === 'user-avatar');
+  const avatarSrc = userProfile?.photoURL || user?.photoURL || userAvatar?.imageUrl;
 
   return (
     <div className="flex flex-col">
@@ -127,7 +130,7 @@ export default function ProfilePage() {
         <div className="flex items-center gap-4 rounded-2xl border bg-card p-4 md:gap-5 md:p-6 lg:p-6">
           <Avatar className="h-16 w-16 border-2 border-primary">
             <AvatarImage
-              src={userProfile?.photoURL ?? user?.photoURL ?? userAvatar?.imageUrl}
+              src={avatarSrc}
               alt={userProfile?.displayName ?? user?.displayName ?? 'User avatar'}
             />
             <AvatarFallback>{userProfile?.displayName?.charAt(0) ?? user?.displayName?.charAt(0)}</AvatarFallback>
@@ -151,32 +154,18 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Course Progress Card */}
+        {/* Course Progress Card - This would need to be adapted to fetch user-specific progress */}
         <div className="space-y-3 rounded-2xl border bg-card p-4 md:space-y-4 md:p-5 lg:p-6">
           <h2 className="text-lg font-semibold leading-tight">Progreso de curso</h2>
           <div className="space-y-3">
             <div>
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>General</span>
-                <span>{currentCourse.progress}%</span>
+                <span>...%</span>
               </div>
-              <Progress value={currentCourse.progress} className="mt-1 h-2" />
+              <Progress value={0} className="mt-1 h-2" />
             </div>
-            <Link
-              href={`/course/${currentCourse.id}`}
-              className="flex items-center justify-between gap-3 rounded-lg bg-secondary p-3 transition-colors hover:bg-secondary/70"
-            >
-              <div className="flex items-center gap-3">
-                <currentCourse.icon className="h-6 w-6 text-primary" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold leading-tight">{currentCourse.title}</p>
-                  <p className="text-xs leading-relaxed text-muted-foreground">
-                    Continúa en la lección 2...
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </Link>
+            <p className="text-center text-sm text-muted-foreground">El seguimiento del progreso del curso se implementará pronto.</p>
           </div>
         </div>
         

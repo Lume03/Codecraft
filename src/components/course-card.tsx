@@ -3,16 +3,17 @@ import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import type { Course } from '@/lib/data.tsx';
 import { cn } from '@/lib/utils';
+import { placeholderImages } from '@/lib/placeholder-images';
 
 export function CourseCard({ course }: { course: Course }) {
   const accentVariants = {
-    'js-101': {
-      ring: 'group-hover:ring-yellow-400/50 group-focus-visible:ring-yellow-400/50',
-      progress: '[&>div]:bg-yellow-400',
-    },
     'py-101': {
       ring: 'group-hover:ring-green-400/50 group-focus-visible:ring-green-400/50',
       progress: '[&>div]:bg-green-400',
+    },
+    'js-101': {
+      ring: 'group-hover:ring-yellow-400/50 group-focus-visible:ring-yellow-400/50',
+      progress: '[&>div]:bg-yellow-400',
     },
     'cpp-101': {
       ring: 'group-hover:ring-blue-400/50 group-focus-visible:ring-blue-400/50',
@@ -22,6 +23,8 @@ export function CourseCard({ course }: { course: Course }) {
 
   const accent =
     accentVariants[course.id as keyof typeof accentVariants] || {};
+    
+  const courseImage = placeholderImages.find(p => p.id === course.imageId);
 
   return (
     <Link
@@ -39,16 +42,18 @@ export function CourseCard({ course }: { course: Course }) {
         )}
       >
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-card-foreground/5 p-1">
-            <Image
-              src={course.image.imageUrl}
-              alt={course.image.description}
-              width={48}
-              height={48}
-              className="h-full w-full object-contain"
-              data-ai-hint={course.image.imageHint}
-            />
-          </div>
+          {courseImage && (
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-card-foreground/5 p-1">
+                <Image
+                  src={courseImage.imageUrl}
+                  alt={courseImage.description}
+                  width={48}
+                  height={48}
+                  className="h-full w-full object-contain"
+                  data-ai-hint={courseImage.imageHint}
+                />
+            </div>
+          )}
           <div className="flex-1 overflow-hidden">
             <h3 className="line-clamp-1 text-lg font-semibold leading-tight tracking-tight">
               {course.title}

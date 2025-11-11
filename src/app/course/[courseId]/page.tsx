@@ -1,8 +1,6 @@
-
 'use client';
 
 import { Header } from '@/components/header';
-import { courses } from '@/lib/data.tsx';
 import { notFound, useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,43 +10,68 @@ import {
   ChevronRight,
   Clock,
   Code,
-  PlayCircle,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { useDoc, useCollection, useFirestore } from '@/firebase';
+import { doc, collection, query, orderBy } from 'firebase/firestore';
+import { placeholderImages } from '@/lib/placeholder-images';
+import { Course, Module } from '@/lib/data';
+import { PythonIcon, JavaScriptIcon, CppIcon } from '@/lib/data';
+
+const iconMap: { [key: string]: React.ElementType } = {
+  PythonIcon,
+  JavaScriptIcon,
+  CppIcon,
+};
+
 
 export default function CourseDetailPage() {
   const params = useParams();
   const { courseId } = params as { courseId: string };
-  const course = courses.find((c) => c.id === courseId);
+  const firestore = useFirestore();
+
+  const courseRef = useMemo(() => firestore ? doc(firestore, `courses/${courseId}`) : null, [firestore, courseId]);
+  const { data: course, loading: courseLoading } = useDoc<Course>(courseRef);
+
+  const modulesQuery = useMemo(() => 
+    firestore ? query(collection(firestore, `courses/${courseId}/modules`), orderBy('order')) : null, 
+    [firestore, courseId]
+  );
+  const { data: modules, loading: modulesLoading } = useCollection<Module>(modulesQuery);
 
   const [moduleStatuses, setModuleStatuses] = useState<
     ('completed' | 'in_progress' | 'locked')[]
   >([]);
 
   useEffect(() => {
-    if (course) {
+    if (modules) {
       // Simulate status: first is completed, second is in progress, rest are locked
-      const statuses: ('completed' | 'in_progress' | 'locked')[] = course.modules.map((_, index) => {
+      const statuses: ('completed' | 'in_progress' | 'locked')[] = modules.map((_, index) => {
         if (index === 0) return 'completed';
         if (index === 1) return 'in_progress';
         return 'locked';
       });
       setModuleStatuses(statuses);
     }
-  }, [course]);
+  }, [modules]);
+
+  if (courseLoading || modulesLoading) {
+    return <div>Cargando...</div>;
+  }
 
   if (!course) {
     notFound();
   }
 
+  const courseImage = placeholderImages.find(p => p.id === course.imageId);
   const lessonsCompleted = moduleStatuses.filter(s => s === 'completed').length;
-  const totalLessons = course.modules.length;
-  const progressPercentage = (lessonsCompleted / totalLessons) * 100;
+  const totalLessons = modules?.length ?? 0;
+  const progressPercentage = totalLessons > 0 ? (lessonsCompleted / totalLessons) * 100 : 0;
   
   const currentLessonIndex = moduleStatuses.findIndex(s => s === 'in_progress');
-  const nextLesson = currentLessonIndex !== -1 ? course.modules[currentLessonIndex] : course.modules[0];
+  const nextLesson = (modules && currentLessonIndex !== -1) ? modules[currentLessonIndex] : (modules?.[0] ?? null);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -58,16 +81,18 @@ export default function CourseDetailPage() {
         {/* Main Course Info Card */}
         <div className="rounded-2xl border bg-card p-5">
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-card-foreground/5 p-1">
-              <Image
-                src={course.image.imageUrl}
-                alt={course.image.description}
-                width={48}
-                height={48}
-                className="h-full w-full object-contain"
-                data-ai-hint={course.image.imageHint}
-              />
-            </div>
+             {courseImage && (
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-card-foreground/5 p-1">
+                  <Image
+                    src={courseImage.imageUrl}
+                    alt={courseImage.description}
+                    width={48}
+                    height={48}
+                    className="h-full w-full object-contain"
+                    data-ai-hint={courseImage.imageHint}
+                  />
+              </div>
+             )}
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold">{course.title}</h2>
@@ -76,7 +101,7 @@ export default function CourseDetailPage() {
                 </span>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
-                Aprende lógica, funciones y DOM para la web moderna.
+                {course.description}
               </p>
             </div>
           </div>
@@ -105,7 +130,7 @@ export default function CourseDetailPage() {
               </div>
             </div>
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/course/${course.id}/${nextLesson.type}/${nextLesson.contentId}`}>
+              <Link href={`/course/${courseId}/${nextLesson.type}/${nextLesson.contentId}`}>
                 Revisar
               </Link>
             </Button>
@@ -116,12 +141,12 @@ export default function CourseDetailPage() {
         <div>
           <h3 className="mb-4 text-xl font-bold">Contenido del curso</h3>
           <div className="space-y-2 rounded-2xl border bg-card p-2">
-            {course.modules.map((module, index) => {
+            {modules?.map((module, index) => {
               const status = moduleStatuses[index];
               return (
                 <Link
                   key={module.id}
-                  href={`/course/${course.id}/${module.type}/${module.contentId}`}
+                  href={`/course/${courseId}/${module.type}/${module.contentId}`}
                   className={cn(
                     'block rounded-xl p-4 transition-colors',
                     status !== 'locked' ? 'hover:bg-secondary' : 'opacity-60 pointer-events-none'
@@ -165,7 +190,7 @@ export default function CourseDetailPage() {
       {nextLesson && (
          <div className="fixed bottom-0 inset-x-0 z-10 border-t bg-background/80 p-4 backdrop-blur-sm pb-[calc(1rem+env(safe-area-inset-bottom))]">
             <Button size="lg" className="w-full" asChild style={{ borderRadius: '9999px', boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)' }}>
-                <Link href={`/course/${course.id}/${nextLesson.type}/${nextLesson.contentId}`}>
+                <Link href={`/course/${courseId}/${nextLesson.type}/${nextLesson.contentId}`}>
                     Comenzar Lección {currentLessonIndex + 1}
                 </Link>
             </Button>
