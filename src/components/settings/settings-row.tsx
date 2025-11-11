@@ -13,17 +13,22 @@ interface SettingsRowProps {
     | { type: 'chevron' }
     | { type: 'text'; value: string };
   href?: string;
+  onClick?: () => void;
+  isButton?: boolean;
 }
 
-export function SettingsRow({ icon: Icon, title, subtitle, trailing, href }: SettingsRowProps) {
+export function SettingsRow({ icon: Icon, title, subtitle, trailing, href, onClick, isButton }: SettingsRowProps) {
+  const Element = isButton ? 'button' : 'div';
+  
   const content = (
-    <div
-      role={!trailing || trailing.type !== 'toggle' ? 'button' : undefined}
-      tabIndex={!trailing || trailing.type !== 'toggle' ? 0 : undefined}
+    <Element
+      onClick={onClick}
+      role={href || onClick ? 'button' : undefined}
+      tabIndex={href || onClick ? 0 : undefined}
       aria-label={`Abrir ${title}`}
       className={cn(
-        "group flex items-center gap-3 px-4 py-3 md:py-4 h-[72px] md:h-[76px]",
-        href && "transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:bg-white/5"
+        "group flex items-center gap-3 px-4 py-3 md:py-4 h-[72px] md:h-[76px] w-full text-left",
+        (href || onClick) && "transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:bg-white/5"
       )}
     >
       <div className="flex size-10 items-center justify-center rounded-xl border">
@@ -47,7 +52,8 @@ export function SettingsRow({ icon: Icon, title, subtitle, trailing, href }: Set
           )}
         </div>
       )}
-    </div>
+      {isButton && !trailing && <ChevronRight className="h-5 w-5 text-muted-foreground" />}
+    </Element>
   );
 
   if (href) {

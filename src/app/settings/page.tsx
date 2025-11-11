@@ -18,6 +18,9 @@ import {
 } from 'lucide-react';
 import { SettingsSection } from '@/components/settings/settings-section';
 import { SettingsRow } from '@/components/settings/settings-row';
+import { useAuth } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { signOut } from 'firebase/auth';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -29,6 +32,9 @@ export default function SettingsPage() {
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(false);
 
+  const auth = useAuth();
+  const router = useRouter();
+
   useEffect(() => {
     setMounted(true);
     setIsDarkTheme(theme === 'dark');
@@ -37,6 +43,13 @@ export default function SettingsPage() {
   const handleThemeChange = (checked: boolean) => {
     setTheme(checked ? 'dark' : 'light');
     setIsDarkTheme(checked);
+  };
+
+  const handleLogout = async () => {
+    if (auth) {
+      await signOut(auth);
+      router.push('/auth');
+    }
   };
   
   if (!mounted) {
@@ -126,8 +139,8 @@ export default function SettingsPage() {
             icon={LogOut}
             title="Cerrar sesión"
             subtitle="Desvincula este dispositivo"
-            trailing={{ type: 'chevron' }}
-            href="/auth"
+            onClick={handleLogout}
+            isButton={true}
           />
         </SettingsSection>
       </main>

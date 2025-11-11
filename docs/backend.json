@@ -1,0 +1,64 @@
+{
+    "entities": {
+        "UserProfile": {
+            "title": "User Profile",
+            "description": "Represents a user's profile information.",
+            "type": "object",
+            "properties": {
+                "displayName": {
+                    "type": "string",
+                    "description": "The user's display name."
+                },
+                "username": {
+                    "type": "string",
+                    "description": "The user's unique username."
+                },
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "The user's email address."
+                },
+                "photoURL": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "URL of the user's profile picture."
+                },
+                "level": {
+                    "type": "number",
+                    "description": "The user's current level."
+                },
+                "xp": {
+                    "type": "number",
+                    "description": "The user's experience points."
+                },
+                "streak": {
+                    "type": "number",
+                    "description": "The user's current practice streak."
+                },
+                "achievements": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "List of achievements unlocked by the user."
+                },
+                "reminders": {
+                    "type": "boolean",
+                    "description": "Whether the user has learning reminders enabled."
+                }
+            },
+            "required": ["displayName", "email"]
+        }
+    },
+    "auth": {
+        "providers": ["google.com", "password"]
+    },
+    "firestore": {
+        "/users/{userId}": {
+            "schema": {
+                "$ref": "#/entities/UserProfile"
+            },
+            "description": "Stores public profile information for each user."
+        }
+    }
+}

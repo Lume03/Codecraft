@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { courses, user } from '@/lib/data.tsx';
+import { courses } from '@/lib/data.tsx';
 import {
   ChevronRight,
   Flame,
@@ -20,6 +20,9 @@ import { GoalProgress } from '@/components/goal-progress';
 import { AchievementBadge } from '@/components/achievement-badge';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import { useUser, useDoc, useFirestore } from '@/firebase';
+import { placeholderImages } from '@/lib/placeholder-images';
+import { doc } from 'firebase/firestore';
 
 const QuickSettingTile = ({
   icon: Icon,
@@ -60,6 +63,12 @@ const QuickSettingTile = ({
 export default function ProfilePage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const user = useUser();
+  const firestore = useFirestore();
+  const userProfileRef =
+    user && firestore ? doc(firestore, `users/${user.uid}`) : null;
+  const { data: userProfile } = useDoc(userProfileRef);
+
   const currentCourse = courses[0]; // Example: current course is Python
   const goals = [
     {
@@ -87,9 +96,14 @@ export default function ProfilePage() {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  const streak = userProfile?.streak ?? 0;
+  const achievements = userProfile?.achievements ?? [];
+
   if (!mounted) {
     return null; 
   }
+  
+  const userAvatar = placeholderImages.find(p => p.id === 'user-avatar');
 
   return (
     <div className="flex flex-col">
@@ -113,25 +127,25 @@ export default function ProfilePage() {
         <div className="flex items-center gap-4 rounded-2xl border bg-card p-4 md:gap-5 md:p-6 lg:p-6">
           <Avatar className="h-16 w-16 border-2 border-primary">
             <AvatarImage
-              src={user.avatar.imageUrl}
-              alt={user.avatar.description}
+              src={user?.photoURL ?? userAvatar?.imageUrl}
+              alt={user?.displayName ?? 'User avatar'}
             />
-            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{user?.displayName?.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-3">
             <div>
-              <h1 className="text-xl font-bold leading-tight">{user.name}</h1>
-              <p className="text-sm leading-relaxed text-muted-foreground">@{user.username}</p>
+              <h1 className="text-xl font-bold leading-tight">{userProfile?.displayName ?? user?.displayName ?? 'New User'}</h1>
+              <p className="text-sm leading-relaxed text-muted-foreground">@{userProfile?.username ?? 'new.user'}</p>
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3">
               <div className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
-                Nivel {user.level}
+                Nivel {userProfile?.level ?? 1}
               </div>
               <div className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
-                {user.xp} XP
+                {userProfile?.xp ?? 0} XP
               </div>
               <div className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
-                {user.achievements.length} Logros
+                {achievements.length} Logros
               </div>
             </div>
           </div>
@@ -186,19 +200,19 @@ export default function ProfilePage() {
                 key={goal.target}
                 icon={goal.icon}
                 title={goal.title}
-                currentValue={user.streak}
+                currentValue={streak}
                 targetValue={goal.target}
               />
             ))}
           </div>
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2 md:gap-3">
-              {user.achievements.slice(0, 3).map((ach) => (
+              {achievements.slice(0, 3).map((ach: string) => (
                 <AchievementBadge key={ach} icon={Trophy} label={ach} />
               ))}
-              {user.achievements.length > 3 && (
+              {achievements.length > 3 && (
                  <div className="flex h-8 items-center justify-center rounded-full border border-dashed border-border bg-secondary px-3 text-xs font-semibold text-muted-foreground">
-                    +{user.achievements.length - 3} más
+                    +{achievements.length - 3} más
                 </div>
               )}
             </div>

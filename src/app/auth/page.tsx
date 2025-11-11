@@ -15,6 +15,17 @@ import { Switch } from '@/components/ui/switch';
 import { CodeXml, Github, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  getAdditionalUserInfo,
+} from 'firebase/auth';
+import { useRouter } from 'next/navigation';
+import { useAuth, useFirestore } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { doc, setDoc } from 'firebase/firestore';
 
 function GoogleIcon() {
   return (
@@ -47,6 +58,67 @@ function GoogleIcon() {
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullname, setFullname] = useState('');
+  const router = useRouter();
+  const auth = useAuth();
+  const firestore = useFirestore();
+  const { toast } = useToast();
+
+  const handleAuthAction = async () => {
+    if (!auth || !firestore) return;
+    try {
+      if (isLogin) {
+        await signInWithEmailAndPassword(auth, email, password);
+        router.push('/learn');
+      } else {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        const userRef = doc(firestore, 'users', user.uid);
+        await setDoc(userRef, { 
+          displayName: fullname,
+          email: user.email,
+        }, { merge: true });
+        router.push('/profile/setup');
+      }
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error de autenticación',
+        description: error.message,
+      });
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (!auth || !firestore) return;
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const additionalInfo = getAdditionalUserInfo(result);
+      if (additionalInfo?.isNewUser) {
+        const user = result.user;
+        const userRef = doc(firestore, 'users', user.uid);
+        await setDoc(userRef, {
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          level: 1,
+          xp: 0,
+          streak: 0,
+          achievements: [],
+        }, { merge: true });
+      }
+      router.push('/learn');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error con Google',
+        description: error.message,
+      });
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background p-4 md:p-6">
@@ -80,7 +152,12 @@ export default function AuthPage() {
               {!isLogin && (
                 <div className="space-y-2">
                   <Label htmlFor="fullname">Nombre completo</Label>
-                  <Input id="fullname" placeholder="Alonso Luque" />
+                  <Input
+                    id="fullname"
+                    placeholder="Alonso Luque"
+                    value={fullname}
+                    onChange={(e) => setFullname(e.target.value)}
+                  />
                 </div>
               )}
               <div className="space-y-2">
@@ -89,6 +166,8 @@ export default function AuthPage() {
                   id="email"
                   type="email"
                   placeholder="alonso@gmail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -107,6 +186,8 @@ export default function AuthPage() {
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                   <Button
                     type="button"
@@ -161,19 +242,17 @@ export default function AuthPage() {
             <CardFooter className="flex-col gap-4">
               <Button
                 className="w-full"
-                asChild
+                onClick={handleAuthAction}
                 size="lg"
                 style={{
                   borderRadius: '9999px',
                   boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
                 }}
               >
-                <Link href={isLogin ? '/learn' : '/learn'}>
-                  {isLogin ? 'Entrar' : 'Verificar y continuar'}
-                </Link>
+                {isLogin ? 'Entrar' : 'Verificar y continuar'}
               </Button>
               {!isLogin && (
-                <Button variant="ghost" className="w-full">
+                <Button variant="ghost" className="w-full" onClick={() => setIsLogin(true)}>
                   Volver
                 </Button>
               )}
@@ -192,7 +271,7 @@ export default function AuthPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleGoogleSignIn}>
               <GoogleIcon /> <span className="ml-2">Google</span>
             </Button>
             <Button variant="outline">
