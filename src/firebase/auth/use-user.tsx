@@ -6,13 +6,11 @@ import { useAuth } from '../client-provider';
 
 export const useUser = () => {
   const auth = useAuth();
-  const [user, setUser] = useState<User | null>(auth?.currentUser ?? null);
+  const [user, setUser] = useState<User | null>(() => auth?.currentUser ?? null);
 
   useEffect(() => {
     if (!auth) return;
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-    });
+    const unsubscribe = onAuthStateChanged(auth, setUser);
     return () => unsubscribe();
   }, [auth]);
 

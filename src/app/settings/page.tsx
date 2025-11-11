@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { SettingsSection } from '@/components/settings/settings-section';
 import { SettingsRow } from '@/components/settings/settings-row';
-import { useAuth } from '@/firebase/client-provider';
+import { useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 

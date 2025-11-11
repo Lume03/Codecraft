@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useUser, useFirestore, useDoc } from '@/firebase/client-provider';
+import { useUser, useFirestore, useDoc } from '@/firebase';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { doc, setDoc } from 'firebase/firestore';
 import { Camera } from 'lucide-react';

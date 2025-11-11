@@ -1,23 +1,23 @@
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 
+// Inicialización idempotente y robusta de Firebase
 let firebaseApp: FirebaseApp;
-
-// Idempotent initialization
 if (!getApps().length) {
   firebaseApp = initializeApp(firebaseConfig);
 } else {
   firebaseApp = getApp();
 }
 
+// Obtener servicios directamente de la app inicializada
 const auth: Auth = getAuth(firebaseApp);
 const firestore: Firestore = getFirestore(firebaseApp);
 
 export { firebaseApp, auth, firestore };
 
-// Export hooks and providers
+// Exportar hooks y providers necesarios
 export * from './client-provider';
 export * from './auth/use-user';
 export * from './firestore/use-collection';

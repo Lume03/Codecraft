@@ -17,7 +17,7 @@ export const FirebaseClientProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  // Services are initialized synchronously in `index.ts`
+  // Las instancias de los servicios ya están inicializadas en `./index.ts`
   const services = { app: firebaseApp, auth, firestore };
 
   return (
