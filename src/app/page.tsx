@@ -19,12 +19,22 @@ export default function OnboardingPage() {
         </div>
       </main>
       <footer className="w-full p-8">
-        <Button asChild size="lg" className="w-full max-w-md mx-auto" style={{
-          borderRadius: '9999px', 
-          boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
-        }}>
-          <Link href="/auth">Empezar</Link>
-        </Button>
+        <div className="mx-auto flex max-w-md flex-col gap-4">
+          <Button
+            asChild
+            size="lg"
+            className="w-full"
+            style={{
+              borderRadius: '9999px',
+              boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
+            }}
+          >
+            <Link href="/auth">Empezar</Link>
+          </Button>
+          <Button asChild variant="link" size="sm">
+            <Link href="/admin">Acceso Administrador</Link>
+          </Button>
+        </div>
       </footer>
     </div>
   );

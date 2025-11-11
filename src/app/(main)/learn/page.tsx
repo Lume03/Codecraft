@@ -5,7 +5,7 @@ import { Header } from '@/components/header';
 import { useCollection, useFirestore } from '@/firebase';
 import type { Course } from '@/lib/data';
 import { collection, query, orderBy } from 'firebase/firestore';
-import { CodeXml, PlusCircle } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LearnPage() {
