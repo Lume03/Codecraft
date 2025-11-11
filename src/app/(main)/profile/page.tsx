@@ -20,7 +20,7 @@ import { GoalProgress } from '@/components/goal-progress';
 import { AchievementBadge } from '@/components/achievement-badge';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
-import { useUser, useDoc, useFirestore } from '@/firebase/client-provider';
+import { useUser, useDoc, useFirestore } from '@/firebase';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { doc } from 'firebase/firestore';
 
