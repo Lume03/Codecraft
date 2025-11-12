@@ -8,80 +8,10 @@ import { notFound, useSearchParams, useParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState, useMemo } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Theory, TheoryPage } from '@/lib/data';
+import { ContentRenderer } from '@/components/content-renderer';
 
-
-function ContentRenderer({ content }: { content: string }) {
-  return (
-    <div className="prose prose-invert max-w-none text-foreground/90">
-      <ReactMarkdown
-        components={{
-          h1: ({ node, ...props }) => (
-            <h1
-              className="my-4 text-3xl font-bold text-foreground"
-              {...props}
-            />
-          ),
-          h2: ({ node, ...props }) => (
-            <h2
-              className="my-3 border-b border-border pb-2 text-2xl font-bold text-foreground"
-              {...props}
-            />
-          ),
-          p: ({ node, ...props }) => (
-            <p className="my-4 text-base leading-relaxed" {...props} />
-          ),
-          code: ({ node, className, children, ...props }) => {
-            const match = /language-(\w+)/.exec(className || '');
-            return match ? (
-              <pre className="my-4 overflow-x-auto rounded-xl bg-card p-4">
-                <code className="font-code text-sm">{children}</code>
-              </pre>
-            ) : (
-              <code
-                className="font-code rounded-md bg-secondary px-1.5 py-0.5 text-primary"
-                {...props}
-              >
-                {children}
-              </code>
-            );
-          },
-          table: ({ node, ...props }) => (
-            <table
-              className="my-4 w-full border-collapse border border-border"
-              {...props}
-            />
-          ),
-          th: ({ node, ...props }) => (
-            <th
-              className="border border-border bg-secondary px-4 py-2 text-left font-semibold"
-              {...props}
-            />
-          ),
-          td: ({ node, ...props }) => (
-            <td className="border border-border px-4 py-2" {...props} />
-          ),
-          ul: ({ node, ...props }) => (
-            <ul className="my-4 ml-5 list-disc space-y-2" {...props} />
-          ),
-          ol: ({ node, ...props }) => (
-            <ol className="my-4 ml-5 list-decimal space-y-2" {...props} />
-          ),
-          li: ({ node, ...props }) => (
-            <li className="leading-relaxed" {...props} />
-          ),
-          strong: ({ node, ...props }) => (
-            <strong className="font-bold text-foreground" {...props} />
-          ),
-        }}
-      >
-        {content}
-      </ReactMarkdown>
-    </div>
-  );
-}
 
 export default function TheoryLessonPage() {
   const params = useParams();

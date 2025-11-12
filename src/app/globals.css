@@ -81,3 +81,67 @@
       @apply font-code bg-secondary px-1.5 py-0.5 rounded-md text-primary;
   }
 }
+
+.prose {
+    @apply text-foreground/90;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    @apply text-foreground;
+}
+
+.prose strong {
+    @apply text-foreground;
+}
+
+.prose code {
+    @apply text-primary font-code bg-secondary rounded-md px-1.5 py-1;
+}
+
+.prose pre {
+    @apply bg-card p-4 rounded-xl overflow-x-auto;
+}
+
+.prose pre code {
+    @apply bg-transparent p-0 text-sm;
+}
+
+.prose table {
+    @apply my-4 w-full border-collapse border border-border;
+}
+
+.prose thead {
+    @apply border-b border-border;
+}
+
+.prose th {
+    @apply border border-border bg-secondary px-4 py-2 text-left font-semibold;
+}
+
+.prose td {
+    @apply border border-border px-4 py-2;
+}
+
+.prose ul, .prose ol {
+  @apply my-4 ml-5 space-y-2;
+}
+
+.prose ul {
+  @apply list-disc;
+}
+
+.prose ol {
+  @apply list-decimal;
+}
+
+.prose li {
+  @apply leading-relaxed;
+}
+
+.prose p {
+  @apply my-4 text-base leading-relaxed;
+}
+
+.prose a {
+  @apply text-primary hover:underline;
+}
