@@ -38,6 +38,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose
 } from '@/components/ui/dialog';
 
 function NewCourseForm({ onCourseAdded }: { onCourseAdded: () => void }) {
@@ -255,16 +256,118 @@ function NewTheoryForm({
               Agregar otra página
             </Button>
           </div>
-          <Button onClick={handleSaveTheory} className="w-full">
-            Guardar Lección
-          </Button>
+          <DialogClose asChild>
+            <Button onClick={handleSaveTheory} className="w-full">
+              Guardar Lección
+            </Button>
+          </DialogClose>
         </div>
       </div>
     </DialogContent>
   );
 }
 
-function EditModuleDialog({ module, onModuleUpdated, onModuleDeleted }: { module: TModule, onModuleUpdated: () => void, onModuleDeleted: () => void }) {
+function EditPageDialog({ page, onPageUpdated, onPageDeleted }: { page: TheoryPage, onPageUpdated: () => void, onPageDeleted: () => void }) {
+    const [title, setTitle] = useState(page.title);
+    const [content, setContent] = useState(page.content);
+    const { toast } = useToast();
+
+    const handleUpdate = async () => {
+        try {
+            const res = await fetch(`/api/pages/${page.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, content }),
+            });
+            if (!res.ok) throw new Error('Failed to update page');
+            toast({ title: 'Página actualizada' });
+            onPageUpdated();
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!confirm('¿Estás seguro de que quieres eliminar esta página?')) return;
+        try {
+            const res = await fetch(`/api/pages/${page.id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to delete page');
+            toast({ title: 'Página eliminada' });
+            onPageDeleted();
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
+        }
+    }
+
+    return (
+        <DialogContent className="max-w-3xl">
+            <DialogHeader>
+                <DialogTitle>Editar Página</DialogTitle>
+            </DialogHeader>
+            <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 space-y-4">
+                <div className="space-y-2">
+                    <Label>Título de la Página</Label>
+                    <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                    <Label>Contenido (Markdown)</Label>
+                    <Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={10} />
+                </div>
+                <div className="flex justify-between">
+                    <DialogClose asChild>
+                        <Button onClick={handleUpdate}>Guardar Cambios</Button>
+                    </DialogClose>
+                     <DialogClose asChild>
+                        <Button variant="destructive" onClick={handleDelete}>Eliminar Página</Button>
+                    </DialogClose>
+                </div>
+            </div>
+        </DialogContent>
+    )
+}
+
+function PageList({ theoryId, onRefresh }: { theoryId: string; onRefresh: () => void }) {
+    const [pages, setPages] = useState<TheoryPage[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchPages() {
+            try {
+                setLoading(true);
+                const res = await fetch(`/api/theories?id=${theoryId}`);
+                if (!res.ok) throw new Error('Failed to fetch pages');
+                const data = await res.json();
+                setPages(data.pages);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchPages();
+    }, [theoryId, onRefresh]);
+
+    if (loading) return <p className="px-4 py-2 text-sm text-muted-foreground">Cargando páginas...</p>;
+
+    return (
+        <div className="space-y-2 pl-6 pr-2">
+            {pages.length === 0 && <p className="text-sm text-muted-foreground text-center">No hay páginas en esta lección.</p>}
+            {pages.map(page => (
+                <div key={page.id} className="flex items-center justify-between rounded-lg border bg-secondary/50 p-2">
+                    <span className="text-sm font-medium truncate flex-1 pl-2">{page.title}</span>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
+                        </DialogTrigger>
+                        <EditPageDialog page={page} onPageUpdated={onRefresh} onPageDeleted={onRefresh} />
+                    </Dialog>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function EditModuleDialog({ module, onModuleUpdated, onModuleDeleted, onRefresh }: { module: TModule, onModuleUpdated: () => void, onModuleDeleted: () => void, onRefresh: () => void }) {
     const [title, setTitle] = useState(module.title);
     const { toast } = useToast();
 
@@ -284,7 +387,7 @@ function EditModuleDialog({ module, onModuleUpdated, onModuleDeleted }: { module
     };
 
     const handleDelete = async () => {
-        if (!confirm('¿Estás seguro de que quieres eliminar esta lección y todas sus páginas?')) return;
+        if (!confirm('¿Estás seguro de que quieres eliminar esta lección y todo su contenido?')) return;
         try {
             const res = await fetch(`/api/modules/${module.id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Failed to delete module');
@@ -298,16 +401,26 @@ function EditModuleDialog({ module, onModuleUpdated, onModuleDeleted }: { module
     return (
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Editar Lección</DialogTitle>
+                <DialogTitle>Gestionar Lección</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
                 <div className="space-y-2">
                     <Label>Título de la Lección</Label>
                     <Input value={title} onChange={(e) => setTitle(e.target.value)} />
                 </div>
-                <div className="flex justify-between">
-                    <Button onClick={handleUpdate}>Guardar Cambios</Button>
-                    <Button variant="destructive" onClick={handleDelete}>Eliminar Lección</Button>
+                 <div className="flex justify-between">
+                    <DialogClose asChild>
+                        <Button onClick={handleUpdate}>Guardar Cambios</Button>
+                    </DialogClose>
+                     <DialogClose asChild>
+                        <Button variant="destructive" onClick={handleDelete}>Eliminar Lección</Button>
+                    </DialogClose>
+                </div>
+                 <div>
+                    <h3 className="mb-2 font-semibold text-lg">Páginas</h3>
+                    <div className="max-h-64 overflow-y-auto rounded-md border p-2">
+                        <PageList theoryId={module.contentId} onRefresh={onRefresh} />
+                    </div>
                 </div>
             </div>
         </DialogContent>
@@ -320,7 +433,7 @@ function CourseManager({ courses, onRefresh }: { courses: Course[], onRefresh: (
       <CardHeader>
         <CardTitle>Gestionar Cursos Existentes</CardTitle>
         <CardDescription>
-          Agrega o gestiona lecciones en los cursos existentes.
+          Agrega, edita o elimina lecciones y páginas en los cursos.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -376,17 +489,26 @@ function ModuleList({ courseId, onRefresh }: { courseId: string, onRefresh: () =
     return (
         <div className="space-y-2">
             {modules.length === 0 && <p className="text-sm text-muted-foreground text-center">No hay lecciones en este curso.</p>}
-            {modules.map(module => (
-                 <div key={module.id} className="flex items-center justify-between rounded-lg border p-3">
-                    <span className="font-medium">{module.title}</span>
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
-                        </DialogTrigger>
-                        <EditModuleDialog module={module} onModuleUpdated={onRefresh} onModuleDeleted={onRefresh} />
-                    </Dialog>
-                </div>
-            ))}
+            <Accordion type="single" collapsible className="w-full">
+                {modules.map(module => (
+                     <AccordionItem key={module.id} value={module.id}>
+                        <AccordionTrigger className="hover:no-underline">
+                            <div className="flex w-full items-center justify-between">
+                                <span className="font-medium text-left flex-1 truncate">{module.title}</span>
+                                <Dialog onOpenChange={(open) => !open && onRefresh()}>
+                                    <DialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="mr-2" onClick={(e) => e.stopPropagation()}><Edit className="h-4 w-4" /></Button>
+                                    </DialogTrigger>
+                                    <EditModuleDialog module={module} onModuleUpdated={onRefresh} onModuleDeleted={onRefresh} onRefresh={onRefresh} />
+                                </Dialog>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                            <PageList theoryId={module.contentId} onRefresh={onRefresh} />
+                        </AccordionContent>
+                    </AccordionItem>
+                ))}
+            </Accordion>
         </div>
     );
 }
@@ -437,3 +559,5 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+    
