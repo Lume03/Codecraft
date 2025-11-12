@@ -5,13 +5,15 @@ import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
-import vscDarkPlus from 'shiki/themes/vsc-dark-plus.mjs';
 
 type Props = { content: string };
 
 const prettyCodeOptions = {
-  theme: vscDarkPlus,
-  keepBackground: false, // usamos el fondo del <pre> de Tailwind
+  theme: {
+    dark: 'github-dark',
+    light: 'github-light',
+  },
+  keepBackground: false,
   onVisitLine(node: any) {
     // Evita que líneas vacías colapsen
     if (node.children.length === 0)
