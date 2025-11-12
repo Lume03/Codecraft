@@ -5,7 +5,6 @@ import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
-import { cn } from '@/lib/utils';
 
 type Props = {
   content: string;
@@ -23,7 +22,7 @@ const prettyCodeOptions = {
   },
 };
 
-export function ContentRenderer({ content }: Props) {
+export async function ContentRenderer({ content }: Props) {
   return (
     <div className="markdown">
       <ReactMarkdown

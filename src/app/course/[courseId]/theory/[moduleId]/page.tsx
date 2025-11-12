@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { Theory, TheoryPage as TheoryPageType } from '@/lib/data';
 import { ContentRenderer } from '@/components/content-renderer';
 import clientPromise from '@/lib/mongodb';
