@@ -1,83 +1,80 @@
-'use client';
+'use server';
 
-import * as React from 'react';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { notFound, useParams, useSearchParams } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Theory, TheoryPage as TheoryPageType } from '@/lib/data';
+import type { Theory, TheoryPage as TheoryPageType } from '@/lib/data';
 import { ContentRenderer } from '@/components/content-renderer';
+import clientPromise from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
 
-export default function TheoryLessonPage() {
-  const params = useParams();
-  const searchParams = useSearchParams();
-  const { courseId, moduleId: theoryId } = params as {
-    courseId: string;
-    moduleId: string;
-  };
-
-  const [data, setData] = React.useState<{
-    theory: Theory;
-    pages: TheoryPageType[];
-  } | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(false);
-
-  React.useEffect(() => {
-    async function fetchData() {
-      if (!theoryId) return;
-      setLoading(true);
-      setError(false);
-      try {
-        const res = await fetch(`/api/theories?id=${theoryId}`);
-        if (!res.ok) {
-          throw new Error('Failed to fetch theory data');
-        }
-        const fetchedData = await res.json();
-        setData(fetchedData);
-      } catch (e) {
-        console.error(e);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, [theoryId]);
-
-  if (error) {
-    notFound();
+async function getTheoryData(theoryId: string): Promise<{
+  theory: Theory;
+  pages: TheoryPageType[];
+} | null> {
+  if (!theoryId || !ObjectId.isValid(theoryId)) {
+    return null;
   }
-  
-  if (loading || !data) {
-    return (
-      <div className="flex min-h-screen flex-col">
-        <Header title="Cargando..." showBackButton />
-        <div className="flex-1 p-4 pb-40 md:p-6">
-          <div className="mx-auto max-w-3xl">
-            <div className="mb-8 flex items-center justify-center gap-2">
-              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-1.5 w-full" />)}
-            </div>
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+
+  try {
+    const client = await clientPromise;
+    const db = client.db('ravencode');
+    const id = new ObjectId(theoryId);
+
+    const theory = await db.collection('theories').findOne({ _id: id });
+    if (!theory) {
+      return null;
+    }
+
+    const pages = await db
+      .collection('theory-pages')
+      .find({ theoryId: id })
+      .sort({ order: 1 })
+      .toArray();
+
+    return {
+      theory: {
+        id: theory._id.toString(),
+        title: theory.title,
+      },
+      pages: pages.map((page) => ({
+        id: page._id.toString(),
+        theoryId: page.theoryId.toString(),
+        title: page.title,
+        content: page.content,
+        order: page.order,
+      })),
+    };
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
+
+export default async function TheoryLessonPage({
+  params,
+  searchParams,
+}: {
+  params: { courseId: string; moduleId: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const { courseId, moduleId: theoryId } = params;
+
+  const data = await getTheoryData(theoryId);
+
+  if (!data) {
+    notFound();
   }
 
   const { theory, pages } = data;
   const totalPages = pages.length;
 
   let currentPage = 1;
-  const pageFromQuery = parseInt(searchParams.get('page') as string, 10);
+  const pageFromQuery = parseInt(searchParams?.page as string, 10);
   if (
     !isNaN(pageFromQuery) &&
     pageFromQuery > 0 &&
@@ -89,6 +86,18 @@ export default function TheoryLessonPage() {
   const pageContent = pages[currentPage - 1]?.content;
 
   if (!pageContent) {
+     if (pages.length > 0) {
+      // Si hay páginas pero la actual no existe, redirige a la primera
+       const basePath = `/course/${courseId}/theory/${theoryId}`;
+       return (
+        <div className="flex min-h-screen flex-col items-center justify-center">
+          <p>Página no encontrada.</p>
+          <Link href={`${basePath}?page=1`} className="text-primary underline">
+            Ir a la primera página
+          </Link>
+        </div>
+      );
+    }
     notFound();
   }
 
