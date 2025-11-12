@@ -22,7 +22,7 @@ const prettyCodeOptions = {
   },
 };
 
-export async function ContentRenderer({ content }: Props) {
+export function ContentRenderer({ content }: Props) {
   return (
     <div className="markdown">
       <ReactMarkdown
