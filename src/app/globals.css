@@ -65,84 +65,79 @@
     min-height: 100vh;
     transition: background-color 0.3s, color 0.3s;
   }
-  .prose table {
-      @apply w-full my-4 border-collapse border border-border;
-  }
-  .prose th {
-      @apply border border-border px-4 py-2 bg-secondary text-left font-semibold;
-  }
-  .prose td {
-      @apply border border-border px-4 py-2;
-  }
-  .prose pre {
-      @apply my-4 rounded-xl bg-card p-4 overflow-x-auto;
-  }
-  .prose code:not(pre > code) {
-      @apply font-code bg-secondary px-1.5 py-0.5 rounded-md text-primary;
-  }
 }
 
-.prose {
+/* Styles for react-markdown rendered content */
+@layer components {
+  .prose {
     @apply text-foreground/90;
-}
+    
+    h1, h2, h3, h4, h5, h6 {
+      @apply text-foreground;
+    }
+    
+    strong {
+      @apply text-foreground;
+    }
 
-.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-    @apply text-foreground;
-}
+    /* Inline code */
+    code {
+      @apply rounded bg-secondary px-1.5 py-1 font-code text-sm text-primary/80;
+    }
 
-.prose strong {
-    @apply text-foreground;
-}
+    /* Code blocks */
+    pre {
+      @apply my-4 rounded-xl bg-card p-4 overflow-x-auto;
+    }
 
-.prose code {
-    @apply text-primary font-code bg-secondary rounded-md px-1.5 py-1;
-}
+    pre code {
+      @apply bg-transparent p-0 font-code text-sm;
+    }
+    
+    /* Tables */
+    table {
+      @apply my-4 w-full border-collapse border border-border;
+    }
+    
+    thead {
+        @apply border-b-2 border-border;
+    }
 
-.prose pre {
-    @apply bg-card p-4 rounded-xl overflow-x-auto;
-}
+    th {
+      @apply border border-border bg-secondary px-4 py-2 text-left font-semibold;
+    }
 
-.prose pre code {
-    @apply bg-transparent p-0 text-sm;
-}
+    td {
+      @apply border border-border px-4 py-2;
+    }
+    
+    tr:nth-child(2n) {
+        @apply bg-card/50;
+    }
 
-.prose table {
-    @apply my-4 w-full border-collapse border border-border;
+    /* Lists */
+    ul, ol {
+      @apply my-4 ml-5 space-y-2;
+    }
+    
+    ul {
+      @apply list-disc;
+    }
+    
+    ol {
+      @apply list-decimal;
+    }
+    
+    li {
+      @apply leading-relaxed;
+    }
+    
+    p {
+      @apply my-4 text-base leading-relaxed;
+    }
+    
+    a {
+      @apply text-primary hover:underline;
+    }
+  }
 }
-
-.prose thead {
-    @apply border-b border-border;
-}
-
-.prose th {
-    @apply border border-border bg-secondary px-4 py-2 text-left font-semibold;
-}
-
-.prose td {
-    @apply border border-border px-4 py-2;
-}
-
-.prose ul, .prose ol {
-  @apply my-4 ml-5 space-y-2;
-}
-
-.prose ul {
-  @apply list-disc;
-}
-
-.prose ol {
-  @apply list-decimal;
-}
-
-.prose li {
-  @apply leading-relaxed;
-}
-
-.prose p {
-  @apply my-4 text-base leading-relaxed;
-}
-
-.prose a {
-  @apply text-primary hover:underline;
-}
-
