@@ -5,7 +5,7 @@ import type { Course } from '@/lib/data.tsx';
 import { cn } from '@/lib/utils';
 import { placeholderImages } from '@/lib/placeholder-images';
 
-export function CourseCard({ course }: { course: Course }) {
+export function CourseCard({ course }: { course: Course & { _id?: string } }) {
   const accentVariants = {
     'py-101': {
       ring: 'group-hover:ring-green-400/50 group-focus-visible:ring-green-400/50',
@@ -21,14 +21,16 @@ export function CourseCard({ course }: { course: Course }) {
     },
   };
 
+  // @ts-ignore
+  const id = course._id ?? course.id;
   const accent =
-    accentVariants[course.id as keyof typeof accentVariants] || {};
+    accentVariants[id as keyof typeof accentVariants] || {};
     
   const courseImage = placeholderImages.find(p => p.id === course.imageId);
 
   return (
     <Link
-      href={`/course/${course.id}`}
+      href={`/course/${id}`}
       className="group block"
       aria-label={`Abrir curso: ${course.title}`}
     >
