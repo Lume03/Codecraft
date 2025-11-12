@@ -1,96 +1,80 @@
-'use client';
-
 import * as React from 'react';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { notFound, useSearchParams, useParams } from 'next/navigation';
+import { notFound, useSearchParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useEffect, useState, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Theory, TheoryPage } from '@/lib/data';
 import { ContentRenderer } from '@/components/content-renderer';
+import clientPromise from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
 
-
-export default function TheoryLessonPage() {
-  const params = useParams();
-  const searchParams = useSearchParams();
-  
-  const { courseId, moduleId: theoryId } = params as {
-    courseId: string;
-    moduleId: string;
-  };
-
-  const [theory, setTheory] = useState<Theory | null>(null);
-  const [pages, setPages] = useState<TheoryPage[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = pages?.length ?? 0;
-
-  useEffect(() => {
-    async function fetchData() {
-        if (!theoryId) return;
-        setLoading(true);
-        try {
-            const res = await fetch(`/api/theories?id=${theoryId}`);
-            if (!res.ok) throw new Error('Failed to fetch theory');
-            const data = await res.json();
-            setTheory(data.theory);
-            setPages(data.pages);
-        } catch (error) {
-            console.error(error);
-            setTheory(null);
-            setPages([]);
-        } finally {
-            setLoading(false);
-        }
-    }
-    fetchData();
-  }, [theoryId]);
-
-
-  useEffect(() => {
-    const pageFromQuery = parseInt(searchParams.get('page') || '1', 10);
-    if (
-      !isNaN(pageFromQuery) &&
-      pageFromQuery > 0 &&
-      totalPages > 0 &&
-      pageFromQuery <= totalPages
-    ) {
-      setCurrentPage(pageFromQuery);
-    } else if (totalPages > 0) {
-      setCurrentPage(1);
-    }
-  }, [searchParams, totalPages]);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen flex-col">
-        <Header title="..." showBackButton />
-        <div className="flex-1 p-4 pb-40 md:p-6">
-          <div className="mx-auto max-w-3xl space-y-4">
-            <Skeleton className="h-8 w-3/4" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-5/6" />
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-4 w-full" />
-          </div>
-        </div>
-      </div>
-    );
+async function getTheoryData(theoryId: string) {
+  if (!theoryId || !ObjectId.isValid(theoryId)) {
+    return null;
   }
 
-  if (!theory || !pages || pages.length === 0) {
-    return notFound();
+  try {
+    const client = await clientPromise;
+    const db = client.db('ravencode');
+    const theoryObjectId = new ObjectId(theoryId);
+
+    const theory = await db.collection('theories').findOne({ _id: theoryObjectId });
+
+    if (!theory) {
+      return null;
+    }
+
+    const pages = await db
+      .collection('theory-pages')
+      .find({ theoryId: theoryObjectId })
+      .sort({ order: 1 })
+      .toArray();
+
+    return {
+      theory: { ...theory, id: theory._id.toString() },
+      pages: pages.map((page) => ({
+        ...page,
+        id: page._id.toString(),
+        theoryId: page.theoryId.toString(),
+      })),
+    };
+  } catch (error) {
+    console.error('Database error:', error);
+    return null;
+  }
+}
+
+export default async function TheoryLessonPage({
+  params,
+  searchParams,
+}: {
+  params: { courseId: string; moduleId: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const { courseId, moduleId: theoryId } = params;
+
+  const data = await getTheoryData(theoryId);
+
+  if (!data) {
+    notFound();
+  }
+
+  const { theory, pages } = data;
+  const totalPages = pages.length;
+
+  let currentPage = 1;
+  const pageFromQuery = parseInt(searchParams?.page as string, 10);
+  if (!isNaN(pageFromQuery) && pageFromQuery > 0 && pageFromQuery <= totalPages) {
+    currentPage = pageFromQuery;
   }
 
   const pageContent = pages[currentPage - 1]?.content;
 
   if (!pageContent) {
-    // This can happen briefly while currentPage is being set, or if a page is missing.
-    return <div>Cargando página...</div>;
+    return notFound();
   }
 
   const hasPrev = currentPage > 1;

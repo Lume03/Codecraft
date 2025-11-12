@@ -68,11 +68,13 @@
 }
 
 @layer components {
+  /* Clase para contenedores de Markdown */
   .markdown {
     @apply prose prose-invert max-w-none;
   }
 
-  pre code[class*="language-"] {
-    @apply bg-transparent p-0;
+  /* Ajustes mínimos para bloques de código renderizados por Shiki */
+  .markdown pre {
+    @apply shadow-sm;
   }
 }
