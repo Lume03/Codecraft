@@ -1,28 +1,15 @@
-// Server Component
-import React from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeSlug from 'rehype-slug';
-import rehypeAutolinkHeadings from 'rehype-autolink-headings';
-import rehypePrettyCode from 'rehype-pretty-code';
+// src/components/content-renderer.tsx  (Server Component)
+import React from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeSlug from 'rehype-slug'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+import rehypePrism from 'rehype-prism-plus'
 
-type Props = { content: string };
+// tema oscuro parecido a VS Code
+import 'prism-themes/themes/prism-vsc-dark-plus.css'
 
-const prettyCodeOptions = {
-  theme: {
-    dark: 'github-dark',
-    light: 'github-light',
-  },
-  keepBackground: false,
-  onVisitLine(node: any) {
-    // Evita que líneas vacías colapsen
-    if (node.children.length === 0)
-      node.children = [{ type: 'text', value: ' ' }];
-  },
-  onVisitHighlightedLine(node: any) {
-    node.properties.className?.push('bg-zinc-800/60');
-  },
-} as const;
+type Props = { content: string }
 
 export function ContentRenderer({ content }: Props) {
   return (
@@ -32,12 +19,12 @@ export function ContentRenderer({ content }: Props) {
         rehypePlugins={[
           rehypeSlug,
           [rehypeAutolinkHeadings, { behavior: 'wrap' }],
-          [rehypePrettyCode, prettyCodeOptions as any],
+          rehypePrism, // ⬅️ Prism en lugar de PrettyCode
         ]}
         className="prose prose-invert max-w-none prose-pre:shadow-sm prose-code:before:hidden prose-code:after:hidden"
       >
         {content}
       </ReactMarkdown>
     </div>
-  );
+  )
 }

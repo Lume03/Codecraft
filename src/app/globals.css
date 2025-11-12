@@ -77,4 +77,8 @@
   .markdown pre {
     @apply shadow-sm;
   }
+  
+  pre code[class*="language-"] {
+    @apply bg-transparent p-0;
+  }
 }
