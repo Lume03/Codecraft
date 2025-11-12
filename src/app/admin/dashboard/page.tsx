@@ -13,14 +13,6 @@ import {
 } from '@/components/ui/card';
 import { Header } from '@/components/header';
 import { useFirestore, useCollection } from '@/firebase';
-import {
-  collection,
-  query,
-  orderBy,
-  addDoc,
-  doc,
-  writeBatch,
-} from 'firebase/firestore';
 import type { Course, Module as TModule, Theory, TheoryPage } from '@/lib/data';
 import Link from 'next/link';
 import {
@@ -40,24 +32,48 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { placeholderImages } from '@/lib/placeholder-images';
+import { useToast } from '@/hooks/use-toast';
 
 function NewCourseForm({ onCourseAdded }: { onCourseAdded: () => void }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageId, setImageId] = useState('');
-  const firestore = useFirestore();
+  const { toast } = useToast();
 
   const handleAddCourse = async () => {
-    if (!firestore || !title || !description || !imageId) return;
-    await addDoc(collection(firestore, 'courses'), {
-      title,
-      description,
-      imageId,
-    });
-    setTitle('');
-    setDescription('');
-    setImageId('');
-    onCourseAdded();
+    if (!title || !description || !imageId) {
+      toast({
+        variant: 'destructive',
+        title: 'Faltan campos',
+        description: 'Por favor, completa todos los campos del curso.',
+      });
+      return;
+    }
+    try {
+      const response = await fetch('/api/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description, imageId }),
+      });
+      if (!response.ok) {
+        throw new Error('Error al crear el curso');
+      }
+      setTitle('');
+      setDescription('');
+      setImageId('');
+      onCourseAdded();
+      toast({
+        title: 'Curso agregado',
+        description: 'El nuevo curso ha sido guardado en MongoDB.',
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: (error as Error).message,
+      });
+    }
   };
 
   return (
@@ -108,7 +124,7 @@ function NewTheoryForm({
   const [title, setTitle] = useState('');
   const [module, setModule] = useState('basico');
   const [pages, setPages] = useState([{ title: '', content: '' }]);
-  const firestore = useFirestore();
+  const { toast } = useToast();
 
   const handleAddPage = () => {
     setPages([...pages, { title: '', content: '' }]);
@@ -125,44 +141,46 @@ function NewTheoryForm({
   };
 
   const handleSaveTheory = async () => {
-    if (!firestore || !title || !module) return;
+    if (!title || !module || pages.some(p => !p.title || !p.content)) {
+       toast({
+        variant: 'destructive',
+        title: 'Faltan campos',
+        description: 'Asegúrate de que la lección y todas sus páginas tengan título y contenido.',
+      });
+      return;
+    }
 
     try {
-      const batch = writeBatch(firestore);
-
-      // 1. Create Theory document
-      const theoryRef = doc(collection(firestore, 'theories'));
-      batch.set(theoryRef, { title });
-
-      // 2. Create pages subcollection
-      pages.forEach((page, index) => {
-        const pageRef = doc(
-          collection(firestore, `theories/${theoryRef.id}/pages`)
-        );
-        batch.set(pageRef, { ...page, order: index + 1 });
+      const response = await fetch(`/api/courses/${courseId}/modules`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lessonTitle: title,
+          moduleType: module, // e.g., 'basico'
+          pages: pages,
+        }),
       });
 
-      // 3. Create Module document in the course
-      const moduleRef = doc(
-        collection(firestore, `courses/${courseId}/modules`)
-      );
-      batch.set(moduleRef, {
-        title,
-        type: 'theory',
-        contentId: theoryRef.id,
-        duration: 5, // Default duration
-        order: Date.now(), // Simple ordering for now
-      });
-
-      await batch.commit();
+      if (!response.ok) {
+        throw new Error('Error al guardar la lección');
+      }
 
       // Reset form
       setTitle('');
       setModule('basico');
       setPages([{ title: '', content: '' }]);
       onTheoryAdded();
+       toast({
+        title: 'Lección guardada',
+        description: 'La nueva lección se ha guardado en MongoDB.',
+      });
     } catch (error) {
       console.error('Error saving theory:', error);
+       toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: (error as Error).message,
+      });
     }
   };
 
@@ -222,15 +240,9 @@ function NewTheoryForm({
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const firestore = useFirestore();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
-
-  const coursesQuery = firestore
-    ? query(collection(firestore, 'courses'), orderBy('title'))
-    : null;
-  const { data: courses, loading } = useCollection<Course>(coursesQuery, {
-    key: `courses-${refreshKey}`,
-  } as any);
 
   useEffect(() => {
     const isAdmin = localStorage.getItem('isAdmin');
@@ -238,6 +250,24 @@ export default function AdminDashboard() {
       router.replace('/admin');
     }
   }, [router]);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/courses');
+        if (!res.ok) throw new Error('Failed to fetch courses');
+        const data = await res.json();
+        setCourses(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCourses();
+  }, [refreshKey]);
+
 
   return (
     <div className="flex min-h-screen flex-col">
