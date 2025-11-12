@@ -8,10 +8,10 @@ import { notFound, useSearchParams, useParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState, useMemo } from 'react';
-import { useDoc, useCollection, useFirestore } from '@/firebase';
-import { doc, collection, query, orderBy } from 'firebase/firestore';
 import ReactMarkdown from 'react-markdown';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Theory, TheoryPage } from '@/lib/data';
+
 
 function ContentRenderer({ content }: { content: string }) {
   return (
@@ -83,35 +83,43 @@ function ContentRenderer({ content }: { content: string }) {
   );
 }
 
-export default function TheoryPage() {
+export default function TheoryLessonPage() {
   const params = useParams();
   const searchParams = useSearchParams();
-  const firestore = useFirestore();
-  const { courseId, moduleId } = params as {
+  
+  const { courseId, moduleId: theoryId } = params as {
     courseId: string;
     moduleId: string;
   };
 
-  const theoryRef = useMemo(
-    () => firestore ? doc(firestore, `theories/${moduleId}`) : null,
-    [firestore, moduleId]
-  );
-  const { data: theory, loading: theoryLoading } = useDoc(theoryRef);
-
-  const pagesQuery = useMemo(
-    () =>
-      firestore
-        ? query(
-            collection(firestore, `theories/${moduleId}/pages`),
-            orderBy('order')
-          )
-        : null,
-    [firestore, moduleId]
-  );
-  const { data: pages, loading: pagesLoading } = useCollection(pagesQuery);
+  const [theory, setTheory] = useState<Theory | null>(null);
+  const [pages, setPages] = useState<TheoryPage[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = pages?.length ?? 0;
+
+  useEffect(() => {
+    async function fetchData() {
+        if (!theoryId) return;
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/theories?id=${theoryId}`);
+            if (!res.ok) throw new Error('Failed to fetch theory');
+            const data = await res.json();
+            setTheory(data.theory);
+            setPages(data.pages);
+        } catch (error) {
+            console.error(error);
+            setTheory(null);
+            setPages([]);
+        } finally {
+            setLoading(false);
+        }
+    }
+    fetchData();
+  }, [theoryId]);
+
 
   useEffect(() => {
     const pageFromQuery = parseInt(searchParams.get('page') || '1', 10);
@@ -127,7 +135,7 @@ export default function TheoryPage() {
     }
   }, [searchParams, totalPages]);
 
-  if (theoryLoading || pagesLoading) {
+  if (loading) {
     return (
       <div className="flex min-h-screen flex-col">
         <Header title="..." showBackButton />
@@ -159,7 +167,7 @@ export default function TheoryPage() {
   const hasNext = currentPage < totalPages;
   const isLastPage = currentPage === totalPages;
 
-  const basePath = `/course/${courseId}/theory/${moduleId}`;
+  const basePath = `/course/${courseId}/theory/${theoryId}`;
 
   return (
     <div className="flex min-h-screen flex-col">

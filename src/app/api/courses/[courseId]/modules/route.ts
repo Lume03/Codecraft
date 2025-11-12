@@ -52,3 +52,39 @@ export async function POST(
     return NextResponse.json({ error: 'Error al guardar la lección en el servidor' }, { status: 500 });
   }
 }
+
+export async function GET(
+  request: Request,
+  { params }: { params: { courseId: string } }
+) {
+  try {
+    const { courseId } = params;
+    if (!ObjectId.isValid(courseId)) {
+       return NextResponse.json({ error: 'El ID del curso proporcionado es inválido.' }, { status: 400 });
+    }
+
+    const client = await clientPromise;
+    const db = client.db("ravencode");
+
+    const modules = await db
+      .collection("modules")
+      .find({ courseId: new ObjectId(courseId) })
+      .sort({ order: 1 })
+      .toArray();
+    
+    const modulesWithStringIds = modules.map(module => ({
+        ...module,
+        id: module._id.toString(),
+        _id: undefined,
+        courseId: module.courseId.toString(),
+    }));
+
+    return NextResponse.json(modulesWithStringIds);
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json(
+      { error: "Error al obtener los módulos" },
+      { status: 500 }
+    );
+  }
+}

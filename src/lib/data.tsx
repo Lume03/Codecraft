@@ -4,7 +4,7 @@ import { placeholderImages } from './placeholder-images';
 
 // Note: This file now primarily serves for local development, fallback data,
 // or for data structures not suited for Firestore like static quiz questions.
-// The main course content is intended to be fetched from Firestore.
+// The main course content is intended to be fetched from MongoDB.
 
 const findImage = (id: string): ImagePlaceholder => {
   const image = placeholderImages.find((img) => img.id === id);
@@ -28,24 +28,40 @@ export interface User {
   achievements: string[];
 }
 
-// This interface is for type-checking Firestore data for a Course
+// This interface is for type-checking MongoDB data for a Course
 export interface Course {
-  id: string; // Document ID from Firestore
+  id: string; // Document ID from MongoDB
   title: string;
   description: string;
   imageId: string;
   progress?: number; // User-specific progress, not stored on the course doc
 }
 
-// This interface is for type-checking Firestore data for a Module
+// This interface is for type-checking MongoDB data for a Module
 export interface Module {
-  id: string; // Document ID from Firestore
+  id: string; // Document ID from MongoDB
+  courseId: string;
   title: string;
   type: 'theory' | 'quiz';
   contentId: string; // ID for the corresponding Theory or Quiz document
   duration: number; // Duration in minutes
   order: number;
+  moduleType: 'basico' | 'intermedio' | 'avanzado';
 }
+
+export interface Theory {
+    id: string;
+    title: string;
+}
+
+export interface TheoryPage {
+    id: string;
+    theoryId: string;
+    title: string;
+    content: string;
+    order: number;
+}
+
 
 export type QuestionType =
   | 'single_choice'
@@ -92,72 +108,6 @@ export const user: User = {
   streak: 2,
   achievements: ['Primer quiz', 'Code Novice', 'Quiz Master', 'Racha de 3 días'],
 };
-
-// --- Icon Components ---
-// Icons are not stored in Firestore, so they remain here.
-export function PythonIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M12 20v-8.5l-4-2.5 4-2.5v-5l-8 5v11l8 5z" fill="#9FE870" />
-      <path d="M12 20v-8.5l4-2.5-4-2.5v-5l8 5v11l-8 5z" fill="#306998" />
-    </svg>
-  );
-}
-
-export function JavaScriptIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      {...props}
-    >
-      <rect width="24" height="24" rx="3" fill="#FACC15" />
-      <path
-        d="M7.5 16.5V7.5H12C13.6569 7.5 15 8.84315 15 10.5V10.5C15 12.1569 13.6569 13.5 12 13.5H9"
-        stroke="black"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M10.5 13.5H7.5"
-        stroke="black"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-export function CppIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 48 48"
-      fill="#60A5FA"
-      {...props}
-    >
-      <path d="M24.3 12.3c-2.3-2.2-5.1-3.3-8.4-3.3-3.1 0-5.7 1-7.9 3l3.1 3.1c1.5-1.3 3.1-2 4.8-2 2.7 0 4.7 1.3 4.7 3.8 0 1.2-.5 2.2-1.4 3.1-1 .9-2.5 1.7-4.6 2.4-3 .9-4.8 2-5.6 3.1-.7 1.1-1.1 2.5-1.1 4.2 0 3.3 1.1 5.9 3.4 7.6 2.3 1.8 5.1 2.7 8.5 2.7 3.1 0 5.8-1 8-3.1l-3-3.1c-1.5 1.4-3.1 2.1-4.9 2.1-2.9 0-4.8-1.5-4.8-4.3 0-1.8.8-3 2.3-3.9 1.5-.9 3.9-1.9 6.9-2.9 3.1-1.1 5-2.4 5.9-4.1.9-1.7 1.4-3.5 1.4-5.5 0-3.3-1.2-5.9-3.5-7.7zm13.5 13.5h-6v-6h-6v6h-6v6h6v6h6v-6h6v-6z" />
-    </svg>
-  );
-}
 
 // --- Static Data (Quizzes, Exercises) ---
 
@@ -295,6 +245,3 @@ export const codeCompletionExercises: CodeCompletionExercise[] = [
     language: 'Python',
   },
 ];
-
-// No static course data is needed anymore, it will be fetched from firestore.
-export const courses: Course[] = [];

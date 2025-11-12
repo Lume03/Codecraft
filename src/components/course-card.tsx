@@ -5,7 +5,7 @@ import type { Course } from '@/lib/data.tsx';
 import { cn } from '@/lib/utils';
 import { placeholderImages } from '@/lib/placeholder-images';
 
-export function CourseCard({ course }: { course: Course & { _id?: string } }) {
+export function CourseCard({ course }: { course: Course }) {
   const accentVariants = {
     'py-101': {
       ring: 'group-hover:ring-green-400/50 group-focus-visible:ring-green-400/50',
@@ -21,8 +21,7 @@ export function CourseCard({ course }: { course: Course & { _id?: string } }) {
     },
   };
 
-  // @ts-ignore
-  const id = course._id ?? course.id;
+  const id = course.id;
   const accent =
     accentVariants[id as keyof typeof accentVariants] || {};
     

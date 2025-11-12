@@ -54,8 +54,7 @@ export default function LearnPage() {
           </div>
         )}
         {courses.map((course) => (
-          // @ts-ignore _id is coming from MongoDB
-          <CourseCard key={course._id} course={course} />
+          <CourseCard key={course.id} course={course} />
         ))}
       </div>
     </div>

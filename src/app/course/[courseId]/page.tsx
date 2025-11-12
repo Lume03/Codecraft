@@ -9,38 +9,48 @@ import { CheckCircle, ChevronRight, Clock, Code } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useEffect, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { useDoc, useCollection, useFirestore } from '@/firebase';
-import { doc, collection, query, orderBy } from 'firebase/firestore';
 import { placeholderImages } from '@/lib/placeholder-images';
 import type { Course, Module } from '@/lib/data';
 
 export default function CourseDetailPage() {
   const params = useParams();
   const { courseId } = params as { courseId: string };
-  const firestore = useFirestore();
-
-  const courseRef = useMemo(
-    () => (firestore ? doc(firestore, `courses/${courseId}`) : null),
-    [firestore, courseId]
-  );
-  const { data: course, loading: courseLoading } = useDoc<Course>(courseRef);
-
-  const modulesQuery = useMemo(
-    () =>
-      firestore
-        ? query(
-            collection(firestore, `courses/${courseId}/modules`),
-            orderBy('order')
-          )
-        : null,
-    [firestore, courseId]
-  );
-  const { data: modules, loading: modulesLoading } =
-    useCollection<Module>(modulesQuery);
+  
+  const [course, setCourse] = useState<Course | null>(null);
+  const [modules, setModules] = useState<Module[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [moduleStatuses, setModuleStatuses] = useState<
     ('completed' | 'in_progress' | 'locked')[]
   >([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      if (!courseId) return;
+      setLoading(true);
+      try {
+        // Fetch course details
+        const courseRes = await fetch(`/api/courses?id=${courseId}`);
+        if (!courseRes.ok) throw new Error('Failed to fetch course');
+        const courseData = await courseRes.json();
+        setCourse(courseData);
+
+        // Fetch course modules
+        const modulesRes = await fetch(`/api/courses/${courseId}/modules`);
+        if (!modulesRes.ok) throw new Error('Failed to fetch modules');
+        const modulesData = await modulesRes.json();
+        setModules(modulesData);
+
+      } catch (error) {
+        console.error(error);
+        setCourse(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [courseId]);
+
 
   useEffect(() => {
     if (modules) {
@@ -56,7 +66,7 @@ export default function CourseDetailPage() {
     }
   }, [modules]);
 
-  if (courseLoading || modulesLoading) {
+  if (loading) {
     return <div>Cargando...</div>;
   }
 
@@ -145,7 +155,7 @@ export default function CourseDetailPage() {
             </div>
             <Button variant="outline" size="sm" asChild>
               <Link
-                href={`/course/${courseId}/theory/${nextLesson.id}`}
+                href={`/course/${courseId}/theory/${nextLesson.contentId}`}
               >
                 Revisar
               </Link>
@@ -162,7 +172,7 @@ export default function CourseDetailPage() {
               return (
                 <Link
                   key={module.id}
-                  href={`/course/${courseId}/theory/${module.id}`}
+                  href={`/course/${courseId}/theory/${module.contentId}`}
                   className={cn(
                     'block rounded-xl p-4 transition-colors',
                     status !== 'locked'
@@ -218,7 +228,7 @@ export default function CourseDetailPage() {
             }}
           >
             <Link
-              href={`/course/${courseId}/theory/${nextLesson.id}`}
+              href={`/course/${courseId}/theory/${nextLesson.contentId}`}
             >
               Comenzar Lección {currentLessonIndex + 1}
             </Link>
