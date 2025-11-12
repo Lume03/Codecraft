@@ -4,10 +4,23 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import rehypePrettyCode from 'rehype-pretty-code';
 
-type Props = {
-  content: string;
-};
+type Props = { content: string };
+
+const prettyCodeOptions = {
+  // Temas recomendados: 'vsc-dark-plus', 'one-dark-pro', 'github-dark'
+  theme: 'vsc-dark-plus',
+  keepBackground: false, // usamos el fondo del <pre> de Tailwind
+  onVisitLine(node: any) {
+    // Evita que líneas vacías colapsen
+    if (node.children.length === 0)
+      node.children = [{ type: 'text', value: ' ' }];
+  },
+  onVisitHighlightedLine(node: any) {
+    node.properties.className?.push('bg-zinc-800/60');
+  },
+} as const;
 
 export function ContentRenderer({ content }: Props) {
   return (
@@ -17,6 +30,7 @@ export function ContentRenderer({ content }: Props) {
         rehypePlugins={[
           rehypeSlug,
           [rehypeAutolinkHeadings, { behavior: 'wrap' }],
+          [rehypePrettyCode, prettyCodeOptions as any],
         ]}
         className="prose prose-invert max-w-none prose-pre:shadow-sm prose-code:before:hidden prose-code:after:hidden"
       >
