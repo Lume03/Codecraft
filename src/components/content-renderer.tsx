@@ -5,12 +5,12 @@ import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
+import vscDarkPlus from 'shiki/themes/vsc-dark-plus.mjs';
 
 type Props = { content: string };
 
 const prettyCodeOptions = {
-  // Temas recomendados: 'vsc-dark-plus', 'one-dark-pro', 'github-dark'
-  theme: 'vsc-dark-plus',
+  theme: vscDarkPlus,
   keepBackground: false, // usamos el fondo del <pre> de Tailwind
   onVisitLine(node: any) {
     // Evita que líneas vacías colapsen

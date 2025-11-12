@@ -58,10 +58,11 @@ export default async function TheoryLessonPage({
   params,
   searchParams,
 }: {
-  params: { courseId: string; moduleId: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ courseId: string; moduleId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { courseId, moduleId: theoryId } = params;
+  const { courseId, moduleId: theoryId } = await params;
+  const sp = await searchParams;
 
   const data = await getTheoryData(theoryId);
 
@@ -73,7 +74,7 @@ export default async function TheoryLessonPage({
   const totalPages = pages.length;
 
   let currentPage = 1;
-  const pageFromQuery = parseInt(searchParams?.page as string, 10);
+  const pageFromQuery = parseInt(sp?.page as string, 10);
   if (
     !isNaN(pageFromQuery) &&
     pageFromQuery > 0 &&
