@@ -107,7 +107,6 @@ function NewTheoryForm({
 }) {
   const [title, setTitle] = useState('');
   const [module, setModule] = useState('basico');
-  const [duration, setDuration] = useState(10);
   const [pages, setPages] = useState([{ title: '', content: '' }]);
   const firestore = useFirestore();
 
@@ -151,7 +150,7 @@ function NewTheoryForm({
         title,
         type: 'theory',
         contentId: theoryRef.id,
-        duration,
+        duration: 5, // Default duration
         order: Date.now(), // Simple ordering for now
       });
 
@@ -186,14 +185,6 @@ function NewTheoryForm({
             <SelectItem value="avanzado">Avanzado</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-      <div className="space-y-2">
-        <Label>Duración (minutos)</Label>
-        <Input
-          type="number"
-          value={duration}
-          onChange={(e) => setDuration(parseInt(e.target.value, 10))}
-        />
       </div>
 
       <div className="space-y-4">
