@@ -17,26 +17,27 @@ export async function POST(
     const client = await clientPromise;
     const db = client.db('ravencode');
 
-    // 1. Create Theory document and its pages
+    // 1. Create Theory document
     const theoryResult = await db.collection('theories').insertOne({ title: lessonTitle });
     const theoryId = theoryResult.insertedId;
 
+    // 2. Create TheoryPage documents
     const pagesToInsert = pages.map((page, index) => ({
       ...page,
       theoryId: theoryId,
       order: index + 1,
     }));
-    await db.collection('theory_pages').insertMany(pagesToInsert);
+    await db.collection('theory-pages').insertMany(pagesToInsert);
 
-    // 2. Create Module document in the course
+    // 3. Create Module document in the course
     const newModule = {
       courseId: new ObjectId(courseId),
       title: lessonTitle,
-      type: 'theory', // for now, only theory
+      type: 'theory',
       contentId: theoryId.toString(),
-      duration: 5, // Default duration
-      order: Date.now(), // Simple ordering for now
-      moduleType, // 'basico', 'intermedio', 'avanzado'
+      duration: 5, // Static duration
+      order: Date.now(),
+      moduleType,
     };
     
     await db.collection('modules').insertOne(newModule);
@@ -45,8 +46,7 @@ export async function POST(
 
   } catch (e) {
     console.error(e);
-    // Check if the error is due to an invalid ObjectId
-    if (e instanceof Error && e.message.includes('Argument passed in must be a string of 12 bytes or a string of 24 hex characters')) {
+    if (e instanceof Error && e.message.includes('Argument passed in must be a string')) {
          return NextResponse.json({ error: 'El ID del curso proporcionado es inválido.' }, { status: 400 });
     }
     return NextResponse.json({ error: 'Error al guardar la lección en el servidor' }, { status: 500 });

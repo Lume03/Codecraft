@@ -12,9 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Header } from '@/components/header';
-import { useFirestore, useCollection } from '@/firebase';
-import type { Course, Module as TModule, Theory, TheoryPage } from '@/lib/data';
-import Link from 'next/link';
+import type { Course, Module as TModule, TheoryPage } from '@/lib/data';
 import {
   Accordion,
   AccordionContent,
@@ -33,6 +31,14 @@ import {
 } from '@/components/ui/select';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
+import { Edit, Plus, Trash2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 function NewCourseForm({ onCourseAdded }: { onCourseAdded: () => void }) {
   const [title, setTitle] = useState('');
@@ -139,6 +145,11 @@ function NewTheoryForm({
     newPages[index][field] = value;
     setPages(newPages);
   };
+  
+  const handleRemovePage = (index: number) => {
+    const newPages = pages.filter((_, i) => i !== index);
+    setPages(newPages);
+  }
 
   const handleSaveTheory = async () => {
     if (!title || !module || pages.some(p => !p.title || !p.content)) {
@@ -156,7 +167,7 @@ function NewTheoryForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           lessonTitle: title,
-          moduleType: module, // e.g., 'basico'
+          moduleType: module,
           pages: pages,
         }),
       });
@@ -185,57 +196,199 @@ function NewTheoryForm({
   };
 
   return (
-    <div className="space-y-4 rounded-lg border p-4">
-      <h3 className="font-semibold">Agregar Nueva Lección (Teoría)</h3>
-      <div className="space-y-2">
-        <Label>Título de la Lección</Label>
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} />
-      </div>
-      <div className="space-y-2">
-        <Label>Módulo</Label>
-        <Select value={module} onValueChange={setModule}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="basico">Básico</SelectItem>
-            <SelectItem value="intermedio">Intermedio</SelectItem>
-            <SelectItem value="avanzado">Avanzado</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-4">
-        <h4 className="font-medium">Páginas de la lección</h4>
-        {pages.map((page, index) => (
-          <div key={index} className="space-y-2 rounded border p-3">
-            <Label>Página {index + 1}</Label>
-            <Input
-              placeholder="Título de la página"
-              value={page.title}
-              onChange={(e) =>
-                handlePageChange(index, 'title', e.target.value)
-              }
-            />
-            <Textarea
-              placeholder="Contenido en Markdown..."
-              value={page.content}
-              onChange={(e) =>
-                handlePageChange(index, 'content', e.target.value)
-              }
-              rows={5}
-            />
+    <DialogContent className="max-w-3xl">
+      <DialogHeader>
+        <DialogTitle>Agregar Nueva Lección de Teoría</DialogTitle>
+      </DialogHeader>
+      <div className="max-h-[80vh] overflow-y-auto p-1 pr-4">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Título de la Lección</Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
-        ))}
-        <Button variant="outline" onClick={handleAddPage}>
-          Agregar otra página
-        </Button>
+          <div className="space-y-2">
+            <Label>Módulo</Label>
+            <Select value={module} onValueChange={setModule}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="basico">Básico</SelectItem>
+                <SelectItem value="intermedio">Intermedio</SelectItem>
+                <SelectItem value="avanzado">Avanzado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="font-medium">Páginas de la lección</h4>
+            {pages.map((page, index) => (
+              <div key={index} className="relative space-y-2 rounded border p-3">
+                 <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute -top-3 -right-3 h-7 w-7"
+                    onClick={() => handleRemovePage(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                <Label>Página {index + 1}</Label>
+                <Input
+                  placeholder="Título de la página"
+                  value={page.title}
+                  onChange={(e) =>
+                    handlePageChange(index, 'title', e.target.value)
+                  }
+                />
+                <Textarea
+                  placeholder="Contenido en Markdown..."
+                  value={page.content}
+                  onChange={(e) =>
+                    handlePageChange(index, 'content', e.target.value)
+                  }
+                  rows={5}
+                />
+              </div>
+            ))}
+            <Button variant="outline" onClick={handleAddPage}>
+              <Plus className="mr-2 h-4 w-4" />
+              Agregar otra página
+            </Button>
+          </div>
+          <Button onClick={handleSaveTheory} className="w-full">
+            Guardar Lección
+          </Button>
+        </div>
       </div>
-      <Button onClick={handleSaveTheory} className="w-full">
-        Guardar Lección
-      </Button>
-    </div>
+    </DialogContent>
   );
+}
+
+function EditModuleDialog({ module, onModuleUpdated, onModuleDeleted }: { module: TModule, onModuleUpdated: () => void, onModuleDeleted: () => void }) {
+    const [title, setTitle] = useState(module.title);
+    const { toast } = useToast();
+
+    const handleUpdate = async () => {
+        try {
+            const res = await fetch(`/api/modules/${module.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title }),
+            });
+            if (!res.ok) throw new Error('Failed to update module');
+            toast({ title: 'Lección actualizada' });
+            onModuleUpdated();
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!confirm('¿Estás seguro de que quieres eliminar esta lección y todas sus páginas?')) return;
+        try {
+            const res = await fetch(`/api/modules/${module.id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to delete module');
+            toast({ title: 'Lección eliminada' });
+            onModuleDeleted();
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
+        }
+    }
+
+    return (
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Editar Lección</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <Label>Título de la Lección</Label>
+                    <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+                </div>
+                <div className="flex justify-between">
+                    <Button onClick={handleUpdate}>Guardar Cambios</Button>
+                    <Button variant="destructive" onClick={handleDelete}>Eliminar Lección</Button>
+                </div>
+            </div>
+        </DialogContent>
+    )
+}
+
+function CourseManager({ courses, onRefresh }: { courses: Course[], onRefresh: () => void }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Gestionar Cursos Existentes</CardTitle>
+        <CardDescription>
+          Agrega o gestiona lecciones en los cursos existentes.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Accordion type="single" collapsible className="w-full">
+          {courses.map((course) => (
+            <AccordionItem key={course.id} value={course.id}>
+              <AccordionTrigger>{course.title}</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-4 p-2">
+                  <ModuleList courseId={course.id} onRefresh={onRefresh} />
+                  <Dialog>
+                     <DialogTrigger asChild>
+                        <Button className="w-full">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Agregar Nueva Lección
+                        </Button>
+                    </DialogTrigger>
+                    <NewTheoryForm courseId={course.id} onTheoryAdded={onRefresh} />
+                  </Dialog>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ModuleList({ courseId, onRefresh }: { courseId: string, onRefresh: () => void }) {
+    const [modules, setModules] = useState<TModule[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchModules() {
+            try {
+                setLoading(true);
+                const res = await fetch(`/api/courses/${courseId}/modules`);
+                if (!res.ok) throw new Error('Failed to fetch modules');
+                const data = await res.json();
+                setModules(data);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchModules();
+    }, [courseId, onRefresh]);
+
+    if (loading) return <p>Cargando lecciones...</p>;
+
+    return (
+        <div className="space-y-2">
+            {modules.length === 0 && <p className="text-sm text-muted-foreground text-center">No hay lecciones en este curso.</p>}
+            {modules.map(module => (
+                 <div key={module.id} className="flex items-center justify-between rounded-lg border p-3">
+                    <span className="font-medium">{module.title}</span>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
+                        </DialogTrigger>
+                        <EditModuleDialog module={module} onModuleUpdated={onRefresh} onModuleDeleted={onRefresh} />
+                    </Dialog>
+                </div>
+            ))}
+        </div>
+    );
 }
 
 export default function AdminDashboard() {
@@ -275,30 +428,11 @@ export default function AdminDashboard() {
       <main className="container mx-auto max-w-4xl flex-1 space-y-6 p-4">
         <NewCourseForm onCourseAdded={() => setRefreshKey((k) => k + 1)} />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Gestionar Cursos Existentes</CardTitle>
-            <CardDescription>
-              Agrega lecciones a los cursos existentes.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading && <p>Cargando cursos...</p>}
-            <Accordion type="single" collapsible className="w-full">
-              {courses?.map((course) => (
-                <AccordionItem key={course.id} value={course.id}>
-                  <AccordionTrigger>{course.title}</AccordionTrigger>
-                  <AccordionContent>
-                    <NewTheoryForm
-                      courseId={course.id}
-                      onTheoryAdded={() => setRefreshKey((k) => k + 1)}
-                    />
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </CardContent>
-        </Card>
+        {loading ? (
+            <p>Cargando cursos...</p>
+        ) : (
+            <CourseManager courses={courses} onRefresh={() => setRefreshKey(k => k + 1)} />
+        )}
       </main>
     </div>
   );

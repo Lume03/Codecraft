@@ -21,7 +21,7 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Lección no encontrada' }, { status: 404 });
         }
 
-        const pages = await db.collection('theory_pages').find({ theoryId: theoryId }).sort({ order: 1 }).toArray();
+        const pages = await db.collection('theory-pages').find({ theoryId: theoryId }).sort({ order: 1 }).toArray();
 
         const theoryWithStringId = {
             ...theory,
