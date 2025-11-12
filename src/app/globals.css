@@ -67,77 +67,12 @@
   }
 }
 
-/* Styles for react-markdown rendered content */
 @layer components {
-  .prose {
-    @apply text-foreground/90;
-    
-    h1, h2, h3, h4, h5, h6 {
-      @apply text-foreground;
-    }
-    
-    strong {
-      @apply text-foreground;
-    }
+  .markdown {
+    @apply prose prose-invert max-w-none;
+  }
 
-    /* Inline code */
-    code {
-      @apply rounded bg-secondary px-1.5 py-1 font-code text-sm text-primary/80;
-    }
-
-    /* Code blocks */
-    pre {
-      @apply my-4 rounded-xl bg-card p-4 overflow-x-auto;
-    }
-
-    pre code {
-      @apply bg-transparent p-0 font-code text-sm;
-    }
-    
-    /* Tables */
-    table {
-      @apply my-4 w-full border-collapse border border-border;
-    }
-    
-    thead {
-        @apply border-b-2 border-border;
-    }
-
-    th {
-      @apply border border-border bg-secondary px-4 py-2 text-left font-semibold;
-    }
-
-    td {
-      @apply border border-border px-4 py-2;
-    }
-    
-    tr:nth-child(2n) {
-        @apply bg-card/50;
-    }
-
-    /* Lists */
-    ul, ol {
-      @apply my-4 ml-5 space-y-2;
-    }
-    
-    ul {
-      @apply list-disc;
-    }
-    
-    ol {
-      @apply list-decimal;
-    }
-    
-    li {
-      @apply leading-relaxed;
-    }
-    
-    p {
-      @apply my-4 text-base leading-relaxed;
-    }
-    
-    a {
-      @apply text-primary hover:underline;
-    }
+  pre code[class*="language-"] {
+    @apply bg-transparent p-0;
   }
 }
