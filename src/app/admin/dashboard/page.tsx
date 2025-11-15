@@ -31,15 +31,19 @@ import {
 } from '@/components/ui/select';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2, Settings } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose
+  DialogClose,
+  DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
+
+// --- FORMULARIOS Y DIÁLOGOS DE CREACIÓN ---
 
 function NewCourseForm({ onCourseAdded }: { onCourseAdded: () => void }) {
   const [title, setTitle] = useState('');
@@ -71,7 +75,7 @@ function NewCourseForm({ onCourseAdded }: { onCourseAdded: () => void }) {
       onCourseAdded();
       toast({
         title: 'Curso agregado',
-        description: 'El nuevo curso ha sido guardado en MongoDB.',
+        description: 'El nuevo curso ha sido guardado.',
       });
     } catch (error) {
       console.error(error);
@@ -146,18 +150,19 @@ function NewTheoryForm({
     newPages[index][field] = value;
     setPages(newPages);
   };
-  
+
   const handleRemovePage = (index: number) => {
     const newPages = pages.filter((_, i) => i !== index);
     setPages(newPages);
-  }
+  };
 
   const handleSaveTheory = async () => {
-    if (!title || !module || pages.some(p => !p.title || !p.content)) {
-       toast({
+    if (!title || !module || pages.some((p) => !p.title || !p.content)) {
+      toast({
         variant: 'destructive',
         title: 'Faltan campos',
-        description: 'Asegúrate de que la lección y todas sus páginas tengan título y contenido.',
+        description:
+          'Asegúrate de que la lección y todas sus páginas tengan título y contenido.',
       });
       return;
     }
@@ -177,18 +182,17 @@ function NewTheoryForm({
         throw new Error('Error al guardar la lección');
       }
 
-      // Reset form
       setTitle('');
       setModule('basico');
       setPages([{ title: '', content: '' }]);
       onTheoryAdded();
-       toast({
+      toast({
         title: 'Lección guardada',
-        description: 'La nueva lección se ha guardado en MongoDB.',
+        description: 'La nueva lección se ha guardado exitosamente.',
       });
     } catch (error) {
       console.error('Error saving theory:', error);
-       toast({
+      toast({
         variant: 'destructive',
         title: 'Error',
         description: (error as Error).message,
@@ -224,15 +228,18 @@ function NewTheoryForm({
           <div className="space-y-4">
             <h4 className="font-medium">Páginas de la lección</h4>
             {pages.map((page, index) => (
-              <div key={index} className="relative space-y-2 rounded border p-3">
-                 <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute -top-3 -right-3 h-7 w-7"
-                    onClick={() => handleRemovePage(index)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+              <div
+                key={index}
+                className="relative space-y-2 rounded border p-3"
+              >
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="absolute -top-3 -right-3 h-7 w-7"
+                  onClick={() => handleRemovePage(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
                 <Label>Página {index + 1}</Label>
                 <Input
                   placeholder="Título de la página"
@@ -267,191 +274,462 @@ function NewTheoryForm({
   );
 }
 
-function EditPageDialog({ page, onPageUpdated, onPageDeleted }: { page: TheoryPage, onPageUpdated: () => void, onPageDeleted: () => void }) {
-    const [title, setTitle] = useState(page.title);
-    const [content, setContent] = useState(page.content);
+// --- DIÁLOGOS Y COMPONENTES DE EDICIÓN ---
+
+function EditPageDialog({
+  page,
+  onPageUpdated,
+  onPageDeleted,
+}: {
+  page: TheoryPage;
+  onPageUpdated: () => void;
+  onPageDeleted: () => void;
+}) {
+  const [title, setTitle] = useState(page.title);
+  const [content, setContent] = useState(page.content);
+  const { toast } = useToast();
+
+  const handleUpdate = async () => {
+    try {
+      const res = await fetch(`/api/pages/${page.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content }),
+      });
+      if (!res.ok) throw new Error('Failed to update page');
+      toast({ title: 'Página actualizada' });
+      onPageUpdated();
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: (error as Error).message,
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/pages/${page.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete page');
+      toast({ title: 'Página eliminada' });
+      onPageDeleted();
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: (error as Error).message,
+      });
+    }
+  };
+
+  return (
+    <DialogContent className="max-w-3xl">
+      <DialogHeader>
+        <DialogTitle>Editar Página</DialogTitle>
+      </DialogHeader>
+      <div className="max-h-[80vh] overflow-y-auto space-y-4 p-1 pr-4">
+        <div className="space-y-2">
+          <Label>Título de la Página</Label>
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label>Contenido (Markdown)</Label>
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={10}
+          />
+        </div>
+        <div className="flex justify-between">
+          <DialogClose asChild>
+            <Button onClick={handleUpdate}>Guardar Cambios</Button>
+          </DialogClose>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="destructive">Eliminar Página</Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>¿Estás seguro?</DialogTitle>
+                    <DialogDescription>
+                        Esta acción no se puede deshacer. Se eliminará la página permanentemente.
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                    <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
+                    <DialogClose asChild><Button variant="destructive" onClick={handleDelete}>Sí, eliminar</Button></DialogClose>
+                </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+    </DialogContent>
+  );
+}
+
+function EditModuleDialog({
+  module,
+  onModuleUpdated,
+  onModuleDeleted,
+  onRefresh,
+}: {
+  module: TModule;
+  onModuleUpdated: () => void;
+  onModuleDeleted: () => void;
+  onRefresh: () => void;
+}) {
+  const [title, setTitle] = useState(module.title);
+  const { toast } = useToast();
+
+  const handleUpdate = async () => {
+    try {
+      const res = await fetch(`/api/modules/${module.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title }),
+      });
+      if (!res.ok) throw new Error('Failed to update module');
+      toast({ title: 'Lección actualizada' });
+      onModuleUpdated();
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: (error as Error).message,
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/modules/${module.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete module');
+      toast({ title: 'Lección eliminada' });
+      onModuleDeleted();
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: (error as Error).message,
+      });
+    }
+  };
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Gestionar Lección</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label>Título de la Lección</Label>
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        </div>
+        <div className="flex justify-between">
+          <DialogClose asChild>
+            <Button onClick={handleUpdate}>Guardar Cambios</Button>
+          </DialogClose>
+          <Dialog>
+             <DialogTrigger asChild>
+                <Button variant="destructive">Eliminar Lección</Button>
+            </DialogTrigger>
+             <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>¿Estás seguro?</DialogTitle>
+                    <DialogDescription>
+                        Se eliminará la lección y todas sus páginas. Esta acción no se puede deshacer.
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                    <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
+                    <DialogClose asChild><Button variant="destructive" onClick={handleDelete}>Sí, eliminar</Button></DialogClose>
+                </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+        <div>
+          <h3 className="mb-2 text-lg font-semibold">Páginas</h3>
+          <div className="max-h-64 rounded-md border p-2">
+            <PageList theoryId={module.contentId} onRefresh={onRefresh} />
+          </div>
+        </div>
+      </div>
+    </DialogContent>
+  );
+}
+
+function EditCourseDialog({ course, onCourseUpdated, onCourseDeleted }: { course: Course; onCourseUpdated: () => void; onCourseDeleted: () => void; }) {
+    const [title, setTitle] = useState(course.title);
+    const [description, setDescription] = useState(course.description);
+    const [imageId, setImageId] = useState(course.imageId);
     const { toast } = useToast();
 
     const handleUpdate = async () => {
         try {
-            const res = await fetch(`/api/pages/${page.id}`, {
+            const res = await fetch(`/api/courses/${course.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, content }),
+                body: JSON.stringify({ title, description, imageId }),
             });
-            if (!res.ok) throw new Error('Failed to update page');
-            toast({ title: 'Página actualizada' });
-            onPageUpdated();
+            if (!res.ok) throw new Error('Failed to update course');
+            toast({ title: 'Curso actualizado' });
+            onCourseUpdated();
         } catch (error) {
             toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
         }
     };
 
     const handleDelete = async () => {
-        if (!confirm('¿Estás seguro de que quieres eliminar esta página?')) return;
         try {
-            const res = await fetch(`/api/pages/${page.id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Failed to delete page');
-            toast({ title: 'Página eliminada' });
-            onPageDeleted();
+            const res = await fetch(`/api/courses/${course.id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to delete course');
+            toast({ title: 'Curso eliminado' });
+            onCourseDeleted();
         } catch (error) {
             toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
         }
-    }
+    };
 
     return (
-        <DialogContent className="max-w-3xl">
+         <DialogContent className="max-w-xl">
             <DialogHeader>
-                <DialogTitle>Editar Página</DialogTitle>
+                <DialogTitle>Gestionar Curso: {course.title}</DialogTitle>
             </DialogHeader>
             <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 space-y-4">
                 <div className="space-y-2">
-                    <Label>Título de la Página</Label>
+                    <Label>Título del Curso</Label>
                     <Input value={title} onChange={(e) => setTitle(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                    <Label>Contenido (Markdown)</Label>
-                    <Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={10} />
+                    <Label>Descripción</Label>
+                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
                 </div>
-                <div className="flex justify-between">
+                <div className="space-y-2">
+                    <Label>Imagen del Curso</Label>
+                    <Select value={imageId} onValueChange={setImageId}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                        {placeholderImages.map((img) => (
+                            <SelectItem key={img.id} value={img.id}>
+                            {img.description}
+                            </SelectItem>
+                        ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="flex justify-between pt-4">
                     <DialogClose asChild>
                         <Button onClick={handleUpdate}>Guardar Cambios</Button>
                     </DialogClose>
-                     <DialogClose asChild>
-                        <Button variant="destructive" onClick={handleDelete}>Eliminar Página</Button>
-                    </DialogClose>
-                </div>
-            </div>
-        </DialogContent>
-    )
-}
-
-function PageList({ theoryId, onRefresh }: { theoryId: string; onRefresh: () => void }) {
-    const [pages, setPages] = useState<TheoryPage[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchPages() {
-            try {
-                setLoading(true);
-                const res = await fetch(`/api/theories?id=${theoryId}`);
-                if (!res.ok) throw new Error('Failed to fetch pages');
-                const data = await res.json();
-                setPages(data.pages);
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchPages();
-    }, [theoryId, onRefresh]);
-
-    if (loading) return <p className="px-4 py-2 text-sm text-muted-foreground">Cargando páginas...</p>;
-
-    return (
-        <div className="space-y-2 pl-6 pr-2">
-            {pages.length === 0 && <p className="text-sm text-muted-foreground text-center">No hay páginas en esta lección.</p>}
-            {pages.map(page => (
-                <div key={page.id} className="flex items-center justify-between rounded-lg border bg-secondary/50 p-2">
-                    <span className="text-sm font-medium truncate flex-1 pl-2">{page.title}</span>
-                    <Dialog>
+                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
+                            <Button variant="destructive">Eliminar Curso</Button>
                         </DialogTrigger>
-                        <EditPageDialog page={page} onPageUpdated={onRefresh} onPageDeleted={onRefresh} />
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>¿Estás seguro de que quieres eliminar este curso?</DialogTitle>
+                                <DialogDescription>
+                                    Esta acción no se puede deshacer. Se eliminará permanentemente el curso y todas sus lecciones y páginas asociadas.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                                <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
+                                <DialogClose asChild><Button variant="destructive" onClick={handleDelete}>Sí, eliminar curso</Button></DialogClose>
+                            </DialogFooter>
+                        </DialogContent>
                     </Dialog>
                 </div>
-            ))}
-        </div>
-    );
-}
-
-function EditModuleDialog({ module, onModuleUpdated, onModuleDeleted, onRefresh }: { module: TModule, onModuleUpdated: () => void, onModuleDeleted: () => void, onRefresh: () => void }) {
-    const [title, setTitle] = useState(module.title);
-    const { toast } = useToast();
-
-    const handleUpdate = async () => {
-        try {
-            const res = await fetch(`/api/modules/${module.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title }),
-            });
-            if (!res.ok) throw new Error('Failed to update module');
-            toast({ title: 'Lección actualizada' });
-            onModuleUpdated();
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
-        }
-    };
-
-    const handleDelete = async () => {
-        if (!confirm('¿Estás seguro de que quieres eliminar esta lección y todo su contenido?')) return;
-        try {
-            const res = await fetch(`/api/modules/${module.id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Failed to delete module');
-            toast({ title: 'Lección eliminada' });
-            onModuleDeleted();
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
-        }
-    }
-
-    return (
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>Gestionar Lección</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-                <div className="space-y-2">
-                    <Label>Título de la Lección</Label>
-                    <Input value={title} onChange={(e) => setTitle(e.target.value)} />
-                </div>
-                 <div className="flex justify-between">
-                    <DialogClose asChild>
-                        <Button onClick={handleUpdate}>Guardar Cambios</Button>
-                    </DialogClose>
-                     <DialogClose asChild>
-                        <Button variant="destructive" onClick={handleDelete}>Eliminar Lección</Button>
-                    </DialogClose>
-                </div>
-                 <div>
-                    <h3 className="mb-2 font-semibold text-lg">Páginas</h3>
-                    <div className="max-h-64 overflow-y-auto rounded-md border p-2">
-                        <PageList theoryId={module.contentId} onRefresh={onRefresh} />
-                    </div>
-                </div>
             </div>
         </DialogContent>
     )
 }
 
-function CourseManager({ courses, onRefresh }: { courses: Course[], onRefresh: () => void }) {
+// --- COMPONENTES DE LISTA ---
+
+function PageList({ theoryId, onRefresh }: { theoryId: string; onRefresh: () => void; }) {
+  const [pages, setPages] = useState<TheoryPage[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPages() {
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/theories?id=${theoryId}`);
+        if (!res.ok) throw new Error('Failed to fetch pages');
+        const data = await res.json();
+        setPages(data.pages);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPages();
+  }, [theoryId, onRefresh]);
+
+  if (loading)
+    return (
+      <p className="px-4 py-2 text-sm text-muted-foreground">
+        Cargando páginas...
+      </p>
+    );
+
+  return (
+    <div className="space-y-2">
+      {pages.length === 0 && (
+        <p className="text-center text-sm text-muted-foreground">
+          No hay páginas en esta lección.
+        </p>
+      )}
+      {pages.map((page) => (
+        <div
+          key={page.id}
+          className="flex items-center justify-between rounded-lg border bg-secondary/50 p-2"
+        >
+          <span className="flex-1 truncate pl-2 text-sm font-medium">
+            {page.title}
+          </span>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Edit className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <EditPageDialog
+              page={page}
+              onPageUpdated={onRefresh}
+              onPageDeleted={onRefresh}
+            />
+          </Dialog>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ModuleList({
+  courseId,
+  onRefresh,
+}: {
+  courseId: string;
+  onRefresh: () => void;
+}) {
+  const [modules, setModules] = useState<TModule[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchModules() {
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/courses/${courseId}/modules`);
+        if (!res.ok) throw new Error('Failed to fetch modules');
+        const data = await res.json();
+        setModules(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchModules();
+  }, [courseId, onRefresh]);
+
+  if (loading) return <p>Cargando lecciones...</p>;
+
+  return (
+    <div className="space-y-2">
+      {modules.length === 0 && (
+        <p className="text-center text-sm text-muted-foreground">
+          No hay lecciones en este curso.
+        </p>
+      )}
+      <Accordion type="single" collapsible className="w-full">
+        {modules.map((module) => (
+          <AccordionItem key={module.id} value={module.id}>
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex w-full items-center justify-between pr-2">
+                <span className="flex-1 truncate text-left font-medium">
+                  {module.title}
+                </span>
+                <Dialog onOpenChange={(open) => !open && onRefresh()}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="mr-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <EditModuleDialog
+                    module={module}
+                    onModuleUpdated={onRefresh}
+                    onModuleDeleted={onRefresh}
+                    onRefresh={onRefresh}
+                  />
+                </Dialog>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <PageList theoryId={module.contentId} onRefresh={onRefresh} />
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  );
+}
+
+// --- COMPONENTES PRINCIPALES ---
+
+function CourseManager({
+  courses,
+  onRefresh,
+}: {
+  courses: Course[];
+  onRefresh: () => void;
+}) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Gestionar Cursos Existentes</CardTitle>
         <CardDescription>
-          Agrega, edita o elimina lecciones y páginas en los cursos.
+          Edita, elimina o agrega contenido a los cursos.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Accordion type="single" collapsible className="w-full">
           {courses.map((course) => (
             <AccordionItem key={course.id} value={course.id}>
-              <AccordionTrigger>{course.title}</AccordionTrigger>
+              <AccordionTrigger>
+                <div className="flex w-full items-center justify-between pr-2">
+                    <span className="flex-1 truncate text-left">{course.title}</span>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                                <Settings className="h-4 w-4" />
+                            </Button>
+                        </DialogTrigger>
+                        <EditCourseDialog course={course} onCourseUpdated={onRefresh} onCourseDeleted={onRefresh} />
+                    </Dialog>
+                </div>
+              </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4 p-2">
                   <ModuleList courseId={course.id} onRefresh={onRefresh} />
                   <Dialog>
-                     <DialogTrigger asChild>
-                        <Button className="w-full">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Agregar Nueva Lección
-                        </Button>
+                    <DialogTrigger asChild>
+                      <Button className="w-full">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Agregar Nueva Lección
+                      </Button>
                     </DialogTrigger>
-                    <NewTheoryForm courseId={course.id} onTheoryAdded={onRefresh} />
+                    <NewTheoryForm
+                      courseId={course.id}
+                      onTheoryAdded={onRefresh}
+                    />
                   </Dialog>
                 </div>
               </AccordionContent>
@@ -463,61 +741,13 @@ function CourseManager({ courses, onRefresh }: { courses: Course[], onRefresh: (
   );
 }
 
-function ModuleList({ courseId, onRefresh }: { courseId: string, onRefresh: () => void }) {
-    const [modules, setModules] = useState<TModule[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchModules() {
-            try {
-                setLoading(true);
-                const res = await fetch(`/api/courses/${courseId}/modules`);
-                if (!res.ok) throw new Error('Failed to fetch modules');
-                const data = await res.json();
-                setModules(data);
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchModules();
-    }, [courseId, onRefresh]);
-
-    if (loading) return <p>Cargando lecciones...</p>;
-
-    return (
-        <div className="space-y-2">
-            {modules.length === 0 && <p className="text-sm text-muted-foreground text-center">No hay lecciones en este curso.</p>}
-            <Accordion type="single" collapsible className="w-full">
-                {modules.map(module => (
-                     <AccordionItem key={module.id} value={module.id}>
-                        <AccordionTrigger className="hover:no-underline">
-                            <div className="flex w-full items-center justify-between">
-                                <span className="font-medium text-left flex-1 truncate">{module.title}</span>
-                                <Dialog onOpenChange={(open) => !open && onRefresh()}>
-                                    <DialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="mr-2" onClick={(e) => e.stopPropagation()}><Edit className="h-4 w-4" /></Button>
-                                    </DialogTrigger>
-                                    <EditModuleDialog module={module} onModuleUpdated={onRefresh} onModuleDeleted={onRefresh} onRefresh={onRefresh} />
-                                </Dialog>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                            <PageList theoryId={module.contentId} onRefresh={onRefresh} />
-                        </AccordionContent>
-                    </AccordionItem>
-                ))}
-            </Accordion>
-        </div>
-    );
-}
-
 export default function AdminDashboard() {
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleRefresh = () => setRefreshKey((k) => k + 1);
 
   useEffect(() => {
     const isAdmin = localStorage.getItem('isAdmin');
@@ -543,21 +773,18 @@ export default function AdminDashboard() {
     fetchCourses();
   }, [refreshKey]);
 
-
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="min-h-screen flex-col">
       <Header title="Dashboard del Administrador" />
       <main className="container mx-auto max-w-4xl flex-1 space-y-6 p-4">
-        <NewCourseForm onCourseAdded={() => setRefreshKey((k) => k + 1)} />
+        <NewCourseForm onCourseAdded={handleRefresh} />
 
         {loading ? (
-            <p>Cargando cursos...</p>
+          <p>Cargando cursos...</p>
         ) : (
-            <CourseManager courses={courses} onRefresh={() => setRefreshKey(k => k + 1)} />
+          <CourseManager courses={courses} onRefresh={handleRefresh} />
         )}
       </main>
     </div>
   );
 }
-
-    
