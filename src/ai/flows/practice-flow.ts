@@ -9,8 +9,9 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { equal } from 'node:assert';
 
-// --- Esquemas de Preguntas ---
+// --- Question Schemas ---
 const QuestionSchema = z.object({
   id: z.string().describe('Unique identifier for the question (e.g., "q1").'),
   type: z
@@ -22,7 +23,7 @@ const QuestionSchema = z.object({
 });
 type Question = z.infer<typeof QuestionSchema>;
 
-// --- Esquema de Entrada ---
+// --- Input Schema ---
 const GenerateModeSchema = z.object({
   mode: z.literal('generate'),
   courseTitle: z.string().describe('Title of the course.'),
@@ -50,7 +51,7 @@ export const PracticeInputSchema = z.union([
 export type PracticeInput = z.infer<typeof PracticeInputSchema>;
 
 
-// --- Esquema de Salida ---
+// --- Output Schema ---
 const GenerateOutputSchema = z.object({
   questions: z.array(QuestionSchema).length(5).describe('An array of 5 generated practice questions.'),
 });
@@ -58,7 +59,7 @@ const GenerateOutputSchema = z.object({
 const GradingResultSchema = z.object({
     questionId: z.string(),
     isCorrect: z.boolean(),
-    correctAnswer: z.union([z.string(), z.boolean(), z.array(z E.string())]),
+    correctAnswer: z.union([z.string(), z.boolean(), z.array(z.string())]),
     userAnswer: z.union([z.string(), z.boolean(), z.array(z.string())]),
 });
 
@@ -81,27 +82,30 @@ export async function handlePractice(input: PracticeInput): Promise<PracticeOutp
   if (input.mode === 'generate') {
     return practiceGenerateFlow(input);
   } else {
+    // For grading, we can do it locally to save tokens and improve speed/accuracy.
     return practiceGradeFlow(input);
   }
 }
 
-// --- Flujo de Generación ---
+// --- Generation Flow ---
 
 const generatePrompt = ai.definePrompt({
   name: 'practiceGeneratePrompt',
   input: { schema: GenerateModeSchema },
   output: { schema: GenerateOutputSchema },
-  prompt: `You are an expert educator. Your task is to create a practice quiz with exactly 5 questions based on the provided lesson content.
-
-Course: {{{courseTitle}}}
-Lesson: {{{lessonTitle}}}
-Content:
+  prompt: `You are an expert educator creating a practice quiz.
+- Task: Generate exactly 5 diverse, easy-level questions based on the provided lesson content.
+- Course: {{{courseTitle}}}
+- Lesson: {{{lessonTitle}}}
+- Content:
 ---
 {{{theoryContent}}}
 ---
-
-Generate 5 diverse, easy-level questions in the specified JSON format. The question types should be a mix of 'single_choice', 'boolean', and 'reorder'. Ensure the 'correctAnswer' field is accurately filled for each question.
-Provide unique IDs for each question (e.g., "q1", "q2", ... "q5").
+- Instructions:
+  - Create a mix of 'single_choice', 'boolean', and 'reorder' question types.
+  - Ensure the 'correctAnswer' field is accurately filled for each question.
+  - Provide unique IDs for each question (e.g., "q1", "q2", ..., "q5").
+  - The entire output MUST be a valid JSON object matching the specified schema.
 `,
 });
 
@@ -113,44 +117,57 @@ const practiceGenerateFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await generatePrompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('AI failed to generate practice questions.');
+    }
+    return output;
   }
 );
 
 
-// --- Flujo de Calificación ---
-
-const gradePrompt = ai.definePrompt({
-    name: 'practiceGradePrompt',
-    input: { schema: GradeModeSchema },
-    output: { schema: GradeOutputSchema },
-    prompt: `You are an AI grading assistant. Your task is to evaluate the user's answers against the provided questions and correct answers.
+// --- Grading Flow (Local Logic for Accuracy and Speed) ---
   
-  You must return a score, a boolean 'approved' status (true if score is 3 or more), and a detailed result for each question.
-  
-  The questions and their correct answers are:
-  {{#each questions}}
-  - Question {{id}}: "{{text}}" | Correct Answer: {{{json correctAnswer}}}
-  {{/each}}
-  
-  The user's submitted answers are:
-  {{#each answers}}
-  - For Question {{questionId}}: {{{json userAnswer}}}
-  {{/each}}
-  
-  Now, provide the evaluation in the required JSON format.
-  `,
-  });
-  
-  const practiceGradeFlow = ai.defineFlow(
+const practiceGradeFlow = ai.defineFlow(
     {
       name: 'practiceGradeFlow',
       inputSchema: GradeModeSchema,
       outputSchema: GradeOutputSchema,
     },
     async (input) => {
-      const { output } = await gradePrompt(input);
-      return output!;
+      const { questions, answers } = input;
+      let score = 0;
+      const results: z.infer<typeof GradingResultSchema>[] = [];
+  
+      for (const q of questions) {
+        const userAnswerObj = answers.find(a => a.questionId === q.id);
+        const userAnswer = userAnswerObj?.userAnswer;
+  
+        let isCorrect = false;
+        // Deep equality check for arrays, strict equality for others.
+        if (Array.isArray(q.correctAnswer) && Array.isArray(userAnswer)) {
+          isCorrect = JSON.stringify(q.correctAnswer) === JSON.stringify(userAnswer);
+        } else {
+          isCorrect = q.correctAnswer === userAnswer;
+        }
+  
+        if (isCorrect) {
+          score++;
+        }
+  
+        results.push({
+          questionId: q.id,
+          isCorrect,
+          correctAnswer: q.correctAnswer,
+          userAnswer: userAnswer ?? null, // Ensure userAnswer is not undefined
+        });
+      }
+  
+      return {
+        score,
+        maxScore: questions.length as 5,
+        approved: score >= 3,
+        results,
+      };
     }
-  );
+);
   
