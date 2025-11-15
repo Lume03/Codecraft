@@ -75,21 +75,46 @@ export default function AuthPage() {
     }
   }, [auth, firestore])
 
-  const createFirestoreUserDocument = async (user: User) => {
+  const createInitialUserDocument = async (user: User) => {
     if (!firestore) return;
 
+    // Create in Firestore
     const userRef = doc(firestore, 'users', user.uid);
-    const userData = {
+    const firestoreData = {
         displayName: user.displayName || fullname,
         email: user.email,
         photoURL: user.photoURL,
         level: 1,
         streak: 0,
         achievements: [],
-        lives: 5, // Start with 5 lives
-        lastLifeUpdate: serverTimestamp(), // Set initial timestamp
+        lives: 5, 
+        lastLifeUpdate: serverTimestamp(),
     };
-    await setDoc(userRef, userData, { merge: true });
+    await setDoc(userRef, firestoreData, { merge: true });
+
+    // Also create/update in MongoDB
+    const mongoData = {
+      firebaseUid: user.uid,
+      email: user.email,
+      displayName: user.displayName || fullname,
+      photoURL: user.photoURL,
+      level: 1,
+      streak: 0,
+      achievements: [],
+      lives: 5,
+      lastLifeUpdate: new Date(),
+    };
+
+    try {
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mongoData),
+      });
+    } catch (error) {
+      console.error("Failed to create user in MongoDB:", error);
+      // Optional: handle this error, e.g., show a toast
+    }
   }
 
   const handleAuthAction = async () => {
@@ -100,7 +125,7 @@ export default function AuthPage() {
         router.push('/learn');
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await createFirestoreUserDocument(userCredential.user);
+        await createInitialUserDocument(userCredential.user);
         router.push('/profile/setup');
       }
     } catch (error: any) {
@@ -120,7 +145,7 @@ export default function AuthPage() {
       const additionalInfo = getAdditionalUserInfo(result);
       
       if (additionalInfo?.isNewUser) {
-        await createFirestoreUserDocument(result.user);
+        await createInitialUserDocument(result.user);
         router.push('/profile/setup');
       } else {
         // For existing users, we don't need to overwrite their document unless necessary

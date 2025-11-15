@@ -23,17 +23,12 @@ export async function POST(request: Request) {
         const db = client.db('ravencode');
         const usersCollection = db.collection('users');
         
-        let userObjectId;
-        try {
-            userObjectId = new ObjectId(userId);
-        } catch (error) {
-            // Fallback for Firebase UID which is not an ObjectId
-            const user = await usersCollection.findOne({ firebaseUid: userId });
-            if (!user) {
-                 return NextResponse.json({ message: 'Usuario no encontrado con el UID proporcionado.' }, { status: 404 });
-            }
-            userObjectId = user._id;
+        // Find user by firebaseUid
+        const user = await usersCollection.findOne({ firebaseUid: userId });
+        if (!user) {
+             return NextResponse.json({ message: 'Usuario no encontrado.' }, { status: 404 });
         }
+        const userObjectId = user._id;
 
         // 2. If approved, update user progress
         let unlockedNextLesson = false;

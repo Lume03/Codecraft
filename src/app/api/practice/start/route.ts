@@ -44,17 +44,12 @@ export async function POST(request: Request) {
         const usersCollection = db.collection('users');
         const modulesCollection = db.collection('modules');
         const coursesCollection = db.collection('courses');
-        const theoriesCollection = db.collection('theories');
         const theoryPagesCollection = db.collection('theory-pages');
 
-        // 1. Fetch user and recalculate lives
-        let user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+        // 1. Fetch user by Firebase UID and recalculate lives
+        let user = await usersCollection.findOne({ firebaseUid: userId });
         if (!user) {
-            // As a fallback, try finding user by clerk/firebase ID if you store it differently
-             user = await usersCollection.findOne({ firebaseUid: userId });
-             if(!user) {
-                return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
-             }
+            return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
         }
         
         user = recalculateLives(user, new Date());
@@ -106,6 +101,10 @@ export async function POST(request: Request) {
 
     } catch (e: any) {
         console.error('Error in /api/practice/start:', e);
+        // Handle specific ObjectId errors
+        if (e.message.includes('Argument passed in must be a string of 12 bytes or a string of 24 hex characters')) {
+            return NextResponse.json({ message: 'ID de lección o curso inválido.' }, { status: 400 });
+        }
         return NextResponse.json({ message: 'Error interno del servidor', error: e.message }, { status: 500 });
     }
 }

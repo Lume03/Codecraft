@@ -50,9 +50,13 @@
                     "type": "string",
                     "format": "date-time",
                     "description": "The last time a life was regenerated."
+                },
+                "firebaseUid": {
+                    "type": "string",
+                    "description": "The user's unique ID from Firebase Authentication."
                 }
             },
-            "required": ["displayName", "email"]
+            "required": ["displayName", "email", "firebaseUid"]
         },
         "Course": {
             "title": "Course",
