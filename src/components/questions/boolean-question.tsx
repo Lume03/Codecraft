@@ -1,9 +1,11 @@
 'use client';
 
-import type { Question } from '@/lib/data.tsx';
+import type { PracticeOutput } from '@/ai/flows/practice-flow';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+
+type Question = Extract<PracticeOutput, { questions: any }>['questions'][0];
 
 interface BooleanQuestionProps {
   question: Question;

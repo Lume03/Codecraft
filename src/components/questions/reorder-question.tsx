@@ -1,9 +1,11 @@
 'use client';
 
-import type { Question } from '@/lib/data';
+import type { PracticeOutput } from '@/ai/flows/practice-flow';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowDown, ArrowUp } from 'lucide-react';
+
+type Question = Extract<PracticeOutput, { questions: any }>['questions'][0];
 
 interface ReorderQuestionProps {
   question: Question;
@@ -14,7 +16,14 @@ export default function ReorderQuestion({
   question,
   onAnswer,
 }: ReorderQuestionProps) {
-  const [items, setItems] = useState(question.options || []);
+  const [items, setItems] = useState<string[]>([]);
+  
+  useEffect(() => {
+    if (question.options) {
+      // Shuffle options to make it a challenge
+      setItems([...question.options].sort(() => Math.random() - 0.5));
+    }
+  }, [question.options]);
 
   const moveItem = (index: number, direction: 'up' | 'down') => {
     const newItems = [...items];
@@ -30,6 +39,17 @@ export default function ReorderQuestion({
   const handleSubmit = () => {
     onAnswer(items);
   };
+
+  useEffect(() => {
+    // Automatically submit when all items are ordered, 
+    // since there's no separate "submit" button in this design.
+    if(items.length > 0) {
+        onAnswer(items);
+    }
+  }, [items, onAnswer]);
+
+
+  if (!question.options) return <p>Esta pregunta no tiene opciones para ordenar.</p>;
 
   return (
     <div className="space-y-4">
@@ -63,9 +83,9 @@ export default function ReorderQuestion({
           </div>
         ))}
       </div>
-      <Button onClick={handleSubmit} className="w-full">
-        Confirmar orden
-      </Button>
+       <p className="text-center text-sm text-muted-foreground">
+        Ordena los bloques en el orden correcto. La respuesta se registrará automáticamente.
+      </p>
     </div>
   );
 }

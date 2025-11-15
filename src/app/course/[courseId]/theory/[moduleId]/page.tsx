@@ -4,7 +4,7 @@ import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BrainCircuit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Theory, TheoryPage as TheoryPageType } from '@/lib/data';
 import { ContentRenderer } from '@/components/content-renderer';
@@ -58,12 +58,10 @@ export default async function TheoryLessonPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ courseId: string; moduleId: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  params: { courseId: string; moduleId: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const { courseId, moduleId: theoryId } = await params;
-  const sp = await searchParams;
-
+  const { courseId, moduleId: theoryId } = params;
   const data = await getTheoryData(theoryId);
 
   if (!data) {
@@ -74,7 +72,7 @@ export default async function TheoryLessonPage({
   const totalPages = pages.length;
 
   let currentPage = 1;
-  const pageFromQuery = parseInt(sp?.page as string, 10);
+  const pageFromQuery = parseInt(searchParams?.page as string, 10);
   if (
     !isNaN(pageFromQuery) &&
     pageFromQuery > 0 &&
@@ -86,10 +84,9 @@ export default async function TheoryLessonPage({
   const pageContent = pages[currentPage - 1]?.content;
 
   if (!pageContent) {
-     if (pages.length > 0) {
-      // Si hay páginas pero la actual no existe, redirige a la primera
-       const basePath = `/course/${courseId}/theory/${theoryId}`;
-       return (
+    if (pages.length > 0) {
+      const basePath = `/course/${courseId}/theory/${theoryId}`;
+      return (
         <div className="flex min-h-screen flex-col items-center justify-center">
           <p>Página no encontrada.</p>
           <Link href={`${basePath}?page=1`} className="text-primary underline">
@@ -159,7 +156,9 @@ export default async function TheoryLessonPage({
                   boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
                 }}
               >
-                <Link href={`/course/${courseId}`}>Finalizar lección</Link>
+                <Link href={`/practice/session/${theory.id}?courseId=${courseId}`}>
+                   <BrainCircuit className="mr-2 h-4 w-4" /> Comenzar Práctica
+                </Link>
               </Button>
             ) : (
               <Button
