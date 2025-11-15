@@ -9,18 +9,25 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-// --- Question Schemas ---
+// ---------- Schemas de preguntas ----------
+
 const QuestionSchema = z.object({
   id: z.string().describe('Unique identifier for the question (e.g., "q1").'),
   type: z
     .enum(['single_choice', 'boolean', 'reorder'])
     .describe('The type of question.'),
   text: z.string().describe('The question text.'),
-  options: z.array(z.string()).optional().describe('List of options for single_choice or reorder.'),
-  correctAnswer: z.union([z.string(), z.boolean(), z.array(z.string())]).describe('The correct answer for the question.'),
+  options: z
+    .array(z.string())
+    .optional()
+    .describe('List of options for single_choice or reorder.'),
+  correctAnswer: z
+    .union([z.string(), z.boolean(), z.array(z.string())])
+    .describe('The correct answer for the question.'),
 });
 
-// --- Input Schema ---
+// ---------- Input schema ----------
+
 const GenerateModeSchema = z.object({
   mode: z.literal('generate'),
   courseTitle: z.string().describe('Title of the course.'),
@@ -31,14 +38,18 @@ const GenerateModeSchema = z.object({
 });
 
 const UserAnswerSchema = z.object({
-    questionId: z.string(),
-    userAnswer: z.union([z.string(), z.boolean(), z.array(z.string())]),
+  questionId: z.string(),
+  userAnswer: z.union([z.string(), z.boolean(), z.array(z.string())]),
 });
 
 const GradeModeSchema = z.object({
   mode: z.literal('grade'),
-  questions: z.array(QuestionSchema).describe("The original questions that were given to the user."),
-  answers: z.array(UserAnswerSchema).describe("The user's answers."),
+  questions: z
+    .array(QuestionSchema)
+    .describe('The original questions that were given to the user.'),
+  answers: z
+    .array(UserAnswerSchema)
+    .describe("The user's answers."),
 });
 
 export const PracticeInputSchema = z.union([
@@ -47,24 +58,27 @@ export const PracticeInputSchema = z.union([
 ]);
 export type PracticeInput = z.infer<typeof PracticeInputSchema>;
 
+// ---------- Output schema ----------
 
-// --- Output Schema ---
 const GenerateOutputSchema = z.object({
-  questions: z.array(QuestionSchema).length(5).describe('An array of 5 generated practice questions.'),
+  questions: z
+    .array(QuestionSchema)
+    .length(5)
+    .describe('An array of 5 generated practice questions.'),
 });
 
 const GradingResultSchema = z.object({
-    questionId: z.string(),
-    isCorrect: z.boolean(),
-    correctAnswer: z.union([z.string(), z.boolean(), z.array(z.string())]),
-    userAnswer: z.union([z.string(), z.boolean(), z.array(z.string())]),
+  questionId: z.string(),
+  isCorrect: z.boolean(),
+  correctAnswer: z.union([z.string(), z.boolean(), z.array(z.string())]),
+  userAnswer: z.union([z.string(), z.boolean(), z.array(z.string())]),
 });
 
 const GradeOutputSchema = z.object({
-  score: z.number().int().min(0).max(5).describe('The number of correct answers.'),
+  score: z.number().int().min(0).max(5),
   maxScore: z.literal(5),
-  approved: z.boolean().describe('Whether the user passed the practice (score >= 3).'),
-  results: z.array(GradingResultSchema).describe('A detailed breakdown of each answer.'),
+  approved: z.boolean(),
+  results: z.array(GradingResultSchema),
 });
 
 export const PracticeOutputSchema = z.union([
@@ -73,7 +87,7 @@ export const PracticeOutputSchema = z.union([
 ]);
 export type PracticeOutput = z.infer<typeof PracticeOutputSchema>;
 
-// --- Generation Flow ---
+// ---------- Flujo de generación (IA) ----------
 
 const generatePrompt = ai.definePrompt({
   name: 'practiceGeneratePrompt',
@@ -110,60 +124,59 @@ const practiceGenerateFlow = ai.defineFlow(
   }
 );
 
+// ---------- Flujo de corrección (solo lógica local) ----------
 
-// --- Grading Flow (Local Logic for Accuracy and Speed) ---
-  
 const practiceGradeFlow = ai.defineFlow(
-    {
-      name: 'practiceGradeFlow',
-      inputSchema: GradeModeSchema,
-      outputSchema: GradeOutputSchema,
-    },
-    async (input) => {
-      const { questions, answers } = input;
-      let score = 0;
-      const results: z.infer<typeof GradingResultSchema>[] = [];
-  
-      for (const q of questions) {
-        const userAnswerObj = answers.find(a => a.questionId === q.id);
-        const userAnswer = userAnswerObj?.userAnswer;
-  
-        let isCorrect = false;
-        // Deep equality check for arrays, strict equality for others.
-        if (Array.isArray(q.correctAnswer) && Array.isArray(userAnswer)) {
-          isCorrect = JSON.stringify(q.correctAnswer) === JSON.stringify(userAnswer);
-        } else {
-          isCorrect = q.correctAnswer === userAnswer;
-        }
-  
-        if (isCorrect) {
-          score++;
-        }
-  
-        results.push({
-          questionId: q.id,
-          isCorrect,
-          correctAnswer: q.correctAnswer,
-          userAnswer: userAnswer ?? null, // Ensure userAnswer is not undefined
-        });
-      }
-  
-      return {
-        score,
-        maxScore: questions.length as 5,
-        approved: score >= 3,
-        results,
-      };
-    }
-);
-  
-// --- EXPORTED HANDLER FUNCTION ---
+  {
+    name: 'practiceGradeFlow',
+    inputSchema: GradeModeSchema,
+    outputSchema: GradeOutputSchema,
+  },
+  async (input) => {
+    const { questions, answers } = input;
+    let score = 0;
+    const results: z.infer<typeof GradingResultSchema>[] = [];
 
-export async function handlePractice(input: PracticeInput): Promise<PracticeOutput> {
+    for (const q of questions) {
+      const userAnswerObj = answers.find((a) => a.questionId === q.id);
+      const userAnswer = userAnswerObj?.userAnswer;
+
+      let isCorrect = false;
+
+      if (Array.isArray(q.correctAnswer) && Array.isArray(userAnswer)) {
+        isCorrect =
+          JSON.stringify(q.correctAnswer) === JSON.stringify(userAnswer);
+      } else {
+        isCorrect = q.correctAnswer === userAnswer;
+      }
+
+      if (isCorrect) score++;
+
+      results.push({
+        questionId: q.id,
+        isCorrect,
+        correctAnswer: q.correctAnswer,
+        userAnswer: userAnswer ?? null,
+      });
+    }
+
+    return {
+      score,
+      maxScore: questions.length as 5,
+      approved: score >= 3,
+      results,
+    };
+  }
+);
+
+// ---------- Handler que usa tu API ----------
+
+export async function handlePractice(
+  input: PracticeInput
+): Promise<PracticeOutput> {
   if (input.mode === 'generate') {
     return practiceGenerateFlow(input);
   } else {
-    // For grading, we can do it locally to save tokens and improve speed/accuracy.
     return practiceGradeFlow(input);
   }
 }
