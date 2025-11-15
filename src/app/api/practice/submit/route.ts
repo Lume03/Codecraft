@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { handlePractice, PracticeInput, PracticeOutput } from '@/ai/flows/practice-flow';
+import { adminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export async function POST(request: Request) {
     try {
@@ -19,27 +21,23 @@ export async function POST(request: Request) {
             throw new Error("La IA no devolvió un resultado de calificación válido.");
         }
 
-        const client = await clientPromise;
-        const db = client.db('ravencode');
-        const usersCollection = db.collection('users');
-        
-        // Find user by firebaseUid
-        const user = await usersCollection.findOne({ firebaseUid: userId });
-        if (!user) {
-             return NextResponse.json({ message: 'Usuario no encontrado.' }, { status: 404 });
-        }
-        const userObjectId = user._id;
+        // --- User progress logic moved to Firestore ---
+        const userRef = adminDb.collection('users').doc(userId);
+        const userSnap = await userRef.get();
 
-        // 2. If approved, update user progress
+        if (!userSnap.exists) {
+            return NextResponse.json({ message: 'Usuario no encontrado.' }, { status: 404 });
+        }
+
         let unlockedNextLesson = false;
         if (gradeResult.approved) {
-            // Add lesson to completedLessons
-            await usersCollection.updateOne(
-                { _id: userObjectId },
-                { $addToSet: { completedLessons: lessonId } }
-            );
+            await userRef.update({
+                completedLessons: FieldValue.arrayUnion(lessonId)
+            });
 
-            // Find next lesson to unlock
+            // Find next lesson in MongoDB
+            const client = await clientPromise;
+            const db = client.db('ravencode');
             const modulesCollection = db.collection('modules');
             const currentLesson = await modulesCollection.findOne({ _id: new ObjectId(lessonId) });
             
@@ -50,29 +48,26 @@ export async function POST(request: Request) {
                 }, { sort: { order: 1 } });
 
                 if (nextLesson) {
-                    await usersCollection.updateOne(
-                        { _id: userObjectId },
-                        { $addToSet: { unlockedLessons: nextLesson._id.toString() } }
-                    );
+                     await userRef.update({
+                        unlockedLessons: FieldValue.arrayUnion(nextLesson._id.toString())
+                    });
                     unlockedNextLesson = true;
                 }
             }
         }
         
-        // 3. (Optional) Save practice result to history
-        const practiceResultsCollection = db.collection('practiceResults');
-        await practiceResultsCollection.insertOne({
-            userId: userObjectId,
-            courseId: new ObjectId(courseId),
-            lessonId: new ObjectId(lessonId),
+        // Save practice result to Firestore (optional but recommended)
+        const practiceHistoryRef = adminDb.collection('users').doc(userId).collection('practiceHistory');
+        await practiceHistoryRef.add({
+            courseId: courseId,
+            lessonId: lessonId,
             score: gradeResult.score,
             approved: gradeResult.approved,
             results: gradeResult.results,
-            createdAt: new Date(),
+            createdAt: FieldValue.serverTimestamp(),
         });
+        // --- End of Firestore user logic ---
 
-
-        // 4. Return detailed results to frontend
         return NextResponse.json({
             ...gradeResult,
             unlockedNextLesson
