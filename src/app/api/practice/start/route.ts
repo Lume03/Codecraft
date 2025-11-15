@@ -38,11 +38,11 @@ export async function POST(request: Request) {
         if (!userId || !courseId || !lessonId) {
             return NextResponse.json({ message: 'Faltan parámetros requeridos (userId, courseId, lessonId)' }, { status: 400 });
         }
-
+        
         if (!ObjectId.isValid(lessonId) || !ObjectId.isValid(courseId)) {
              return NextResponse.json({ message: 'El ID de la lección o del curso es inválido.' }, { status: 400 });
         }
-        
+
         const client = await clientPromise;
         const db = client.db('ravencode');
         const usersCollection = db.collection('users');

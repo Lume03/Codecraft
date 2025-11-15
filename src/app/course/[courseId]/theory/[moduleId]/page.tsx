@@ -1,3 +1,4 @@
+
 'use server';
 
 import { Header } from '@/components/header';
@@ -14,6 +15,7 @@ import { ObjectId } from 'mongodb';
 async function getTheoryData(theoryId: string): Promise<{
   theory: Theory;
   pages: TheoryPageType[];
+  lessonId: string;
 } | null> {
   if (!theoryId || !ObjectId.isValid(theoryId)) {
     return null;
@@ -23,6 +25,13 @@ async function getTheoryData(theoryId: string): Promise<{
     const client = await clientPromise;
     const db = client.db('ravencode');
     const id = new ObjectId(theoryId);
+
+    // First find the module that corresponds to this theory contentId
+    const module = await db.collection('modules').findOne({ contentId: theoryId });
+    if (!module) {
+      // If no module links to this theory, it's an orphan or invalid ID
+      return null;
+    }
 
     const theory = await db.collection('theories').findOne({ _id: id });
     if (!theory) {
@@ -47,6 +56,7 @@ async function getTheoryData(theoryId: string): Promise<{
         content: page.content,
         order: page.order,
       })),
+      lessonId: module._id.toString(),
     };
   } catch (e) {
     console.error(e);
@@ -58,21 +68,23 @@ export default async function TheoryLessonPage({
   params,
   searchParams,
 }: {
-  params: { courseId: string; moduleId: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ courseId: string; moduleId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { courseId, moduleId: theoryId } = params;
+  const { courseId, moduleId: theoryId } = await params;
+  const sp = await searchParams;
+  
   const data = await getTheoryData(theoryId);
 
   if (!data) {
     notFound();
   }
 
-  const { theory, pages } = data;
+  const { theory, pages, lessonId } = data;
   const totalPages = pages.length;
 
   let currentPage = 1;
-  const pageFromQuery = parseInt(searchParams?.page as string, 10);
+  const pageFromQuery = parseInt(sp?.page as string, 10);
   if (
     !isNaN(pageFromQuery) &&
     pageFromQuery > 0 &&
@@ -156,7 +168,7 @@ export default async function TheoryLessonPage({
                   boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
                 }}
               >
-                <Link href={`/practice/session/${theory.id}?courseId=${courseId}`}>
+                <Link href={`/practice/session/${lessonId}?courseId=${courseId}`}>
                    <BrainCircuit className="mr-2 h-4 w-4" /> Comenzar Práctica
                 </Link>
               </Button>
