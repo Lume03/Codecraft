@@ -26,7 +26,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useAuth, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 function GoogleIcon() {
   return (
@@ -86,6 +86,8 @@ export default function AuthPage() {
         level: 1,
         streak: 0,
         achievements: [],
+        lives: 5, // Start with 5 lives
+        lastLifeUpdate: serverTimestamp(), // Set initial timestamp
     };
     await setDoc(userRef, userData, { merge: true });
   }
@@ -116,12 +118,12 @@ export default function AuthPage() {
     try {
       const result = await signInWithPopup(auth, provider);
       const additionalInfo = getAdditionalUserInfo(result);
-      // Siempre actualiza/crea el documento para asegurar que la photoURL esté presente
-      await createFirestoreUserDocument(result.user);
       
       if (additionalInfo?.isNewUser) {
+        await createFirestoreUserDocument(result.user);
         router.push('/profile/setup');
       } else {
+        // For existing users, we don't need to overwrite their document unless necessary
         router.push('/learn');
       }
     } catch (error: any) {

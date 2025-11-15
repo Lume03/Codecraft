@@ -16,7 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function ProfileSetupPage() {
   const [displayName, setDisplayName] = useState('');
@@ -34,9 +34,12 @@ export default function ProfileSetupPage() {
         username,
         reminders,
         email: user.email,
+        photoURL: user.photoURL,
         level: 1,
         streak: 0,
         achievements: [],
+        lives: 5,
+        lastLifeUpdate: serverTimestamp(),
       }, { merge: true });
       router.push('/learn');
     }

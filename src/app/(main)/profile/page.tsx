@@ -12,6 +12,7 @@ import {
   Bell,
   Trophy,
   CodeXml,
+  Heart,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
@@ -104,6 +105,7 @@ export default function ProfilePage() {
 
   const streak = userProfile?.streak ?? 0;
   const achievements = userProfile?.achievements ?? [];
+  const lives = userProfile?.lives ?? 5;
 
   if (!mounted) {
     return null; 
@@ -120,12 +122,18 @@ export default function ProfilePage() {
             <CodeXml className="h-7 w-7 text-primary" />
             <span className="text-xl">RavenCode</span>
           </Link>
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/settings">
-              <Settings className="h-5 w-5" />
-              <span className="sr-only">Ajustes</span>
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+             <div className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-semibold text-red-500">
+                <Heart className="h-5 w-5 fill-current" />
+                <span>{lives}</span>
+              </div>
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/settings">
+                <Settings className="h-5 w-5" />
+                <span className="sr-only">Ajustes</span>
+              </Link>
+            </Button>
+          </div>
         </div>
       </header>
 
