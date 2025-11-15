@@ -274,6 +274,73 @@ function NewTheoryForm({
   );
 }
 
+function NewPageForm({ theoryId, onPageAdded }: { theoryId: string; onPageAdded: () => void; }) {
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const { toast } = useToast();
+
+  const handleSavePage = async () => {
+    if (!title || !content) {
+      toast({
+        variant: 'destructive',
+        title: 'Faltan campos',
+        description: 'Por favor, completa el título y el contenido de la página.',
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/pages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content, theoryId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al guardar la página');
+      }
+
+      setTitle('');
+      setContent('');
+      onPageAdded();
+      toast({
+        title: 'Página guardada',
+        description: 'La nueva página se ha añadido a la lección.',
+      });
+
+    } catch (error) {
+      console.error('Error saving page:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: (error as Error).message,
+      });
+    }
+  };
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Agregar Nueva Página</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label>Título de la Página</Label>
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label>Contenido (Markdown)</Label>
+          <Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={8} />
+        </div>
+        <DialogClose asChild>
+          <Button onClick={handleSavePage} className="w-full">Guardar Página</Button>
+        </DialogClose>
+      </div>
+    </DialogContent>
+  );
+}
+
+
 // --- DIÁLOGOS Y COMPONENTES DE EDICIÓN ---
 
 function EditPageDialog({
@@ -565,7 +632,12 @@ function PageList({ theoryId, onRefresh }: { theoryId: string; onRefresh: () => 
         setLoading(false);
       }
     }
-    fetchPages();
+    if (theoryId) {
+      fetchPages();
+    } else {
+      setLoading(false);
+      setPages([]);
+    }
   }, [theoryId, onRefresh]);
 
   if (loading)
@@ -578,7 +650,7 @@ function PageList({ theoryId, onRefresh }: { theoryId: string; onRefresh: () => 
   return (
     <div className="space-y-2">
       {pages.length === 0 && (
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="px-4 py-2 text-center text-sm text-muted-foreground">
           No hay páginas en esta lección.
         </p>
       )}
@@ -590,9 +662,9 @@ function PageList({ theoryId, onRefresh }: { theoryId: string; onRefresh: () => 
           <span className="flex-1 truncate pl-2 text-sm font-medium">
             {page.title}
           </span>
-          <Dialog>
+          <Dialog onOpenChange={(open) => !open && onRefresh()}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                 <Edit className="h-4 w-4" />
               </Button>
             </DialogTrigger>
@@ -604,6 +676,15 @@ function PageList({ theoryId, onRefresh }: { theoryId: string; onRefresh: () => 
           </Dialog>
         </div>
       ))}
+      <Dialog onOpenChange={(open) => !open && onRefresh()}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" className="w-full mt-2">
+            <Plus className="mr-2 h-4 w-4" />
+            Agregar Nueva Página
+          </Button>
+        </DialogTrigger>
+        <NewPageForm theoryId={theoryId} onPageAdded={onRefresh} />
+      </Dialog>
     </div>
   );
 }
@@ -647,8 +728,8 @@ function ModuleList({
       <Accordion type="single" collapsible className="w-full">
         {modules.map((module) => (
           <AccordionItem key={module.id} value={module.id}>
-            <div className="flex w-full items-center justify-between pr-2 hover:bg-secondary/20 rounded-lg">
-                <AccordionTrigger className="flex-1 text-left font-medium hover:no-underline px-4 py-2">
+            <div className="flex w-full items-center justify-between rounded-lg pr-2 hover:bg-secondary/20">
+                <AccordionTrigger className="flex-1 px-4 py-2 text-left font-medium hover:no-underline">
                     {module.title}
                 </AccordionTrigger>
                 <Dialog onOpenChange={(open) => !open && onRefresh()}>
@@ -701,11 +782,11 @@ function CourseManager({
         <Accordion type="single" collapsible className="w-full">
           {courses.map((course) => (
             <AccordionItem key={course.id} value={course.id}>
-                <div className="flex w-full items-center justify-between pr-2 hover:bg-secondary/20 rounded-lg">
-                    <AccordionTrigger className="flex-1 text-left hover:no-underline px-4 py-3">
+                <div className="flex w-full items-center justify-between rounded-lg pr-2 hover:bg-secondary/20">
+                    <AccordionTrigger className="flex-1 px-4 py-3 text-left hover:no-underline">
                         {course.title}
                     </AccordionTrigger>
-                    <Dialog>
+                    <Dialog onOpenChange={(open) => !open && onRefresh()}>
                         <DialogTrigger asChild>
                             <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                                 <Settings className="h-4 w-4" />
@@ -717,7 +798,7 @@ function CourseManager({
               <AccordionContent>
                 <div className="space-y-4 p-2">
                   <ModuleList courseId={course.id} onRefresh={onRefresh} />
-                  <Dialog>
+                  <Dialog onOpenChange={(open) => !open && onRefresh()}>
                     <DialogTrigger asChild>
                       <Button className="w-full">
                         <Plus className="mr-2 h-4 w-4" />
