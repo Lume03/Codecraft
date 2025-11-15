@@ -9,7 +9,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { equal } from 'node:assert';
 
 // --- Question Schemas ---
 const QuestionSchema = z.object({
@@ -21,7 +20,6 @@ const QuestionSchema = z.object({
   options: z.array(z.string()).optional().describe('List of options for single_choice or reorder.'),
   correctAnswer: z.union([z.string(), z.boolean(), z.array(z.string())]).describe('The correct answer for the question.'),
 });
-type Question = z.infer<typeof QuestionSchema>;
 
 // --- Input Schema ---
 const GenerateModeSchema = z.object({
@@ -75,17 +73,6 @@ export const PracticeOutputSchema = z.union([
   GradeOutputSchema,
 ]);
 export type PracticeOutput = z.infer<typeof PracticeOutputSchema>;
-
-// --- Exported Flow ---
-
-export async function handlePractice(input: PracticeInput): Promise<PracticeOutput> {
-  if (input.mode === 'generate') {
-    return practiceGenerateFlow(input);
-  } else {
-    // For grading, we can do it locally to save tokens and improve speed/accuracy.
-    return practiceGradeFlow(input);
-  }
-}
 
 // --- Generation Flow ---
 
@@ -171,3 +158,13 @@ const practiceGradeFlow = ai.defineFlow(
     }
 );
   
+// --- EXPORTED HANDLER FUNCTION ---
+
+export async function handlePractice(input: PracticeInput): Promise<PracticeOutput> {
+  if (input.mode === 'generate') {
+    return practiceGenerateFlow(input);
+  } else {
+    // For grading, we can do it locally to save tokens and improve speed/accuracy.
+    return practiceGradeFlow(input);
+  }
+}

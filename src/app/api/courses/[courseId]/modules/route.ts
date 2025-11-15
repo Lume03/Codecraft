@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
@@ -54,11 +54,11 @@ export async function POST(
 }
 
 export async function GET(
-  request: Request,
-  { params }: { params: { courseId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
-    const { courseId } = params;
+    const { courseId } = await params;
     if (!ObjectId.isValid(courseId)) {
        return NextResponse.json({ error: 'El ID del curso proporcionado es inválido.' }, { status: 400 });
     }
