@@ -647,11 +647,10 @@ function ModuleList({
       <Accordion type="single" collapsible className="w-full">
         {modules.map((module) => (
           <AccordionItem key={module.id} value={module.id}>
-            <AccordionTrigger className="hover:no-underline">
-              <div className="flex w-full items-center justify-between pr-2">
-                <span className="flex-1 truncate text-left font-medium">
-                  {module.title}
-                </span>
+            <div className="flex w-full items-center justify-between pr-2 hover:bg-secondary/20 rounded-lg">
+                <AccordionTrigger className="flex-1 text-left font-medium hover:no-underline px-4 py-2">
+                    {module.title}
+                </AccordionTrigger>
                 <Dialog onOpenChange={(open) => !open && onRefresh()}>
                   <DialogTrigger asChild>
                     <Button
@@ -671,7 +670,6 @@ function ModuleList({
                   />
                 </Dialog>
               </div>
-            </AccordionTrigger>
             <AccordionContent>
               <PageList theoryId={module.contentId} onRefresh={onRefresh} />
             </AccordionContent>
@@ -703,9 +701,10 @@ function CourseManager({
         <Accordion type="single" collapsible className="w-full">
           {courses.map((course) => (
             <AccordionItem key={course.id} value={course.id}>
-              <AccordionTrigger>
-                <div className="flex w-full items-center justify-between pr-2">
-                    <span className="flex-1 truncate text-left">{course.title}</span>
+                <div className="flex w-full items-center justify-between pr-2 hover:bg-secondary/20 rounded-lg">
+                    <AccordionTrigger className="flex-1 text-left hover:no-underline px-4 py-3">
+                        {course.title}
+                    </AccordionTrigger>
                     <Dialog>
                         <DialogTrigger asChild>
                             <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
@@ -715,7 +714,6 @@ function CourseManager({
                         <EditCourseDialog course={course} onCourseUpdated={onRefresh} onCourseDeleted={onRefresh} />
                     </Dialog>
                 </div>
-              </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4 p-2">
                   <ModuleList courseId={course.id} onRefresh={onRefresh} />
