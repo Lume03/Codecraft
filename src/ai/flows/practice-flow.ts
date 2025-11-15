@@ -1,4 +1,3 @@
-'use server';
 /**
  * @fileOverview An AI agent for generating and grading practice questions.
  *
