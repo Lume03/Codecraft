@@ -38,6 +38,10 @@ export async function POST(request: Request) {
         if (!userId || !courseId || !lessonId) {
             return NextResponse.json({ message: 'Faltan parámetros requeridos (userId, courseId, lessonId)' }, { status: 400 });
         }
+
+        if (!ObjectId.isValid(lessonId) || !ObjectId.isValid(courseId)) {
+             return NextResponse.json({ message: 'El ID de la lección o del curso es inválido.' }, { status: 400 });
+        }
         
         const client = await clientPromise;
         const db = client.db('ravencode');
@@ -70,9 +74,18 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: 'Lección no encontrada o no es de tipo teoría' }, { status: 404 });
         }
 
-        const course = await coursesCollection.findOne({ _id: module.courseId });
+        // Ensure the courseId from the module matches the one from the request for security
+        if(module.courseId.toString() !== courseId) {
+            return NextResponse.json({ message: 'La lección no pertenece al curso especificado.' }, { status: 400 });
+        }
+
+        const course = await coursesCollection.findOne({ _id: new ObjectId(courseId) });
         if (!course) {
              return NextResponse.json({ message: 'Curso asociado a la lección no encontrado' }, { status: 404 });
+        }
+
+        if (!module.contentId || !ObjectId.isValid(module.contentId)) {
+             return NextResponse.json({ message: 'La lección no tiene un contenido teórico válido.' }, { status: 404 });
         }
 
         const theoryPages = await theoryPagesCollection.find({ theoryId: new ObjectId(module.contentId) }).sort({order: 1}).toArray();
@@ -101,10 +114,6 @@ export async function POST(request: Request) {
 
     } catch (e: any) {
         console.error('Error in /api/practice/start:', e);
-        // Handle specific ObjectId errors
-        if (e.message.includes('Argument passed in must be a string of 12 bytes or a string of 24 hex characters')) {
-            return NextResponse.json({ message: 'ID de lección o curso inválido.' }, { status: 400 });
-        }
         return NextResponse.json({ message: 'Error interno del servidor', error: e.message }, { status: 500 });
     }
 }
