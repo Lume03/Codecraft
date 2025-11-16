@@ -21,56 +21,58 @@ export async function POST(request: Request) {
             throw new Error("La IA no devolvió un resultado de calificación válido.");
         }
 
-        // --- User progress logic moved to Firestore ---
+        const { approved, score, results } = gradeResult;
+
+        // --- User progress logic in Firestore ---
         const userRef = adminDb.collection('users').doc(userId);
-        const userSnap = await userRef.get();
-
-        if (!userSnap.exists) {
-            return NextResponse.json({ message: 'Usuario no encontrado.' }, { status: 404 });
-        }
-
-        let unlockedNextLesson = false;
-        if (gradeResult.approved) {
-            await userRef.update({
-                completedLessons: FieldValue.arrayUnion(lessonId)
-            });
-
-            // Find next lesson in MongoDB
+        
+        let unlockedNextLessonId: string | null = null;
+        
+        if (approved) {
             const client = await clientPromise;
             const db = client.db('ravencode');
             const modulesCollection = db.collection('modules');
+
+            // Find current lesson to get its order
             const currentLesson = await modulesCollection.findOne({ _id: new ObjectId(lessonId) });
             
             if (currentLesson) {
+                // Find next lesson in the same course with a higher order
                 const nextLesson = await modulesCollection.findOne({
-                    courseId: currentLesson.courseId,
+                    courseId: new ObjectId(courseId),
                     order: { $gt: currentLesson.order }
-                }, { sort: { order: 1 } });
+                }, { 
+                    sort: { order: 1 } 
+                });
 
                 if (nextLesson) {
-                     await userRef.update({
-                        unlockedLessons: FieldValue.arrayUnion(nextLesson._id.toString())
-                    });
-                    unlockedNextLesson = true;
+                    unlockedNextLessonId = nextLesson._id.toString();
                 }
             }
+             // Atomically update user document
+            const updates: { [key: string]: any } = {
+                [`progress.${courseId}.completedLessons`]: FieldValue.arrayUnion(lessonId),
+            };
+            if (unlockedNextLessonId) {
+                updates[`progress.${courseId}.unlockedLessons`] = FieldValue.arrayUnion(unlockedNextLessonId);
+            }
+             await userRef.update(updates);
         }
         
-        // Save practice result to Firestore (optional but recommended)
-        const practiceHistoryRef = adminDb.collection('users').doc(userId).collection('practiceHistory');
+        // Save practice result to a subcollection (optional but good for history)
+        const practiceHistoryRef = userRef.collection('practiceHistory');
         await practiceHistoryRef.add({
-            courseId: courseId,
-            lessonId: lessonId,
-            score: gradeResult.score,
-            approved: gradeResult.approved,
-            results: gradeResult.results,
+            courseId,
+            lessonId,
+            score,
+            approved,
+            results,
             createdAt: FieldValue.serverTimestamp(),
         });
-        // --- End of Firestore user logic ---
 
         return NextResponse.json({
             ...gradeResult,
-            unlockedNextLesson
+            unlockedNextLessonId: unlockedNextLessonId
         });
 
     } catch (e: any) {
