@@ -19,15 +19,16 @@ export default function ReorderQuestion({
   const [items, setItems] = useState<string[]>([]);
   
   useEffect(() => {
+    // This effect runs ONLY ONCE when the component mounts.
+    // It shuffles the initial options and sets both the local state
+    // and the parent's state (via onAnswer) just one time.
     if (question.options) {
-      // Shuffle options to make it a challenge
       const shuffledItems = [...question.options].sort(() => Math.random() - 0.5);
       setItems(shuffledItems);
-      // Call onAnswer once with the initial shuffled state
       onAnswer(shuffledItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [question.options]);
+  }, [question.options]); // Dependency on question.options ensures this runs if the question changes.
 
   const moveItem = (index: number, direction: 'up' | 'down') => {
     const newItems = [...items];
@@ -36,7 +37,8 @@ export default function ReorderQuestion({
       // Swap items
       [newItems[index], newItems[newIndex]] = [newItems[newIndex], newItems[index]];
       setItems(newItems);
-      // Propagate the change to the parent component ONLY when the user acts.
+      // CRITICAL FIX: Only call onAnswer when the user actually performs an action.
+      // This breaks the infinite loop.
       onAnswer(newItems);
     }
   };
