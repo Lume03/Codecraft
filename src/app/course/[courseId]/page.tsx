@@ -186,7 +186,7 @@ export default function CourseDetailPage() {
             {modules?.map((module, index) => {
               const isCompleted = completedLessons.includes(module.id);
               // The first lesson is unlocked by default if no lessons are unlocked yet.
-              const isUnlocked = index === 0 ? isFirstLessonUnlocked : unlockedLessons.includes(module.id);
+              const isUnlocked = isFirstLessonUnlocked && index === 0 || unlockedLessons.includes(module.id);
               
               const status = isCompleted ? 'completed' : isUnlocked ? 'unlocked' : 'locked';
 

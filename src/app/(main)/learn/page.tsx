@@ -2,32 +2,72 @@
 
 import { CourseCard } from '@/components/course-card';
 import { Header } from '@/components/header';
-import type { Course } from '@/lib/data';
+import type { Course, Module } from '@/lib/data';
 import { PlusCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
+
+interface CourseWithProgress extends Course {
+  progress: number;
+}
 
 export default function LearnPage() {
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [courses, setCourses] = useState<CourseWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const user = useUser();
+  const firestore = useFirestore();
+
+  const userProfileRef = useMemo(() => {
+    if (user && firestore) {
+      return doc(firestore, `users/${user.uid}`);
+    }
+    return null;
+  }, [user, firestore]);
+
+  const { data: userProfile } = useDoc(userProfileRef);
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchCoursesAndProgress = async () => {
       try {
-        const res = await fetch('/api/courses');
-        if (!res.ok) {
+        setLoading(true);
+        const coursesRes = await fetch('/api/courses');
+        if (!coursesRes.ok) {
           throw new Error('Failed to fetch courses');
         }
-        const data = await res.json();
-        setCourses(data);
+        const coursesData: Course[] = await coursesRes.json();
+
+        if (userProfile && coursesData.length > 0) {
+           const coursesWithProgress = await Promise.all(coursesData.map(async (course) => {
+            const modulesRes = await fetch(`/api/courses/${course.id}/modules`);
+            if (!modulesRes.ok) return { ...course, progress: 0 };
+            
+            const modules: Module[] = await modulesRes.json();
+            const totalLessons = modules.length;
+            const completedLessons = userProfile.progress?.[course.id]?.completedLessons?.length ?? 0;
+            
+            const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+            return { ...course, progress: progress || 0 };
+          }));
+          setCourses(coursesWithProgress);
+        } else {
+            setCourses(coursesData.map(c => ({...c, progress: 0})));
+        }
+
       } catch (error) {
         console.error(error);
       } finally {
         setLoading(false);
       }
     };
-    fetchCourses();
-  }, []);
+    
+    // Fetch courses when component mounts, and re-fetch if user profile changes
+    fetchCoursesAndProgress();
+
+  }, [userProfile]);
 
   return (
     <div>

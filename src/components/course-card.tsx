@@ -5,7 +5,11 @@ import type { Course } from '@/lib/data.tsx';
 import { cn } from '@/lib/utils';
 import { placeholderImages } from '@/lib/placeholder-images';
 
-export function CourseCard({ course }: { course: Course }) {
+interface CourseWithProgress extends Course {
+  progress: number;
+}
+
+export function CourseCard({ course }: { course: CourseWithProgress }) {
   const accentVariants = {
     'py-101': {
       ring: 'group-hover:ring-green-400/50 group-focus-visible:ring-green-400/50',
@@ -20,16 +24,20 @@ export function CourseCard({ course }: { course: Course }) {
       progress: '[&>div]:bg-blue-400',
     },
   };
-
-  const id = course.id;
-  const accent =
-    accentVariants[id as keyof typeof accentVariants] || {};
+  
+  // A simple way to get a course ID for styling if it doesn't match the predefined ones
+  // This is just a placeholder logic for styling and might need adjustment based on real course IDs
+  const courseStyleId = course.id.includes('js') ? 'js-101' : course.id.includes('py') ? 'py-101' : 'cpp-101';
+  
+  const accent = accentVariants[courseStyleId as keyof typeof accentVariants] ?? {};
     
   const courseImage = placeholderImages.find(p => p.id === course.imageId);
 
+  const progress = course.progress ?? 0;
+
   return (
     <Link
-      href={`/course/${id}`}
+      href={`/course/${course.id}`}
       className="group block"
       aria-label={`Abrir curso: ${course.title}`}
     >
@@ -66,11 +74,11 @@ export function CourseCard({ course }: { course: Course }) {
         </div>
         <div className="mt-4 flex items-center gap-3">
           <Progress
-            value={course.progress}
+            value={progress}
             className={cn('h-2 flex-1', accent.progress)}
           />
           <span className="text-sm font-semibold text-muted-foreground">
-            {course.progress}%
+            {progress}%
           </span>
         </div>
       </div>

@@ -23,6 +23,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { doc, DocumentReference } from 'firebase/firestore';
+import { recalculateLives, REFILL_MINUTES } from '@/lib/lives';
 
 const QuickSettingTile = ({
   icon: Icon,
@@ -75,6 +76,15 @@ export default function ProfilePage() {
 
   const { data: userProfile } = useDoc(userProfileRef);
 
+  const [currentLives, setCurrentLives] = useState(userProfile?.lives ?? 0);
+
+  useEffect(() => {
+    if(userProfile) {
+      const recalculated = recalculateLives(userProfile);
+      setCurrentLives(recalculated.lives);
+    }
+  }, [userProfile]);
+
   const goals = [
     {
       title: 'Practicar 3 días seguidos',
@@ -100,11 +110,26 @@ export default function ProfilePage() {
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
-
+  
   const streak = userProfile?.streak ?? 0;
   const achievements = userProfile?.achievements ?? [];
-  const lives = userProfile?.lives ?? 0;
   const level = userProfile?.level ?? 1;
+
+  // Calculate overall progress
+  const overallProgress = useMemo(() => {
+    if (!userProfile?.progress) return 0;
+    const courses = Object.values(userProfile.progress);
+    if (courses.length === 0) return 0;
+    
+    // Simplified: assuming each course has ~10 lessons for progress calculation
+    const totalCompleted = courses.reduce((sum, course) => sum + (course.completedLessons?.length ?? 0), 0);
+    const totalLessons = courses.length * 10; 
+    
+    if (totalLessons === 0) return 0;
+    
+    return Math.round((totalCompleted / totalLessons) * 100) || 0;
+  }, [userProfile?.progress]);
+
 
   if (!mounted) {
     return null; 
@@ -124,7 +149,7 @@ export default function ProfilePage() {
           <div className="flex items-center gap-2">
              <div className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-semibold text-red-500">
                 <Heart className="h-5 w-5 fill-current" />
-                <span>{lives}</span>
+                <span>{currentLives}</span>
               </div>
             <Button variant="ghost" size="icon" asChild>
               <Link href="/settings">
@@ -144,7 +169,7 @@ export default function ProfilePage() {
               src={avatarSrc}
               alt={userProfile?.displayName ?? user?.displayName ?? 'User avatar'}
             />
-            <AvatarFallback>{userProfile?.displayName?.charAt(0) ?? user?.displayName?.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{userProfile?.displayName?.charAt(0) ?? user?.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-3">
             <div>
@@ -162,18 +187,20 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Course Progress Card - This would need to be adapted to fetch user-specific progress */}
+        {/* Course Progress Card */}
         <div className="space-y-3 rounded-2xl border bg-card p-4 md:space-y-4 md:p-5 lg:p-6">
           <h2 className="text-lg font-semibold leading-tight">Progreso de curso</h2>
           <div className="space-y-3">
             <div>
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>General</span>
-                <span>0%</span>
+                <span>{overallProgress}%</span>
               </div>
-              <Progress value={0} className="mt-1 h-2" />
+              <Progress value={overallProgress} className="mt-1 h-2" />
             </div>
-            <p className="text-center text-sm text-muted-foreground">El seguimiento del progreso del curso se implementará pronto.</p>
+            {overallProgress === 0 && (
+                <p className="text-center text-sm text-muted-foreground">¡Completa tu primera lección para ver tu progreso!</p>
+            )}
           </div>
         </div>
         
