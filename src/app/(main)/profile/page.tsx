@@ -103,7 +103,8 @@ export default function ProfilePage() {
 
   const streak = userProfile?.streak ?? 0;
   const achievements = userProfile?.achievements ?? [];
-  const lives = userProfile?.lives ?? 5;
+  const lives = userProfile?.lives ?? 0;
+  const level = userProfile?.level ?? 1;
 
   if (!mounted) {
     return null; 
@@ -152,7 +153,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3">
               <div className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
-                Nivel {userProfile?.level ?? 1}
+                Nivel {level}
               </div>
               <div className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
                 {achievements.length} Logros
@@ -168,7 +169,7 @@ export default function ProfilePage() {
             <div>
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>General</span>
-                <span>...%</span>
+                <span>0%</span>
               </div>
               <Progress value={0} className="mt-1 h-2" />
             </div>

@@ -75,12 +75,10 @@ export default function CourseDetailPage() {
   }
 
   const courseImage = placeholderImages.find((p) => p.id === course.imageId);
-  const lessonsCompleted = moduleStatuses.filter(
-    (s) => s === 'completed'
-  ).length;
+  
+  const lessonsCompleted = moduleStatuses.filter(s => s === 'completed').length ?? 0;
   const totalLessons = modules?.length ?? 0;
-  const progressPercentage =
-    totalLessons > 0 ? (lessonsCompleted / totalLessons) * 100 : 0;
+  const progressPercentage = totalLessons > 0 ? Math.round((lessonsCompleted / totalLessons) * 100) : 0;
 
   const currentLessonIndex = moduleStatuses.findIndex(
     (s) => s === 'in_progress'
