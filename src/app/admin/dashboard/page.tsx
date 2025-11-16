@@ -620,34 +620,33 @@ function PageList({ theoryId, onRefresh }: { theoryId: string; onRefresh: () => 
 
   useEffect(() => {
     async function fetchPages() {
+      if (!theoryId) {
+        setLoading(false);
+        setPages([]);
+        return;
+      }
       try {
         setLoading(true);
         const res = await fetch(`/api/theories?id=${theoryId}`);
         if (!res.ok) {
-            // If the theory was deleted, res.status will be 404
-            // We just set pages to empty array and don't throw an error
+            // If the theory was deleted (e.g., by deleting the parent module),
+            // the API returns 404. We can gracefully handle this.
             if (res.status === 404) {
                 setPages([]);
-                return;
+            } else {
+                throw new Error('Failed to fetch pages');
             }
-            throw new Error('Failed to fetch pages');
+        } else {
+          const data = await res.json();
+          setPages(data.pages);
         }
-        const data = await res.json();
-        setPages(data.pages);
       } catch (error) {
-        // We only log the error if it's not a 404 case, which is expected
-        // after deleting a module. The error is an instance of Error, not Response.
         console.error(error);
       } finally {
         setLoading(false);
       }
     }
-    if (theoryId) {
-      fetchPages();
-    } else {
-      setLoading(false);
-      setPages([]);
-    }
+    fetchPages();
   }, [theoryId, onRefresh]);
 
   if (loading)

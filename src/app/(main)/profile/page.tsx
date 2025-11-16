@@ -22,7 +22,7 @@ import { useTheme } from 'next-themes';
 import { useEffect, useState, useMemo } from 'react';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { placeholderImages } from '@/lib/placeholder-images';
-import { doc } from 'firebase/firestore';
+import { doc, DocumentReference } from 'firebase/firestore';
 
 const QuickSettingTile = ({
   icon: Icon,
@@ -71,11 +71,9 @@ export default function ProfilePage() {
       return doc(firestore, `users/${user.uid}`);
     }
     return null;
-  }, [user, firestore]);
+  }, [user, firestore]) as DocumentReference | null;
 
-  const { data: userProfile } = useDoc(userProfileRef, {
-    revalidate: true,
-  });
+  const { data: userProfile } = useDoc(userProfileRef);
 
   const goals = [
     {

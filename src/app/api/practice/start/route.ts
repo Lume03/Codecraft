@@ -12,6 +12,7 @@ const recalculateLives = (user: any, now: Date) => {
 
     if (!user.lastLifeUpdate) {
         user.lastLifeUpdate = now;
+        return user;
     }
     
     // Firestore Timestamps can be converted to JS Date
@@ -26,12 +27,16 @@ const recalculateLives = (user: any, now: Date) => {
     const livesToAdd = Math.floor(diffMs / (REFILL_MINUTES * 60 * 1000));
 
     if (livesToAdd > 0) {
-        user.lives = Math.min(MAX_LIVES, user.lives + livesToAdd);
-        const newLastLifeUpdate = new Date(
-            lastUpdateDate.getTime() +
-            livesToAdd * REFILL_MINUTES * 60 * 1000
-        );
-        user.lastLifeUpdate = newLastLifeUpdate > now ? now : newLastLifeUpdate;
+        const newLives = Math.min(MAX_LIVES, user.lives + livesToAdd);
+        // Only update lastLifeUpdate if lives were actually added and changed
+        if (newLives > user.lives) {
+             const newLastLifeUpdate = new Date(
+                lastUpdateDate.getTime() +
+                (newLives - user.lives) * REFILL_MINUTES * 60 * 1000
+            );
+            user.lastLifeUpdate = newLastLifeUpdate > now ? now : newLastLifeUpdate;
+        }
+        user.lives = newLives;
     }
     return user;
 };
