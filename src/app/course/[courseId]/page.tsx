@@ -67,32 +67,28 @@ export default function CourseDetailPage() {
   
   const progressPercentage = totalLessons > 0 ? Math.round((completedLessons.length / totalLessons) * 100) : 0;
 
-  // Find first unlocked lesson that is not completed
    const nextLesson = useMemo(() => {
     if (!modules || modules.length === 0) return null;
 
-    const firstUnlockedId = modules[0]?.id;
-    const isFirstUnlockedByDefault = !unlockedLessons.includes(firstUnlockedId);
+    const isFirstLessonUnlockedByDefault = !unlockedLessons.includes(modules[0]?.id) && completedLessons.length === 0;
 
-    // Find the first lesson that is unlocked but not completed
     for (const module of modules) {
-      const isUnlocked = unlockedLessons.includes(module.id) || (isFirstUnlockedByDefault && module.id === firstUnlockedId);
-      const isCompleted = completedLessons.includes(module.id);
-      if (isUnlocked && !isCompleted) {
-        return module;
-      }
+        const isUnlocked = unlockedLessons.includes(module.id) || (isFirstLessonUnlockedByDefault && module.id === modules[0]?.id);
+        const isCompleted = completedLessons.includes(module.id);
+        
+        if (isUnlocked && !isCompleted) {
+            return module;
+        }
     }
     
-    // If all unlocked are completed, maybe return the next in line if it exists
-    // Or just return null if course is finished.
-    const lastCompletedIndex = modules.findIndex(m => m.id === completedLessons[completedLessons.length - 1]);
-    if (lastCompletedIndex > -1 && lastCompletedIndex + 1 < modules.length) {
-      return modules[lastCompletedIndex + 1];
-    }
+    // If all unlocked lessons are completed, check if there's a next locked lesson to show.
+    // Otherwise, it means the course is finished.
+    if (completedLessons.length === totalLessons) return null;
     
-    return isFirstUnlockedByDefault ? modules[0] : null;
+    // Default to the first lesson if nothing else is available
+    return isFirstLessonUnlockedByDefault ? modules[0] : null;
 
-  }, [modules, completedLessons, unlockedLessons]);
+  }, [modules, completedLessons, unlockedLessons, totalLessons]);
 
   const currentLessonIndex = nextLesson ? modules.findIndex(m => m.id === nextLesson.id) : -1;
 
@@ -185,8 +181,9 @@ export default function CourseDetailPage() {
           <div className="space-y-2 rounded-2xl border bg-card p-2">
             {modules?.map((module, index) => {
               const isCompleted = completedLessons.includes(module.id);
-              // The first lesson is unlocked by default if no lessons are unlocked yet.
-              const isUnlocked = isFirstLessonUnlocked && index === 0 || unlockedLessons.includes(module.id);
+              // A lesson is unlocked if it's the first one, or if its ID is in the unlockedLessons array.
+              // A completed lesson is always considered unlocked for access.
+              const isUnlocked = (isFirstLessonUnlocked && index === 0) || unlockedLessons.includes(module.id) || isCompleted;
               
               const status = isCompleted ? 'completed' : isUnlocked ? 'unlocked' : 'locked';
 

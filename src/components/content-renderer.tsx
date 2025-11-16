@@ -19,9 +19,9 @@ export function ContentRenderer({ content }: Props) {
         rehypePlugins={[
           rehypeSlug,
           [rehypeAutolinkHeadings, { behavior: 'wrap' }],
-          rehypePrism, // ⬅️ Prism en lugar de PrettyCode
+          rehypePrism,
         ]}
-        className="prose prose-invert max-w-none prose-pre:shadow-sm prose-code:before:hidden prose-code:after:hidden"
+        className="max-w-none prose-pre:shadow-sm prose-code:before:hidden prose-code:after:hidden"
       >
         {content}
       </ReactMarkdown>
