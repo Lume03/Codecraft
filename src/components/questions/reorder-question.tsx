@@ -21,33 +21,25 @@ export default function ReorderQuestion({
   useEffect(() => {
     if (question.options) {
       // Shuffle options to make it a challenge
-      setItems([...question.options].sort(() => Math.random() - 0.5));
+      const shuffledItems = [...question.options].sort(() => Math.random() - 0.5);
+      setItems(shuffledItems);
+      // Call onAnswer once with the initial shuffled state
+      onAnswer(shuffledItems);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question.options]);
 
   const moveItem = (index: number, direction: 'up' | 'down') => {
     const newItems = [...items];
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     if (newIndex >= 0 && newIndex < newItems.length) {
-      const temp = newItems[index];
-      newItems[index] = newItems[newIndex];
-      newItems[newIndex] = temp;
+      // Swap items
+      [newItems[index], newItems[newIndex]] = [newItems[newIndex], newItems[index]];
       setItems(newItems);
+      // Propagate the change to the parent component ONLY when the user acts.
+      onAnswer(newItems);
     }
   };
-  
-  const handleSubmit = () => {
-    onAnswer(items);
-  };
-
-  useEffect(() => {
-    // Automatically submit when all items are ordered, 
-    // since there's no separate "submit" button in this design.
-    if(items.length > 0) {
-        onAnswer(items);
-    }
-  }, [items, onAnswer]);
-
 
   if (!question.options) return <p>Esta pregunta no tiene opciones para ordenar.</p>;
 
@@ -56,7 +48,7 @@ export default function ReorderQuestion({
       <div className="space-y-2">
         {items.map((item, index) => (
           <div
-            key={index}
+            key={`${item}-${index}`} // Use a more stable key if items can be duplicated
             className="flex items-center gap-2 rounded-md border bg-card p-3 font-code text-sm"
           >
             <span className="flex-1">{item}</span>
@@ -67,6 +59,7 @@ export default function ReorderQuestion({
                 className="h-7 w-7"
                 onClick={() => moveItem(index, 'up')}
                 disabled={index === 0}
+                aria-label={`Mover ${item} hacia arriba`}
               >
                 <ArrowUp className="h-4 w-4" />
               </Button>
@@ -76,6 +69,7 @@ export default function ReorderQuestion({
                 className="h-7 w-7"
                 onClick={() => moveItem(index, 'down')}
                 disabled={index === items.length - 1}
+                aria-label={`Mover ${item} hacia abajo`}
               >
                 <ArrowDown className="h-4 w-4" />
               </Button>
