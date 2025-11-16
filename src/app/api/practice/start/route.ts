@@ -3,44 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { handlePractice } from '@/ai/flows/practice-flow';
 import { adminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
-
-// Simplified recalculateLives function for this context
-const recalculateLives = (user: any, now: Date) => {
-    const MAX_LIVES = 5;
-    const REFILL_MINUTES = 20;
-
-    if (!user.lastLifeUpdate) {
-        user.lastLifeUpdate = now;
-        return user;
-    }
-    
-    // Firestore Timestamps can be converted to JS Date
-    const lastUpdateDate = user.lastLifeUpdate.toDate ? user.lastLifeUpdate.toDate() : new Date(user.lastLifeUpdate);
-
-    if (user.lives >= MAX_LIVES) {
-        user.lastLifeUpdate = now;
-        return user;
-    }
-
-    const diffMs = now.getTime() - lastUpdateDate.getTime();
-    const livesToAdd = Math.floor(diffMs / (REFILL_MINUTES * 60 * 1000));
-
-    if (livesToAdd > 0) {
-        const newLives = Math.min(MAX_LIVES, user.lives + livesToAdd);
-        // Only update lastLifeUpdate if lives were actually added and changed
-        if (newLives > user.lives) {
-             const newLastLifeUpdate = new Date(
-                lastUpdateDate.getTime() +
-                (newLives - user.lives) * REFILL_MINUTES * 60 * 1000
-            );
-            user.lastLifeUpdate = newLastLifeUpdate > now ? now : newLastLifeUpdate;
-        }
-        user.lives = newLives;
-    }
-    return user;
-};
-
+import { recalculateLives, MAX_LIVES } from '@/lib/lives';
 
 export async function POST(request: Request) {
     try {
@@ -54,7 +17,7 @@ export async function POST(request: Request) {
              return NextResponse.json({ message: 'El ID de la lección o del curso es inválido.' }, { status: 400 });
         }
 
-        // --- User logic moved to Firestore ---
+        // --- User logic with Firestore ---
         const userRef = adminDb.collection('users').doc(userId);
         const userSnap = await userRef.get();
 
@@ -62,32 +25,31 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
         }
         
-        let user = recalculateLives(userSnap.data() as any, new Date());
+        const userData = userSnap.data()!;
+        const recalculatedUser = recalculateLives(userData);
 
-        if (user.lives <= 0) {
+        if (recalculatedUser.lives <= 0) {
+            // Save the recalculated (but still 0) lives state before returning
             await userRef.update({
-                lives: user.lives,
-                lastLifeUpdate: user.lastLifeUpdate,
+                lives: recalculatedUser.lives,
+                lastLifeUpdate: recalculatedUser.lastLifeUpdate,
             });
             return NextResponse.json({ message: 'No tienes vidas suficientes para iniciar la práctica.' }, { status: 403 });
         }
-
-        const newLives = user.lives - 1;
+        
+        const newLives = recalculatedUser.lives - 1;
         await userRef.update({ 
             lives: newLives,
-            lastLifeUpdate: user.lastLifeUpdate ?? FieldValue.serverTimestamp(),
+            lastLifeUpdate: recalculatedUser.lastLifeUpdate,
         });
         // --- End of Firestore user logic ---
 
 
-        // --- Course content logic remains in MongoDB ---
+        // --- Course content logic from MongoDB ---
         const client = await clientPromise;
         const db = client.db('ravencode');
-        const modulesCollection = db.collection('modules');
-        const coursesCollection = db.collection('courses');
-        const theoryPagesCollection = db.collection('theory-pages');
         
-        const module = await modulesCollection.findOne({ _id: new ObjectId(lessonId) });
+        const module = await db.collection('modules').findOne({ _id: new ObjectId(lessonId) });
         if (!module || module.type !== 'theory') {
             return NextResponse.json({ message: 'Lección no encontrada o no es de tipo teoría' }, { status: 404 });
         }
@@ -96,7 +58,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: 'La lección no pertenece al curso especificado.' }, { status: 400 });
         }
 
-        const course = await coursesCollection.findOne({ _id: new ObjectId(courseId) });
+        const course = await db.collection('courses').findOne({ _id: new ObjectId(courseId) });
         if (!course) {
              return NextResponse.json({ message: 'Curso asociado a la lección no encontrado' }, { status: 404 });
         }
@@ -105,7 +67,7 @@ export async function POST(request: Request) {
              return NextResponse.json({ message: 'La lección no tiene un contenido teórico válido.' }, { status: 404 });
         }
 
-        const theoryPages = await theoryPagesCollection.find({ theoryId: new ObjectId(module.contentId) }).sort({order: 1}).toArray();
+        const theoryPages = await db.collection('theory-pages').find({ theoryId: new ObjectId(module.contentId) }).sort({order: 1}).toArray();
         const theoryContent = theoryPages.map(p => `## ${p.title}\n\n${p.content}`).join('\n\n---\n\n');
 
         if (!theoryContent) {
