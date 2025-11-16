@@ -70,7 +70,11 @@
 @layer components {
   /* Clase para contenedores de Markdown */
   .markdown {
-    @apply prose prose-invert max-w-none;
+    @apply prose max-w-none;
+  }
+  
+  .dark .markdown {
+      @apply prose-invert;
   }
 
   /* Ajustes mínimos para bloques de código renderizados por Shiki */
