@@ -1,5 +1,5 @@
 export const MAX_LIVES = 5;
-export const REFILL_MINUTES = 2; // Reducido a 2 minutos para facilitar las pruebas
+export const REFILL_MINUTES = 120; // 2 horas
 
 /**
  * Recalculates the number of lives a user has based on the time elapsed

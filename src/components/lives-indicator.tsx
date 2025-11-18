@@ -13,16 +13,27 @@ interface LivesIndicatorProps {
 }
 
 const formatTime = (seconds: number) => {
-  const mins = Math.floor(seconds / 60);
+  const hours = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
+  
+  if (hours > 0) {
+      return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
   return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 };
 
-export function LivesIndicator({ lives, lastLifeUpdate }: LivesIndicatorProps) {
+export function LivesIndicator({ lives: initialLives, lastLifeUpdate }: LivesIndicatorProps) {
+  const [currentLives, setCurrentLives] = useState(initialLives);
   const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
-    if (lives >= MAX_LIVES || !lastLifeUpdate) {
+    // Sincroniza el estado local con las props cuando cambian (ej. al cargar datos de Firestore)
+    setCurrentLives(initialLives);
+  }, [initialLives]);
+
+  useEffect(() => {
+    if (currentLives >= MAX_LIVES || !lastLifeUpdate) {
       setCountdown(0);
       return;
     }
@@ -43,9 +54,9 @@ export function LivesIndicator({ lives, lastLifeUpdate }: LivesIndicatorProps) {
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          // When timer hits 0, it doesn't automatically grant a life.
-          // It just resets to the full duration for the next cycle.
-          // The actual life is granted on the next server-side recalculation.
+          // Cuando el contador llega a 0, se añade una vida visualmente
+          setCurrentLives((current) => Math.min(MAX_LIVES, current + 1));
+          // Y se reinicia el contador para la siguiente vida
           return REFILL_MINUTES * 60;
         }
         return prev - 1;
@@ -53,10 +64,10 @@ export function LivesIndicator({ lives, lastLifeUpdate }: LivesIndicatorProps) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [lives, lastLifeUpdate]);
+  }, [currentLives, lastLifeUpdate]);
 
-  const isFull = lives >= MAX_LIVES;
-  const isInfinite = lives === Infinity;
+  const isFull = currentLives >= MAX_LIVES;
+  const isInfinite = initialLives === Infinity;
 
   return (
     <Popover>
@@ -66,11 +77,11 @@ export function LivesIndicator({ lives, lastLifeUpdate }: LivesIndicatorProps) {
           tabIndex={0}
           className={cn(
             'flex cursor-pointer items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-sm font-semibold',
-            isInfinite ? 'text-blue-500' : 'text-red-500'
+            isInfinite ? 'text-blue-500' : isFull ? 'text-red-500' : 'text-red-500'
           )}
         >
           <Heart className="h-5 w-5 fill-current" />
-          {isInfinite ? <Infinity className="h-5 w-5" /> : <span>{lives}</span>}
+          {isInfinite ? <Infinity className="h-5 w-5" /> : <span>{currentLives}</span>}
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-64 text-center">
@@ -80,7 +91,7 @@ export function LivesIndicator({ lives, lastLifeUpdate }: LivesIndicatorProps) {
             {Array.from({ length: MAX_LIVES }).map((_, i) => (
               <Heart
                 key={i}
-                className={cn('h-6 w-6', i < lives ? 'fill-red-500 text-red-500' : 'fill-muted text-muted-foreground')}
+                className={cn('h-6 w-6', i < currentLives ? 'fill-red-500 text-red-500' : 'fill-muted text-muted-foreground')}
               />
             ))}
           </div>
