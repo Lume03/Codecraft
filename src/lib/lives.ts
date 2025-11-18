@@ -1,9 +1,9 @@
 export const MAX_LIVES = 5;
-export const REFILL_MINUTES = 20;
+export const REFILL_MINUTES = 2; // Reducido a 2 minutos para facilitar las pruebas
 
 /**
  * Recalculates the number of lives a user has based on the time elapsed
- * since the last life was regenerated.
+ * since the last life was regenerated. It correctly handles different timestamp formats.
  *
  * @param user An object containing user's life data. Must have `lives` and `lastLifeUpdate`.
  * @param now The current date, for testability. Defaults to `new Date()`.
@@ -13,17 +13,19 @@ export function recalculateLives<T extends { lives?: number; lastLifeUpdate?: an
   user: T,
   now = new Date()
 ): T & { lives: number; lastLifeUpdate: Date } {
+    
   const firestoreTimestampToDate = (timestamp: any): Date => {
     if (!timestamp) return now;
-    // Handle Firestore Timestamp object
+    // Handle Firestore Timestamp object from server-side (admin SDK)
     if (timestamp.toDate) return timestamp.toDate();
-    // Handle ISO string or JS Date object
+    // Handle ISO string or JS Date object from client-side
     return new Date(timestamp);
   }
 
   let lives = user.lives ?? MAX_LIVES;
   let lastLifeUpdate = firestoreTimestampToDate(user.lastLifeUpdate);
 
+  // If lives are full, the timer is effectively paused. The last update time is now.
   if (lives >= MAX_LIVES) {
     return { ...user, lives: MAX_LIVES, lastLifeUpdate: now };
   }
@@ -33,14 +35,14 @@ export function recalculateLives<T extends { lives?: number; lastLifeUpdate?: an
 
   if (livesToAdd > 0) {
     const newLives = Math.min(MAX_LIVES, lives + livesToAdd);
-     // Calculate the exact time the last life was earned to prevent accumulating "debt"
+    // Important: The new reference date is advanced only by the time it took to earn the new lives.
+    // This preserves any "progress" towards the next life.
     const newLastLifeUpdate = new Date(
-      lastLifeUpdate.getTime() + (newLives - lives) * REFILL_MINUTES * 60 * 1000
+      lastLifeUpdate.getTime() + livesToAdd * REFILL_MINUTES * 60 * 1000
     );
     
     lives = newLives;
-    // The last update time should not be in the future
-    lastLifeUpdate = newLastLifeUpdate > now ? now : newLastLifeUpdate;
+    lastLifeUpdate = newLastLifeUpdate;
   }
 
   return { ...user, lives, lastLifeUpdate };

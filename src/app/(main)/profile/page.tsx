@@ -23,7 +23,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { doc, DocumentReference } from 'firebase/firestore';
-import { recalculateLives, REFILL_MINUTES } from '@/lib/lives';
+import { recalculateLives } from '@/lib/lives';
 
 const QuickSettingTile = ({
   icon: Icon,
@@ -72,12 +72,14 @@ export default function ProfilePage() {
       return doc(firestore, `users/${user.uid}`);
     }
     return null;
-  }, [user, firestore]) as DocumentReference | null;
+  }, [user, firestore]);
 
   const { data: userProfile } = useDoc(userProfileRef);
 
+  // State for lives, initialized to a safe default
   const [currentLives, setCurrentLives] = useState(userProfile?.lives ?? 0);
 
+  // This effect recalculates lives on the client side for an up-to-date view
   useEffect(() => {
     if(userProfile) {
       const recalculated = recalculateLives(userProfile);
@@ -111,6 +113,7 @@ export default function ProfilePage() {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
   
+  // Use nullish coalescing operator to provide safe fallbacks and prevent NaN
   const streak = userProfile?.streak ?? 0;
   const achievements = userProfile?.achievements ?? [];
   const level = userProfile?.level ?? 1;
@@ -118,16 +121,21 @@ export default function ProfilePage() {
   // Calculate overall progress
   const overallProgress = useMemo(() => {
     if (!userProfile?.progress) return 0;
-    const courses = Object.values(userProfile.progress);
-    if (courses.length === 0) return 0;
+
+    const coursesProgress = Object.values(userProfile.progress);
+    if (coursesProgress.length === 0) return 0;
     
     // Simplified: assuming each course has ~10 lessons for progress calculation
-    const totalCompleted = courses.reduce((sum, course) => sum + (course.completedLessons?.length ?? 0), 0);
-    const totalLessons = courses.length * 10; 
+    const totalCompleted = coursesProgress.reduce((sum, course) => sum + (course.completedLessons?.length ?? 0), 0);
+    // To get a more accurate total, we should fetch all modules for all courses,
+    // but for a general overview, this is a reasonable client-side estimation.
+    // Let's assume an average of 10 lessons per course.
+    const totalLessons = coursesProgress.length * 10; 
     
     if (totalLessons === 0) return 0;
     
-    return Math.round((totalCompleted / totalLessons) * 100) || 0;
+    const rawProgress = (totalCompleted / totalLessons) * 100;
+    return Math.round(rawProgress) || 0;
   }, [userProfile?.progress]);
 
 
