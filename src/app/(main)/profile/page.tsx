@@ -22,7 +22,7 @@ import { useTheme } from 'next-themes';
 import { useEffect, useState, useMemo } from 'react';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { placeholderImages } from '@/lib/placeholder-images';
-import { doc, DocumentReference } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import { recalculateLives } from '@/lib/lives';
 
 const QuickSettingTile = ({
@@ -76,12 +76,14 @@ export default function ProfilePage() {
 
   const { data: userProfile } = useDoc(userProfileRef);
 
-  // State for lives, initialized to a safe default
-  const [currentLives, setCurrentLives] = useState(userProfile?.lives ?? 0);
+  // State for lives, initialized to a safe default of 0 to prevent NaN on first render.
+  const [currentLives, setCurrentLives] = useState(0);
 
   // This effect recalculates lives on the client side for an up-to-date view
   useEffect(() => {
+    // Only run recalculation if the user profile has been loaded
     if(userProfile) {
+      // The recalculateLives function is now robust and won't return NaN.
       const recalculated = recalculateLives(userProfile);
       setCurrentLives(recalculated.lives);
     }

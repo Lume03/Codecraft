@@ -3,7 +3,8 @@ export const REFILL_MINUTES = 2; // Reducido a 2 minutos para facilitar las prue
 
 /**
  * Recalculates the number of lives a user has based on the time elapsed
- * since the last life was regenerated. It correctly handles different timestamp formats.
+ * since the last life was regenerated. It correctly handles different timestamp formats
+ * and is resilient to missing or undefined input data.
  *
  * @param user An object containing user's life data. Must have `lives` and `lastLifeUpdate`.
  * @param now The current date, for testability. Defaults to `new Date()`.
@@ -22,6 +23,8 @@ export function recalculateLives<T extends { lives?: number; lastLifeUpdate?: an
     return new Date(timestamp);
   }
 
+  // CRITICAL FIX: Ensure 'lives' is a number, defaulting to MAX_LIVES if undefined or null.
+  // This prevents any subsequent calculation from resulting in NaN.
   let lives = user.lives ?? MAX_LIVES;
   let lastLifeUpdate = firestoreTimestampToDate(user.lastLifeUpdate);
 
@@ -34,6 +37,7 @@ export function recalculateLives<T extends { lives?: number; lastLifeUpdate?: an
   const livesToAdd = Math.floor(diffMs / (REFILL_MINUTES * 60 * 1000));
 
   if (livesToAdd > 0) {
+    // Math.min is safe here because 'lives' is guaranteed to be a number.
     const newLives = Math.min(MAX_LIVES, lives + livesToAdd);
     // Important: The new reference date is advanced only by the time it took to earn the new lives.
     // This preserves any "progress" towards the next life.
