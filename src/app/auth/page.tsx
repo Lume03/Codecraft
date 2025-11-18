@@ -75,57 +75,75 @@ export default function AuthPage() {
     }
   }, [auth, firestore])
 
-  const createInitialUserDocument = async (user: User) => {
+  const upsertUserDocument = async (user: User, isNewUser = false) => {
     if (!firestore) return;
-
-    // Create in Firestore
     const userRef = doc(firestore, 'users', user.uid);
-    const firestoreData = {
+    
+    // Base data that is always updated on login/signup to keep it fresh
+    const baseData = {
         displayName: user.displayName || fullname,
         email: user.email,
         photoURL: user.photoURL,
+        firebaseUid: user.uid,
+    };
+
+    // Data that is only set on creation or if it's missing (the "reset")
+    const initialData = {
         level: 1,
         streak: 0,
         achievements: [],
-        lives: 5, 
+        lives: 5,
         lastLifeUpdate: serverTimestamp(),
+        progress: {},
     };
-    await setDoc(userRef, firestoreData, { merge: true });
-
-    // Also create/update in MongoDB
-    const mongoData = {
-      firebaseUid: user.uid,
-      email: user.email,
-      displayName: user.displayName || fullname,
-      photoURL: user.photoURL,
-      level: 1,
-      streak: 0,
-      achievements: [],
-      lives: 5,
-      lastLifeUpdate: new Date(),
-    };
-
+    
     try {
-      await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mongoData),
-      });
+        if (isNewUser) {
+            // For new users, create the full document
+            await setDoc(userRef, { ...baseData, ...initialData });
+        } else {
+            // For existing users, update base data and only add initial data if missing.
+            // Using merge: true ensures we don't overwrite existing progress, lives, etc.
+            await setDoc(userRef, { ...baseData, ...initialData }, { merge: true });
+        }
+
+        // Also create/update in MongoDB
+        const mongoData = {
+            ...baseData,
+            level: 1,
+            streak: 0,
+            achievements: [],
+            lives: 5,
+            lastLifeUpdate: new Date(),
+        };
+
+        await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(mongoData),
+        });
+
     } catch (error) {
-      console.error("Failed to create user in MongoDB:", error);
-      // Optional: handle this error, e.g., show a toast
+      console.error("Failed to create/update user document:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Error de cuenta',
+        description: 'No se pudo guardar la información del perfil.',
+      });
     }
   }
+
 
   const handleAuthAction = async () => {
     if (!auth || !firestore) return;
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        await upsertUserDocument(userCredential.user); // Ensure user doc is up-to-date
         router.push('/learn');
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await createInitialUserDocument(userCredential.user);
+        await upsertUserDocument(userCredential.user, true); // It's a new user
         router.push('/profile/setup');
       }
     } catch (error: any) {
@@ -144,11 +162,12 @@ export default function AuthPage() {
       const result = await signInWithPopup(auth, provider);
       const additionalInfo = getAdditionalUserInfo(result);
       
-      if (additionalInfo?.isNewUser) {
-        await createInitialUserDocument(result.user);
+      const isNew = additionalInfo?.isNewUser ?? false;
+      await upsertUserDocument(result.user, isNew);
+      
+      if (isNew) {
         router.push('/profile/setup');
       } else {
-        // For existing users, we don't need to overwrite their document unless necessary
         router.push('/learn');
       }
     } catch (error: any) {
@@ -338,3 +357,5 @@ export default function AuthPage() {
       </main>
     </div>
   );
+
+    
