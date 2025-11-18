@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/select';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
-import { Edit, Plus, Trash2, Settings } from 'lucide-react';
+import { Edit, Plus, Trash2, Settings, LogOut } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -837,6 +837,11 @@ export default function AdminDashboard() {
 
   const handleRefresh = () => setRefreshKey((k) => k + 1);
 
+  const handleLogout = () => {
+    localStorage.removeItem('isAdmin');
+    router.replace('/admin');
+  };
+
   useEffect(() => {
     const isAdmin = localStorage.getItem('isAdmin');
     if (isAdmin !== 'true') {
@@ -863,7 +868,15 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen flex-col">
-      <Header title="Dashboard del Administrador" />
+      <Header
+        title="Dashboard del Administrador"
+        action={
+          <Button variant="ghost" size="icon" onClick={handleLogout}>
+            <LogOut className="h-5 w-5" />
+            <span className="sr-only">Cerrar sesión</span>
+          </Button>
+        }
+      />
       <main className="container mx-auto max-w-4xl flex-1 space-y-6 p-4">
         <NewCourseForm onCourseAdded={handleRefresh} />
 
@@ -876,3 +889,5 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+    
