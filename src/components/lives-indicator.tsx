@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -65,7 +66,7 @@ export function LivesIndicator({ lives, lastLifeUpdate }: LivesIndicatorProps) {
           tabIndex={0}
           className={cn(
             'flex cursor-pointer items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-sm font-semibold',
-            isInfinite ? 'text-blue-500' : isFull ? 'text-green-500' : 'text-red-500'
+            isInfinite ? 'text-blue-500' : 'text-red-500'
           )}
         >
           <Heart className="h-5 w-5 fill-current" />
