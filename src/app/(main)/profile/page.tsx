@@ -12,7 +12,6 @@ import {
   Bell,
   Trophy,
   CodeXml,
-  Heart,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
@@ -23,7 +22,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { doc } from 'firebase/firestore';
-import { recalculateLives } from '@/lib/lives';
+import { recalculateLives, MAX_LIVES } from '@/lib/lives';
+import { LivesIndicator } from '@/components/lives-indicator';
 
 const QuickSettingTile = ({
   icon: Icon,
@@ -76,16 +76,14 @@ export default function ProfilePage() {
 
   const { data: userProfile } = useDoc(userProfileRef);
 
-  // State for lives, initialized to a safe default of 0 to prevent NaN on first render.
-  const [currentLives, setCurrentLives] = useState(0);
+  const [currentLives, setCurrentLives] = useState(MAX_LIVES);
+  const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(new Date());
 
-  // This effect recalculates lives on the client side for an up-to-date view
   useEffect(() => {
-    // Only run recalculation if the user profile has been loaded
     if(userProfile) {
-      // The recalculateLives function is now robust and won't return NaN.
       const recalculated = recalculateLives(userProfile);
       setCurrentLives(recalculated.lives);
+      setLastLifeUpdate(recalculated.lastLifeUpdate);
     }
   }, [userProfile]);
 
@@ -115,23 +113,17 @@ export default function ProfilePage() {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
   
-  // Use nullish coalescing operator to provide safe fallbacks and prevent NaN
   const streak = userProfile?.streak ?? 0;
   const achievements = userProfile?.achievements ?? [];
   const level = userProfile?.level ?? 1;
 
-  // Calculate overall progress
   const overallProgress = useMemo(() => {
     if (!userProfile?.progress) return 0;
 
     const coursesProgress = Object.values(userProfile.progress);
     if (coursesProgress.length === 0) return 0;
     
-    // Simplified: assuming each course has ~10 lessons for progress calculation
     const totalCompleted = coursesProgress.reduce((sum, course) => sum + (course.completedLessons?.length ?? 0), 0);
-    // To get a more accurate total, we should fetch all modules for all courses,
-    // but for a general overview, this is a reasonable client-side estimation.
-    // Let's assume an average of 10 lessons per course.
     const totalLessons = coursesProgress.length * 10; 
     
     if (totalLessons === 0) return 0;
@@ -157,10 +149,7 @@ export default function ProfilePage() {
             <span className="text-xl">RavenCode</span>
           </Link>
           <div className="flex items-center gap-2">
-             <div className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-semibold text-red-500">
-                <Heart className="h-5 w-5 fill-current" />
-                <span>{currentLives}</span>
-              </div>
+             <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
             <Button variant="ghost" size="icon" asChild>
               <Link href="/settings">
                 <Settings className="h-5 w-5" />

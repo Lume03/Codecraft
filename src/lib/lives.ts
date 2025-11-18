@@ -13,7 +13,7 @@ export const REFILL_MINUTES = 2; // Reducido a 2 minutos para facilitar las prue
 export function recalculateLives<T extends { lives?: number; lastLifeUpdate?: any }>(
   user: T,
   now = new Date()
-): T & { lives: number; lastLifeUpdate: Date } {
+): { lives: number; lastLifeUpdate: Date } {
     
   const firestoreTimestampToDate = (timestamp: any): Date => {
     if (!timestamp) return now;
