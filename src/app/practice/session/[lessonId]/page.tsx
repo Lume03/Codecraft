@@ -122,8 +122,14 @@ export default function PracticeSessionPage() {
                 throw new Error(resultData.message || 'Error al enviar las respuestas');
             }
             
-            // Navigate to results page with state
-            router.push(`/practice/results?data=${encodeURIComponent(JSON.stringify(resultData))}`);
+            const params = new URLSearchParams();
+            params.set('data', encodeURIComponent(JSON.stringify(resultData)));
+            params.set('questions', encodeURIComponent(JSON.stringify(questions)));
+            if (courseId) {
+                params.set('courseId', courseId);
+            }
+
+            router.push(`/practice/results?${params.toString()}`);
 
         } catch (err: any) {
             console.error(err);

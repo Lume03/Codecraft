@@ -5,22 +5,30 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Home, Trophy, CheckCircle, XCircle } from 'lucide-react';
+import { Trophy, CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
-import type { PracticeOutput } from '@/ai/flows/practice-flow';
+import type { PracticeOutput, PracticeInput } from '@/ai/flows/practice-flow';
 
 type GradeOutput = Extract<PracticeOutput, { score: number }>;
+type Question = Extract<PracticeInput, { mode: 'generate' }>['questions'][0];
+
 
 function ResultsDisplay() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
   const dataParam = searchParams.get('data');
-  if (!dataParam) {
-    return <p>No se encontraron datos de resultados.</p>;
+  const questionsParam = searchParams.get('questions');
+  const courseId = searchParams.get('courseId');
+
+  if (!dataParam || !questionsParam) {
+    return <p>No se encontraron datos de resultados o preguntas.</p>;
   }
 
   const results: GradeOutput = JSON.parse(decodeURIComponent(dataParam));
+  const questions: Question[] = JSON.parse(decodeURIComponent(questionsParam));
+
+  const continueLearningUrl = courseId ? `/course/${courseId}` : '/learn';
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 text-center">
@@ -46,7 +54,7 @@ function ResultsDisplay() {
               </Link>
             </Button>
             <Button asChild className="flex-1" style={{ borderRadius: '9999px', boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)' }}>
-              <Link href="/learn">
+              <Link href={continueLearningUrl}>
                 Continuar Aprendiendo
               </Link>
             </Button>
@@ -60,10 +68,11 @@ function ResultsDisplay() {
         </CardHeader>
         <CardContent className="space-y-4 text-left">
           {results.results.map((res, index) => {
+            const question = questions.find(q => q.id === res.questionId);
             return (
               <div key={res.questionId} className="rounded-lg border p-4">
                 <div className="flex items-start justify-between">
-                  <p className="flex-1 font-semibold">{index + 1}. (ID: {res.questionId})</p>
+                  <p className="flex-1 font-semibold">{index + 1}. {question?.text ?? `Pregunta ${res.questionId}`}</p>
                    {res.isCorrect ? (
                      <CheckCircle className="h-5 w-5 text-green-500 ml-4 shrink-0" />
                   ) : (
