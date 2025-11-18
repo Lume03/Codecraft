@@ -145,7 +145,9 @@ export default function CourseDetailPage() {
               </span>
               <div className="flex items-center gap-2">
                 <Clock className="h-3 w-3" />
-                <span>{totalLessons} lecciones · 0 proyectos</span>
+                <span>
+                  {totalLessons} {totalLessons === 1 ? 'lección' : 'lecciones'}
+                </span>
               </div>
             </div>
           </div>
@@ -161,7 +163,7 @@ export default function CourseDetailPage() {
                   Siguiente: {nextLesson.title}
                 </p>
                 <p className="text-sm font-semibold">
-                  Lección {currentLessonIndex + 1} · {nextLesson.duration} min
+                  Lección {currentLessonIndex + 1}
                 </p>
               </div>
             </div>
@@ -216,7 +218,6 @@ export default function CourseDetailPage() {
                       <div>
                         <p className="font-semibold">{module.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          {module.duration} min ·{' '}
                           {status === 'completed' && 'Completado'}
                           {status === 'unlocked' && 'En curso'}
                           {status === 'locked' && 'Bloqueado'}
