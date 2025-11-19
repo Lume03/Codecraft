@@ -24,20 +24,11 @@ export default function FooterNavItems() {
             href={item.href}
             className={cn(
               'flex flex-col items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground transition-colors hover:text-foreground',
-              isActive && 'text-foreground'
+              isActive && 'text-primary'
             )}
           >
-            {isActive ? (
-              <div className="flex h-[48px] w-full flex-col items-center justify-center gap-1 rounded-2xl bg-primary text-background">
-                <item.icon className="h-6 w-6" strokeWidth={2.5} />
-                <span className="text-xs font-bold">{item.label}</span>
-              </div>
-            ) : (
-              <>
-                <item.icon className="h-6 w-6" strokeWidth={2} />
-                <span className="text-xs font-medium">{item.label}</span>
-              </>
-            )}
+            <item.icon className="h-6 w-6" strokeWidth={isActive ? 2.5 : 2} />
+            <span className="text-[11px] font-semibold">{item.label}</span>
           </Link>
         );
       })}

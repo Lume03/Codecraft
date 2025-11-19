@@ -12,6 +12,7 @@ import {
   Bell,
   Trophy,
   CodeXml,
+  Edit,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
@@ -25,7 +26,7 @@ import { doc } from 'firebase/firestore';
 import { recalculateLives, MAX_LIVES } from '@/lib/lives';
 import { LivesIndicator } from '@/components/lives-indicator';
 
-const QuickSettingTile = ({
+const QuickActionChip = ({
   icon: Icon,
   label,
   href,
@@ -41,16 +42,14 @@ const QuickSettingTile = ({
       role="button"
       tabIndex={0}
       aria-label={`Action: ${label}`}
-      className="group flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-2xl border bg-secondary/60 transition-transform hover:scale-105 focus-visible:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:h-28 md:w-28"
+      className="group flex h-9 items-center justify-center gap-2 rounded-full border bg-secondary/60 px-4 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onClick?.();
       }}
     >
-      <Icon className="h-7 w-7 text-muted-foreground transition-colors group-hover:text-foreground" />
-      <span className="text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
-        {label}
-      </span>
+      <Icon className="h-4 w-4 text-muted-foreground" />
+      <span className="text-xs font-semibold text-muted-foreground">{label}</span>
     </div>
   );
 
@@ -142,9 +141,9 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col">
-      <header className="sticky top-0 z-20 flex h-14 items-center border-b border-border bg-secondary px-4 md:h-16 md:px-6">
+       <header className="sticky top-0 z-20 flex h-14 items-center border-b border-border bg-background/80 px-4 backdrop-blur-sm md:h-16 md:px-6">
         <div className="mx-auto flex w-full max-w-[420px] items-center justify-between md:max-w-[720px] xl:max-w-[960px]">
-          <Link href="/" className="flex items-center gap-2 font-bold">
+          <Link href="/learn" className="flex items-center gap-2 font-bold">
             <CodeXml className="h-7 w-7 text-primary" />
             <span className="text-xl">RavenCode</span>
           </Link>
@@ -160,64 +159,65 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[420px] flex-1 space-y-6 px-4 pb-28 md:max-w-[720px] md:space-y-8 md:px-6 md:pb-32">
-        {/* Profile Card */}
-        <div className="flex items-center gap-4 rounded-2xl border bg-card p-4 md:gap-5 md:p-6 lg:p-6">
-          <Avatar className="h-16 w-16 border-2 border-primary">
-            <AvatarImage
-              src={avatarSrc}
-              alt={userProfile?.displayName ?? user?.displayName ?? 'User avatar'}
-            />
-            <AvatarFallback>{userProfile?.displayName?.charAt(0) ?? user?.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 space-y-3">
-            <div>
-              <h1 className="text-xl font-bold leading-tight">{userProfile?.displayName ?? user?.displayName ?? 'New User'}</h1>
-              <p className="text-sm leading-relaxed text-muted-foreground">@{userProfile?.username ?? 'new.user'}</p>
+      <main className="mx-auto w-full max-w-[420px] flex-1 space-y-8 px-4 pb-28 md:max-w-[720px] md:space-y-10 md:px-6 md:pb-32">
+        {/* Profile Header */}
+        <div className="flex items-center gap-4 pt-4 md:gap-5">
+            <Avatar className="h-20 w-20 border-2 border-primary">
+                <AvatarImage src={avatarSrc} alt={userProfile?.displayName ?? user?.displayName ?? 'User avatar'} />
+                <AvatarFallback>{userProfile?.displayName?.charAt(0) ?? user?.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-1">
+                <div className='flex items-center gap-2'>
+                    <h1 className="text-xl font-bold">{userProfile?.displayName ?? user?.displayName ?? 'New User'}</h1>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+                        <Link href="/profile/edit"><Edit className="h-4 w-4" /></Link>
+                    </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">@{userProfile?.username ?? 'new.user'}</p>
+                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
+                    <div className="inline-flex items-center text-sm font-semibold">
+                        Nivel {level}
+                    </div>
+                    <div className="inline-flex items-center text-sm font-semibold">
+                        {achievements.length} Logros
+                    </div>
+                </div>
             </div>
-            <div className="flex flex-wrap gap-2 md:gap-3">
-              <div className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
-                Nivel {level}
-              </div>
-              <div className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
-                {achievements.length} Logros
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Course Progress Card */}
-        <div className="space-y-3 rounded-2xl border bg-card p-4 md:space-y-4 md:p-5 lg:p-6">
-          <h2 className="text-lg font-semibold leading-tight">Progreso de curso</h2>
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>General</span>
-                <span>{overallProgress}%</span>
-              </div>
-              <Progress value={overallProgress} className="mt-1 h-2" />
-            </div>
-            {overallProgress === 0 && (
-                <p className="text-center text-sm text-muted-foreground">¡Completa tu primera lección para ver tu progreso!</p>
-            )}
-          </div>
-        </div>
-        
-        {/* Quick Settings */}
-        <div className="grid grid-cols-3 justify-items-center gap-3 text-center md:gap-4">
-            <QuickSettingTile 
+        {/* Quick Actions */}
+        <div className="flex items-center gap-3 overflow-x-auto pb-2">
+          <QuickActionChip 
               icon={theme === 'dark' ? Moon : Sun} 
-              label="Tema" 
+              label={theme === 'dark' ? 'Oscuro' : 'Claro'}
               onClick={toggleTheme} 
             />
-            <QuickSettingTile icon={PenSquare} label="Editar Perfil" href="/profile/edit" />
-            <QuickSettingTile icon={Bell} label="Notificaciones" href="/settings" />
+            <QuickActionChip icon={Settings} label="Ajustes" href="/settings" />
+            <QuickActionChip icon={Bell} label="Notificaciones" href="/settings" />
         </div>
 
+
+        {/* Course Progress Card */}
+        <div className="space-y-4">
+           <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Progreso de Curso</h2>
+            <div className="rounded-2xl border bg-card p-4 md:p-5">
+                <div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>General</span>
+                    <span>{overallProgress}%</span>
+                  </div>
+                  <Progress value={overallProgress} className="mt-2 h-1.5" />
+                </div>
+                {overallProgress === 0 && (
+                    <p className="mt-3 text-center text-sm text-muted-foreground">¡Completa tu primera lección para ver tu progreso!</p>
+                )}
+            </div>
+        </div>
+        
         {/* Goals and Achievements */}
-        <div className="space-y-4 rounded-2xl border bg-card p-4 md:space-y-5 md:p-5 lg:p-6">
-          <h2 className="text-lg font-semibold leading-tight">Metas y logros</h2>
-          <div className="space-y-4">
+        <div className="space-y-4">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Metas y Logros</h2>
+          <div className="space-y-3 rounded-2xl border bg-card p-2">
             {goals.map((goal) => (
               <GoalProgress
                 key={goal.target}
@@ -239,7 +239,7 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
-            <Button variant="ghost" className="h-11 w-full justify-center rounded-full border border-border hover:bg-secondary md:h-12">
+            <Button variant="outline" className="h-11 w-full justify-center rounded-full border-border hover:bg-secondary md:h-12">
               Ver todos los logros
             </Button>
           </div>
