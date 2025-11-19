@@ -188,18 +188,19 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
         </Card>
       </div>
 
-      {/* DESKTOP FAB (Hidden on mobile) */}
+      {/* DESKTOP FAB (Icon only) */}
       <Button
         onClick={() => setIsOpen(!isOpen)}
+        size="icon"
         className={cn(
-          "fixed bottom-8 right-8 z-50 hidden h-12 rounded-full px-5 text-base shadow-lg shadow-primary/25 transition-transform hover:scale-105 md:flex",
-          isOpen && "scale-0"
+          "fixed bottom-8 right-8 z-50 hidden h-14 w-14 rounded-full shadow-lg shadow-primary/25 transition-transform duration-300 ease-in-out hover:scale-110 md:flex",
+          isOpen ? "scale-0 opacity-0" : "scale-100 opacity-100"
         )}
       >
-        <Bot className="mr-2 h-5 w-5" /> Preguntar a Raven AI
+        <Bot className="h-7 w-7" />
       </Button>
       
-      {/* MOBILE FAB (Hidden on desktop) */}
+      {/* MOBILE FAB (Icon only) */}
        <Button
         onClick={() => setIsOpen(!isOpen)}
         size="lg"
