@@ -11,6 +11,7 @@ import type { Theory, TheoryPage as TheoryPageType } from '@/lib/data';
 import { ContentRenderer } from '@/components/content-renderer';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { TheoryChatWidget } from '@/components/theory-chat-widget';
 
 async function getTheoryData(theoryId: string): Promise<{
   theory: Theory;
@@ -82,6 +83,10 @@ export default async function TheoryLessonPage({
 
   const { theory, pages, lessonId } = data;
   const totalPages = pages.length;
+  
+  // Concatenate all page content to provide full context to the bot
+  const fullLessonContent = pages.map(p => `## ${p.title}\n${p.content}`).join('\n\n---\n\n');
+
 
   let currentPage = 1;
   const pageFromQuery = parseInt(sp?.page as string, 10);
@@ -187,6 +192,13 @@ export default async function TheoryLessonPage({
           )}
         </div>
       </footer>
+
+      {/* AI Tutor Widget Integration */}
+      <TheoryChatWidget 
+         lessonId={lessonId}
+         lessonTitle={theory.title}
+         lessonContent={fullLessonContent}
+      />
     </div>
   );
 }
