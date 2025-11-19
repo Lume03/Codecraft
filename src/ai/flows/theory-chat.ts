@@ -24,17 +24,13 @@ const TheoryChatInputSchema = z.object({
 });
 export type TheoryChatInput = z.infer<typeof TheoryChatInputSchema>;
 
-export const theoryChatFlow = ai.defineFlow(
-  {
-    name: 'theoryChatFlow',
-    inputSchema: TheoryChatInputSchema,
-    outputSchema: z.object({ text: z.string() }),
-  },
-  async (input) => {
-    const { history, lessonContext, userQuery, userName } = input;
+export async function theoryChatFlow(
+  input: TheoryChatInput
+): Promise<{ text: string }> {
+  const { history, lessonContext, userQuery, userName } = input;
 
-    // Build a robust system prompt with token optimization in mind
-    const systemPrompt = `
+  // Build a robust system prompt with token optimization in mind
+  const systemPrompt = `
       Eres Raven AI, un tutor experto de programación en la app RavenCode.
       Estás ayudando a ${userName || 'el estudiante'} con una lección específica.
       
@@ -47,30 +43,28 @@ export const theoryChatFlow = ai.defineFlow(
       1. **LÍMITE DE LONGITUD:** Tu respuesta NO PUEDE exceder las 60 palabras. Sé telegráfico.
       2. **CERO RELLENO:** Prohibido usar frases introductorias ("Claro", "Es una buena pregunta", "En programación..."), despedidas o analogías ("Imagina que..."). Ve directo a la definición.
       3. **SOLO HECHOS:** Define el concepto basándote *exclusivamente* en el contexto proporcionado.
-      4. **CÓDIGO:** Incluye código SOLO si es vital para entender, y máximo 1 línea. IMPORTANTE: Envuelve siempre el código con \`backticks\`, por ejemplo: \`print("Hola")\`.
-      5. **FORMATO:** Usa negritas para el concepto principal. Evita listas a menos que sean estrictamente necesarias (máx 2 ítems).
+      4. **FORMATO DE CÓDIGO (CRÍTICO):** Para CUALQUIER ejemplo de código (incluso si es una sola línea), usa SIEMPRE bloques de código con triple comilla y especifica el lenguaje.
+         - Ejemplo CORRECTO:
+           \'\'\'python
+           print("Hola")
+           \'\'\'
+         - Ejemplo PROHIBIDO: \`print("Hola")\` (No uses código en línea para ejemplos funcionales).
+      5. **FORMATO DE TEXTO:** Usa negritas para el concepto principal. Evita listas a menos que sean estrictamente necesarias (máx 2 ítems).
 
       EJEMPLO CORRECTO:
       User: "¿Qué es un error de sintaxis?"
       Raven AI: "Es una violación de las reglas gramaticales del lenguaje, como olvidar los dos puntos en un \`if\`. Impide que el programa se ejecute."
-
-      EJEMPLO INCORRECTO (LO QUE NO DEBES HACER):
-      Raven AI: "¡Hola! Un error de sintaxis es como cuando escribes mal en español... [explicación larga]... Por ejemplo..."
     `;
 
-    // Generate the chat response using the Gemini model
-    const response = await ai.generate({
-      prompt: userQuery,
-      history: [
-        { role: 'system', content: systemPrompt },
-        ...history,
-      ],
-      config: {
-        // Lower temperature for more factual, less creative answers
-        temperature: 0.2,
-      }
-    });
+  // Generate the chat response using the Gemini model
+  const response = await ai.generate({
+    prompt: userQuery,
+    history: [{ role: 'system', content: systemPrompt }, ...history],
+    config: {
+      // Lower temperature for more factual, less creative answers
+      temperature: 0.2,
+    },
+  });
 
-    return { text: response.text };
-  }
-);
+  return { text: response.text };
+}
