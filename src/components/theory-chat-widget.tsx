@@ -8,6 +8,11 @@ import { MessageCircle, X, Send, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUser } from '@/firebase';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypePrism from 'rehype-prism-plus';
+import 'prism-themes/themes/prism-vsc-dark-plus.css';
+
 
 interface Message {
   role: 'user' | 'model';
@@ -47,7 +52,7 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
     if (isOpen && !hasGreeted && !isLoading) {
       const greeting: Message = {
         role: 'model',
-        content: `¡Hola ${userName}! 👋 Veo que estás estudiando "${lessonTitle}". ¿Tienes alguna duda sobre este tema?`
+        content: `¡Hola ${userName}! 👋 Soy Raven AI. Veo que estás estudiando "${lessonTitle}". ¿Tienes alguna duda sobre este tema?`
       };
       setMessages([greeting]);
       setHasGreeted(true);
@@ -121,7 +126,7 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
           <div className="flex items-center justify-between bg-primary px-4 py-3 text-primary-foreground">
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5" />
-              <span className="font-semibold">Tutor IA</span>
+              <span className="font-semibold">Raven AI</span>
             </div>
             <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-primary-foreground hover:bg-primary-foreground/20" onClick={() => setIsOpen(false)}>
               <X className="h-4 w-4" />
@@ -141,7 +146,19 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
                         ? "bg-destructive/20 border border-destructive/50 text-destructive-foreground rounded-bl-none"
                         : "bg-card border text-foreground rounded-bl-none"
                   )}>
-                    {msg.content}
+                     {msg.role === 'model' ? (
+                       <div className="prose prose-sm dark:prose-invert max-w-none leading-snug prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 prose-ul:my-2 prose-li:my-0.5 prose-pre:my-2">
+                          <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              rehypePlugins={[rehypePrism]}
+                              className="max-w-none"
+                            >
+                              {msg.content}
+                          </ReactMarkdown>
+                       </div>
+                    ) : (
+                      msg.content // User messages are plain text
+                    )}
                   </div>
                 </div>
               ))}
@@ -179,7 +196,7 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
           isOpen && "scale-0"
         )}
       >
-        <Bot className="mr-2 h-5 w-5" /> Preguntar a RavenBot
+        <Bot className="mr-2 h-5 w-5" /> Preguntar a Raven AI
       </Button>
       
       {/* MOBILE FAB (Hidden on desktop) */}

@@ -78,12 +78,17 @@
   }
 
   /* Ajustes mínimos para bloques de código renderizados por Shiki */
-  .markdown pre {
-    @apply shadow-sm;
+  .markdown pre, .prose pre {
+    @apply shadow-sm my-4;
   }
   
-  pre code[class*="language-"] {
+  .markdown pre code[class*="language-"],
+  .prose pre code[class*="language-"] {
     @apply bg-transparent p-0;
+  }
+  
+  .prose-sm pre {
+      @apply my-2 text-xs;
   }
 }
 
