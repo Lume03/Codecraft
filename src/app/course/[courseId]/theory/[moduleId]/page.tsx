@@ -115,79 +115,76 @@ export default async function TheoryLessonPage({
   const isLastPage = currentPage === totalPages;
 
   const basePath = `/course/${courseId}/theory/${theoryId}`;
+  const coursePath = `/course/${courseId}`;
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header title={theory.title} showBackButton />
+      <Header title={theory.title} showBackButton backButtonHref={coursePath} />
 
-      <div className="flex-1 p-4 pb-40 md:p-6">
-        <div className="mx-auto max-w-3xl">
-          <div className="mb-8 flex items-center justify-center gap-2">
-            {Array.from({ length: totalPages }).map((_, index) => (
-              <Link
-                key={index}
-                href={`${basePath}?page=${index + 1}`}
-                className="flex-1"
-              >
-                <div
-                  className={cn(
-                    'h-1.5 w-full rounded-full bg-secondary',
-                    index < currentPage && 'bg-primary'
-                  )}
-                  aria-label={`Ir a la página ${index + 1}`}
-                />
-              </Link>
-            ))}
-          </div>
-          <div className="space-y-4">
-            <ContentRenderer content={pageContent} />
-          </div>
-        </div>
-      </div>
-
-      <footer className="fixed inset-x-0 bottom-0 border-t bg-background/80 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm">
-        <div className="mx-auto max-w-3xl">
-          <div className="flex items-center justify-between gap-4">
-            <Button
-              variant="outline"
-              disabled={!hasPrev}
-              asChild
+      <main className="mx-auto w-full max-w-2xl flex-1 space-y-4 px-4 pb-40 md:p-6">
+        <div className="mb-4 flex items-center justify-center gap-2">
+          {Array.from({ length: totalPages }).map((_, index) => (
+            <Link
+              key={index}
+              href={`${basePath}?page=${index + 1}`}
               className="flex-1"
             >
-              <Link href={`${basePath}?page=${currentPage - 1}`}>
-                <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
+              <div
+                className={cn(
+                  'h-1.5 w-full rounded-full bg-secondary',
+                  index < currentPage && 'bg-primary'
+                )}
+                aria-label={`Ir a la página ${index + 1}`}
+              />
+            </Link>
+          ))}
+        </div>
+        <div className="prose prose-lg mx-auto max-w-none leading-relaxed dark:prose-invert">
+          <ContentRenderer content={pageContent} />
+        </div>
+      </main>
+
+      <footer className="fixed inset-x-0 bottom-0 z-10 border-t bg-background/80 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-4">
+          <Button
+            variant="outline"
+            disabled={!hasPrev}
+            asChild
+            className="flex-1 rounded-full"
+          >
+            <Link href={`${basePath}?page=${currentPage - 1}`}>
+              <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
+            </Link>
+          </Button>
+
+          {isLastPage ? (
+            <Button
+              asChild
+              className="flex-1"
+              style={{
+                borderRadius: '9999px',
+                boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
+              }}
+            >
+              <Link href={`/practice/session/${lessonId}?courseId=${courseId}`}>
+                 <BrainCircuit className="mr-2 h-4 w-4" /> Comenzar Práctica
               </Link>
             </Button>
-
-            {isLastPage ? (
-              <Button
-                asChild
-                className="flex-1"
-                style={{
-                  borderRadius: '9999px',
-                  boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
-                }}
-              >
-                <Link href={`/practice/session/${lessonId}?courseId=${courseId}`}>
-                   <BrainCircuit className="mr-2 h-4 w-4" /> Comenzar Práctica
-                </Link>
-              </Button>
-            ) : (
-              <Button
-                disabled={!hasNext}
-                asChild
-                className="flex-1"
-                style={{
-                  borderRadius: '9999px',
-                  boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
-                }}
-              >
-                <Link href={`${basePath}?page=${currentPage + 1}`}>
-                  Siguiente <ChevronRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            )}
-          </div>
+          ) : (
+            <Button
+              disabled={!hasNext}
+              asChild
+              className="flex-1"
+              style={{
+                borderRadius: '9999px',
+                boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
+              }}
+            >
+              <Link href={`${basePath}?page=${currentPage + 1}`}>
+                Siguiente <ChevronRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          )}
         </div>
       </footer>
     </div>
