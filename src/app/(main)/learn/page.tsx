@@ -3,7 +3,7 @@
 import { CourseCard } from '@/components/course-card';
 import { Header } from '@/components/header';
 import type { Course, Module } from '@/lib/data';
-import { PlusCircle, Settings } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
@@ -34,6 +34,9 @@ export default function LearnPage() {
   
   const [currentLives, setCurrentLives] = useState(MAX_LIVES);
   const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(new Date());
+  
+  const streak = userProfile?.streak ?? 0;
+  const displayName = userProfile?.displayName ?? user?.displayName ?? 'Aprende';
 
   useEffect(() => {
     if(userProfile) {
@@ -60,7 +63,9 @@ export default function LearnPage() {
             
             const modules: Module[] = await modulesRes.json();
             const totalLessons = modules.length;
-            const completedLessons = userProfile.progress?.[course.id]?.completedLessons?.length ?? 0;
+            
+            const completedLessonsArray = userProfile.progress?.[course.id]?.completedLessons;
+            const completedLessons = Array.isArray(completedLessonsArray) ? completedLessonsArray.length : 0;
             
             const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
@@ -78,28 +83,29 @@ export default function LearnPage() {
       }
     };
     
-    // Fetch courses when component mounts, and re-fetch if user profile changes
     fetchCoursesAndProgress();
 
   }, [userProfile]);
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-5xl space-y-8 p-4 md:p-8">
       <Header
-        title="Aprender"
+        title={`¡Hola, ${displayName.split(' ')[0]}!`}
+        subtitle={streak > 0 ? `🔥 ¡Vamos a mantener esa racha de ${streak} días!` : "¡Es un gran día para aprender algo nuevo!"}
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
             <Button variant="ghost" size="icon" asChild>
               <Link href="/settings">
-                <Settings className="h-5 w-5" />
+                <Settings className="h-6 w-6" />
                 <span className="sr-only">Ajustes</span>
               </Link>
             </Button>
           </div>
         }
       />
-      <div className="container space-y-4 px-4 py-6 md:px-6">
+      <div>
+        <h2 className="mb-4 text-2xl font-bold text-foreground">Cursos</h2>
         {loading && <p>Cargando cursos...</p>}
         {!loading && courses.length === 0 && (
           <div className="text-center text-muted-foreground">
@@ -113,9 +119,11 @@ export default function LearnPage() {
             </p>
           </div>
         )}
-        {courses.map((course) => (
-          <CourseCard key={course.id} course={course} />
-        ))}
+         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {courses.map((course) => (
+              <CourseCard key={course.id} course={course} />
+            ))}
+        </div>
       </div>
     </div>
   );

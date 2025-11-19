@@ -86,3 +86,12 @@
     @apply bg-transparent p-0;
   }
 }
+
+@layer utilities {
+  .btn-gamified {
+    @apply border-b-4 active:border-b-0 active:translate-y-1 transition-all;
+  }
+  .card-gamified {
+    @apply border-2 border-b-[6px] border-border hover:-translate-y-1 hover:border-primary/50 transition-transform duration-200;
+  }
+}

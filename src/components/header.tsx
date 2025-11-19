@@ -8,6 +8,7 @@ import Link from 'next/link';
 
 interface HeaderProps {
   title: string;
+  subtitle?: string;
   showBackButton?: boolean;
   action?: React.ReactNode;
   className?: string;
@@ -15,6 +16,7 @@ interface HeaderProps {
 
 export function Header({
   title,
+  subtitle,
   showBackButton = false,
   action,
   className,
@@ -24,25 +26,26 @@ export function Header({
   return (
     <header
       className={cn(
-        'sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm md:px-6',
+        'flex items-center justify-between',
         className
       )}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
         {showBackButton && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="h-8 w-8"
-            asChild
+            className="h-11 w-11"
+            onClick={() => router.back()}
           >
-            <Link href="/learn">
-              <ChevronLeft className="h-5 w-5" />
-              <span className="sr-only">Volver a Aprender</span>
-            </Link>
+            <ChevronLeft className="h-6 w-6" />
+            <span className="sr-only">Volver</span>
           </Button>
         )}
-        <h1 className="text-xl font-bold">{title}</h1>
+        <div>
+           <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+           {subtitle && <p className="text-lg text-muted-foreground">{subtitle}</p>}
+        </div>
       </div>
       <div>{action}</div>
     </header>
