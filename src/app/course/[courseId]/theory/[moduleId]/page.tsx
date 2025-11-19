@@ -121,7 +121,7 @@ export default async function TheoryLessonPage({
     <div className="flex min-h-screen flex-col">
       <Header title={theory.title} showBackButton backButtonHref={coursePath} />
 
-      <main className="mx-auto w-full max-w-2xl flex-1 space-y-4 px-4 pb-40 md:p-6">
+      <main className="mx-auto w-full max-w-2xl flex-1 space-y-4 px-4 pb-32 md:p-6 md:pb-32">
         <div className="mb-4 flex items-center justify-center gap-2">
           {Array.from({ length: totalPages }).map((_, index) => (
             <Link
