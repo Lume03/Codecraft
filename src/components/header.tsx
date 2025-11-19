@@ -49,7 +49,7 @@ export function Header({
     return (
         <header
         className={cn(
-            'sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-4 md:h-20 md:px-6',
+            'sticky top-0 z-10 flex h-16 items-center justify-between border-b border-transparent bg-transparent px-4 md:h-20 md:px-6',
             className
         )}
         >
@@ -78,7 +78,7 @@ export function Header({
   }
 
   return (
-    <div className={cn('flex items-center justify-between', className)}>
+    <div className={cn('flex items-center justify-between p-4 md:p-8', className)}>
          <div className="flex-1 overflow-hidden">
           <h1 className="truncate text-3xl font-bold tracking-tight">
             {title}
