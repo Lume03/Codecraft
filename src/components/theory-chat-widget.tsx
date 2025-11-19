@@ -10,6 +10,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUser } from '@/firebase';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypePrism from 'rehype-prism-plus';
+import 'prism-themes/themes/prism-vsc-dark-plus.css';
 
 interface Message {
   role: 'user' | 'model';
@@ -27,52 +29,58 @@ interface TheoryChatWidgetProps {
 const MarkdownBubble = ({ content }: { content: string }) => (
   <ReactMarkdown
     remarkPlugins={[remarkGfm]}
+    rehypePlugins={[rehypePrism]} // Activamos el plugin aquí
     components={{
-      // Párrafos: Quitar márgenes excesivos
+      // Párrafos
       p: ({ node, ...props }) => (
         <p className="mb-2 last:mb-0 leading-snug break-words" {...props} />
       ),
-
-      // Listas: Compactarlas y asegurar que los bullets estén dentro
-      ul: ({ node, ...props }) => (
-        <ul className="my-2 pl-4 list-disc space-y-1" {...props} />
-      ),
-      ol: ({ node, ...props }) => (
-        <ol className="my-2 pl-4 list-decimal space-y-1" {...props} />
-      ),
+      // Listas
+      ul: ({ node, ...props }) => <ul className="my-2 pl-4 list-disc space-y-1" {...props} />,
+      ol: ({ node, ...props }) => <ol className="my-2 pl-4 list-decimal space-y-1" {...props} />,
       li: ({ node, ...props }) => <li className="pl-1" {...props} />,
-
-      // Negritas: Color fuerte para contraste
-      strong: ({ node, ...props }) => (
-        <strong className="font-bold text-inherit" {...props} />
-      ),
-
-      // Código en línea (backticks): Fondo sutil, sin romper línea
-      code: ({ node, className, ...props }) => {
-        // Detectar si es bloque o inline
-        const match = /language-(\w+)/.exec(className || '');
-        return (
-          <code
-            className={cn(
-              'px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/10 font-mono text-xs break-all',
-              className
-            )}
-            {...props}
-          />
-        );
-      },
-
-      // Bloques de código (```): Scroll horizontal interno CRÍTICO
+      
+      // Negritas
+      strong: ({ node, ...props }) => <strong className="font-bold text-inherit" {...props} />,
+      
+      // Bloques de código (PRE)
       pre: ({ node, ...props }) => (
-        <div className="my-2 w-full overflow-hidden rounded-lg bg-zinc-900 dark:bg-black/50 border border-white/10">
-          <div className="overflow-x-auto p-2">
-            <pre
-              className="text-xs font-mono text-zinc-100 whitespace-pre"
-              {...props}
+        <div className="my-2 w-full overflow-hidden rounded-lg border border-white/10 shadow-sm">
+          {/* Quitamos bg-zinc-900 y text-zinc-100 para que el tema CSS de Prism actúe */}
+          <div className="overflow-x-auto">
+            <pre 
+              {...props} 
+              // Forzamos el background del tema VS Code para asegurar consistencia y tamaño de fuente
+              className="p-3 text-xs font-mono !bg-[#1e1e1e] !m-0" 
             />
           </div>
         </div>
       ),
+
+      // Código inline vs bloque
+      code: ({ node, className, ...props }) => {
+        // Detectamos si es inline verificando si hay saltos de línea o si no tiene clase de lenguaje
+        const match = /language-(\w+)/.exec(className || '');
+        const isInline = !match;
+
+        if (isInline) {
+          // Estilo para código inline (ej: `variable`)
+          return (
+            <code 
+              className="px-1.5 py-0.5 rounded bg-black/20 dark:bg-white/10 font-mono text-xs text-primary font-semibold break-all" 
+              {...props} 
+            />
+          );
+        }
+
+        // Estilo para bloque de código (deja que Prism ponga los colores)
+        return (
+          <code 
+            className={cn("font-mono text-xs", className)} 
+            {...props} 
+          />
+        );
+      },
     }}
   >
     {content}
@@ -216,8 +224,6 @@ export function TheoryChatWidget({
             ref={scrollAreaRef}
           >
             <div className="flex flex-col gap-4">
-              {' '}
-              {/* gap-4 da espacio vertical entre mensajes */}
               {messages.map((msg, idx) => (
                 <div
                   key={idx}
