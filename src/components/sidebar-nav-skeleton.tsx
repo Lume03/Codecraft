@@ -1,3 +1,4 @@
+
 import { Skeleton } from './ui/skeleton';
 
 export function SidebarNavSkeleton() {
@@ -19,7 +20,7 @@ export function SidebarNavSkeleton() {
                     <Skeleton className="h-5 w-20" />
                 </div>
             ))}
-        </nav>
+        </div>
 
         {/* Bottom Navigation */}
          <div className="mt-auto flex flex-col p-4">
