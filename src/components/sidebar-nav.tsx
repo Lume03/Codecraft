@@ -18,14 +18,15 @@ const bottomNavItems = [
 ];
 
 const NavItem = ({ item, isActive }: { item: typeof mainNavItems[0], isActive: boolean }) => (
-    <Link href={item.href} legacyBehavior passHref>
-      <a className={cn(
+    <Link 
+      href={item.href}
+      className={cn(
         'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
         isActive && 'bg-secondary text-primary'
-      )}>
-        <item.icon className="h-5 w-5" strokeWidth={2} />
-        <span className="text-base font-semibold">{item.label}</span>
-      </a>
+      )}
+    >
+      <item.icon className="h-5 w-5" strokeWidth={2} />
+      <span className="text-base font-semibold">{item.label}</span>
     </Link>
 );
 
