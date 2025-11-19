@@ -36,7 +36,17 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
   const user = useUser();
   const userName = user?.displayName?.split(' ')[0] || 'Estudiante';
   
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom helper
+  const scrollToBottom = () => {
+    if (scrollAreaRef.current) {
+      const viewport = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
+    }
+  };
 
   // 1. Reset logic on lesson change
   useEffect(() => {
@@ -61,9 +71,7 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
   
   // 3. Auto-scroll to bottom
   useEffect(() => {
-    if (scrollRef.current) {
-        scrollRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    scrollToBottom();
   }, [messages, isLoading]);
 
   const handleSend = async () => {
@@ -118,7 +126,7 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
     <>
       {/* CHAT WINDOW (Floats on top of everything) */}
       <div className={cn(
-        "fixed bottom-24 right-4 z-50 flex flex-col gap-2 transition-all duration-300 ease-in-out sm:bottom-28 sm:right-6",
+        "fixed bottom-24 right-4 z-50 flex flex-col gap-2 transition-all duration-300 ease-in-out sm:bottom-28 sm:right-6 md:bottom-24",
         isOpen ? "translate-y-0 opacity-100 scale-100" : "translate-y-10 opacity-0 scale-95 pointer-events-none"
       )}>
         <Card className="flex h-[clamp(400px,70vh,500px)] w-[350px] flex-col overflow-hidden rounded-2xl border-primary/20 shadow-2xl">
@@ -134,8 +142,8 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
           </div>
 
           {/* Messages Area */}
-          <ScrollArea className="flex-1 bg-secondary/30 p-4">
-            <div className="space-y-4">
+          <ScrollArea className="flex-1 bg-secondary/30" ref={scrollAreaRef}>
+            <div className="space-y-4 p-4">
               {messages.map((msg, idx) => (
                 <div key={idx} className={cn("flex w-full", msg.role === 'user' ? "justify-end" : "justify-start")}>
                   <div className={cn(
@@ -147,11 +155,10 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
                         : "bg-card border text-foreground rounded-bl-none"
                   )}>
                      {msg.role === 'model' ? (
-                       <div className="prose prose-sm dark:prose-invert max-w-none leading-snug prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 prose-ul:my-2 prose-li:my-0.5 prose-pre:my-2">
+                       <div className="prose prose-sm dark:prose-invert max-w-full leading-snug prose-p:my-2 prose-p:first:mt-0 prose-p:last:mb-0 prose-ul:my-2 prose-li:my-0.5 prose-pre:my-2">
                           <ReactMarkdown
                               remarkPlugins={[remarkGfm]}
                               rehypePlugins={[rehypePrism]}
-                              className="max-w-none"
                             >
                               {msg.content}
                           </ReactMarkdown>
@@ -169,7 +176,6 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
                    </div>
                 </div>
               )}
-              <div ref={scrollRef} />
             </div>
           </ScrollArea>
 
@@ -188,7 +194,7 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
         </Card>
       </div>
 
-      {/* DESKTOP FAB (Icon only) */}
+       {/* DESKTOP FAB (Icon only) */}
       <Button
         onClick={() => setIsOpen(!isOpen)}
         size="icon"
@@ -203,7 +209,7 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
       {/* MOBILE FAB (Icon only) */}
        <Button
         onClick={() => setIsOpen(!isOpen)}
-        size="lg"
+        size="icon"
         className={cn(
           "fixed bottom-24 right-4 z-50 h-14 w-14 rounded-full shadow-lg shadow-primary/25 transition-transform duration-300 ease-in-out md:hidden",
           isOpen ? "scale-0 opacity-0" : "scale-100 opacity-100"
