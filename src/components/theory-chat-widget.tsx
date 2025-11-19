@@ -193,7 +193,7 @@ export function TheoryChatWidget({ lessonId, lessonTitle, lessonContent }: Theor
         onClick={() => setIsOpen(!isOpen)}
         size="icon"
         className={cn(
-          "fixed bottom-8 right-8 z-50 hidden h-14 w-14 rounded-full shadow-lg shadow-primary/25 transition-transform duration-300 ease-in-out hover:scale-110 md:flex",
+          "fixed bottom-10 right-8 z-50 hidden h-14 w-14 rounded-full shadow-lg shadow-primary/25 transition-transform duration-300 ease-in-out hover:scale-110 md:flex",
           isOpen ? "scale-0 opacity-0" : "scale-100 opacity-100"
         )}
       >
