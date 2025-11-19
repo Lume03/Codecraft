@@ -50,13 +50,13 @@ const practiceModes = [
 const recommendedChallenges = [
   {
     title: 'Tipa correctamente variables en Python',
-    meta: 'Python · 6 min',
+    meta: 'Python',
     icon: CodeXml,
     href: '#',
   },
   {
     title: 'Completa el bucle "for" en JavaScript',
-    meta: 'JavaScript · 4 min',
+    meta: 'JavaScript',
     icon: CodeXml,
     href: '#',
   },
