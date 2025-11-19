@@ -160,7 +160,7 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[420px] flex-1 space-y-6 px-4 pb-28 md:max-w-[720px] md:space-y-8 md:px-6 md:pb-32 xl:max-w-[960px]">
+      <main className="mx-auto w-full max-w-[420px] flex-1 space-y-6 px-4 pb-28 md:max-w-[720px] md:space-y-8 md:px-6 md:pb-32">
         {/* Profile Card */}
         <div className="flex items-center gap-4 rounded-2xl border bg-card p-4 md:gap-5 md:p-6 lg:p-6">
           <Avatar className="h-16 w-16 border-2 border-primary">
