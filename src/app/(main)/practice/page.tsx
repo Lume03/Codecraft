@@ -7,7 +7,6 @@ import {
   CodeXml,
   Puzzle,
   FileCode,
-  Star,
   Flame,
   Settings,
 } from 'lucide-react';
