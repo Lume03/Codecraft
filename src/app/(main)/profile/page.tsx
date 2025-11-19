@@ -123,13 +123,13 @@ export default function ProfilePage() {
     const coursesProgress = Object.values(userProfile.progress);
     if (coursesProgress.length === 0) return 0;
     
-    const totalCompleted = coursesProgress.reduce((sum, course) => sum + (course.completedLessons?.length ?? 0), 0);
-    const totalLessons = coursesProgress.length * 10; 
+    // Asumimos 10 lecciones por curso para el cálculo
+    const totalPossibleLessons = coursesProgress.length * 10;
+    const totalCompletedLessons = coursesProgress.reduce((sum, course) => sum + (course.completedLessons?.length ?? 0), 0);
     
-    if (totalLessons === 0) return 0;
+    if (totalPossibleLessons === 0) return 0;
     
-    const rawProgress = (totalCompleted / totalLessons) * 100;
-    return Math.round(rawProgress) || 0;
+    return Math.round((totalCompletedLessons / totalPossibleLessons) * 100);
   }, [userProfile?.progress]);
 
 

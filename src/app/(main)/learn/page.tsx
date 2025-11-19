@@ -3,11 +3,14 @@
 import { CourseCard } from '@/components/course-card';
 import { Header } from '@/components/header';
 import type { Course, Module } from '@/lib/data';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { LivesIndicator } from '@/components/lives-indicator';
+import { recalculateLives, MAX_LIVES } from '@/lib/lives';
+import { Button } from '@/components/ui/button';
 
 interface CourseWithProgress extends Course {
   progress: number;
@@ -28,6 +31,17 @@ export default function LearnPage() {
   }, [user, firestore]);
 
   const { data: userProfile } = useDoc(userProfileRef);
+  
+  const [currentLives, setCurrentLives] = useState(MAX_LIVES);
+  const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(new Date());
+
+  useEffect(() => {
+    if(userProfile) {
+      const recalculated = recalculateLives(userProfile);
+      setCurrentLives(recalculated.lives);
+      setLastLifeUpdate(recalculated.lastLifeUpdate);
+    }
+  }, [userProfile]);
 
   useEffect(() => {
     const fetchCoursesAndProgress = async () => {
@@ -74,9 +88,15 @@ export default function LearnPage() {
       <Header
         title="Aprender"
         action={
-          <Link href="/admin">
-            <PlusCircle className="h-8 w-8 text-primary" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/settings">
+                <Settings className="h-5 w-5" />
+                <span className="sr-only">Ajustes</span>
+              </Link>
+            </Button>
+          </div>
         }
       />
       <div className="container space-y-4 px-4 py-6 md:px-6">

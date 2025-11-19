@@ -9,8 +9,16 @@ import {
   FileCode,
   Star,
   Flame,
+  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
+import { LivesIndicator } from '@/components/lives-indicator';
+import { Button } from '@/components/ui/button';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { useState, useEffect, useMemo } from 'react';
+import { doc } from 'firebase/firestore';
+import { recalculateLives, MAX_LIVES } from '@/lib/lives';
+
 
 const practiceModes = [
   {
@@ -93,14 +101,45 @@ const PracticeTile = ({
 
 
 export default function PracticePage() {
+    const user = useUser();
+    const firestore = useFirestore();
+
+    const userProfileRef = useMemo(() => {
+        if (user && firestore) {
+        return doc(firestore, `users/${user.uid}`);
+        }
+        return null;
+    }, [user, firestore]);
+
+    const { data: userProfile } = useDoc(userProfileRef);
+    
+    const [currentLives, setCurrentLives] = useState(MAX_LIVES);
+    const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(new Date());
+    const streak = userProfile?.streak ?? 0;
+
+    useEffect(() => {
+        if(userProfile) {
+        const recalculated = recalculateLives(userProfile);
+        setCurrentLives(recalculated.lives);
+        setLastLifeUpdate(recalculated.lastLifeUpdate);
+        }
+    }, [userProfile]);
+
   return (
     <div>
       <Header
         title="Practicar"
         action={
-          <div className="flex items-center gap-2">
-            <StatChip icon={Flame} value="3" />
-          </div>
+            <div className="flex items-center gap-2">
+                <StatChip icon={Flame} value={streak} />
+                <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
+                <Button variant="ghost" size="icon" asChild>
+                <Link href="/settings">
+                    <Settings className="h-5 w-5" />
+                    <span className="sr-only">Ajustes</span>
+                </Link>
+                </Button>
+            </div>
         }
       />
       <div className="space-y-4 p-4">
