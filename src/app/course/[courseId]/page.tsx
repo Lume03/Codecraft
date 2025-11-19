@@ -104,7 +104,7 @@ export default function CourseDetailPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Header title={course.title} showBackButton />
+      <Header title={course.title} showBackButton backButtonHref="/learn" />
 
       <main className="flex-1 space-y-6 p-4 pb-28 md:p-6">
         {/* Main Course Info Card */}
