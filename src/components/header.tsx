@@ -44,27 +44,43 @@ export function Header({
       <span className="sr-only">Volver</span>
     </Button>
   );
+  
+  if (showBackButton) {
+    return (
+        <header
+        className={cn(
+            'sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-4 md:h-20 md:px-6',
+            className
+        )}
+        >
+        <div className="flex flex-1 items-center gap-4 overflow-hidden">
+            {backButtonHref ? (
+                <Link href={backButtonHref} passHref>
+                    <BackButton />
+                </Link>
+            ) : (
+                <BackButton />
+            )}
+            <div className="flex-1 overflow-hidden">
+            <h1 className="truncate text-lg font-bold tracking-tight md:text-2xl">
+                {title}
+            </h1>
+            {subtitle && (
+                <p className="truncate text-base text-muted-foreground">
+                {subtitle}
+                </p>
+            )}
+            </div>
+        </div>
+        <div className="pl-4">{action}</div>
+        </header>
+    )
+  }
 
   return (
-    <header
-      className={cn(
-        'sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-4 md:h-20 md:px-6',
-        className
-      )}
-    >
-      <div className="flex flex-1 items-center gap-4 overflow-hidden">
-        {showBackButton &&
-          (backButtonHref ? (
-            <Link href={backButtonHref} legacyBehavior>
-              <a>
-                <BackButton />
-              </a>
-            </Link>
-          ) : (
-            <BackButton />
-          ))}
-        <div className="flex-1 overflow-hidden">
-          <h1 className="truncate text-lg font-bold tracking-tight md:text-2xl">
+    <div className={cn('flex items-center justify-between', className)}>
+         <div className="flex-1 overflow-hidden">
+          <h1 className="truncate text-3xl font-bold tracking-tight">
             {title}
           </h1>
           {subtitle && (
@@ -73,8 +89,7 @@ export function Header({
             </p>
           )}
         </div>
-      </div>
-      <div className="pl-4">{action}</div>
-    </header>
+        <div className="pl-4">{action}</div>
+    </div>
   );
 }
