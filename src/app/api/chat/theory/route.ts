@@ -1,6 +1,5 @@
 import { theoryChatFlow, type TheoryChatInput } from '@/ai/flows/theory-chat';
 import { NextResponse } from 'next/server';
-import { runFlow } from 'genkit/beta';
 
 export async function POST(req: Request) {
   try {
@@ -13,7 +12,7 @@ export async function POST(req: Request) {
 
     // In a real app, you might add user authentication checks here.
 
-    const result = await runFlow(theoryChatFlow, body);
+    const result = await theoryChatFlow(body);
 
     return NextResponse.json(result);
 
