@@ -32,7 +32,7 @@ export default function LearnPage() {
 
   const { data: userProfile } = useDoc(userProfileRef);
   
-  const [currentLives, setCurrentLives] = useState(MAX_LIVES);
+  const [currentLives, setCurrentLives] = useState(0);
   const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(new Date());
   
   const streak = userProfile?.streak ?? 0;
