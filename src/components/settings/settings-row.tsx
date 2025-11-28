@@ -4,39 +4,12 @@ import Link from 'next/link';
 import React from 'react';
 import { IOSSwitch } from '../ui/switch';
 
-interface LanguageToggleProps {
-  checked: boolean;
-  onCheckedChange: (checked: boolean) => void;
-}
-
-const LanguageToggle = ({ checked, onCheckedChange }: LanguageToggleProps) => (
-  <div
-    onClick={() => onCheckedChange(!checked)}
-    role="switch"
-    aria-checked={checked}
-    className="flex h-7 w-14 cursor-pointer items-center rounded-full bg-input p-1 transition-colors"
-  >
-    <div
-      className={cn(
-        "flex h-5 w-5 items-center justify-center rounded-full bg-background shadow-md transition-transform",
-        checked ? "translate-x-7" : "translate-x-0"
-      )}
-    >
-      <span className="text-xs font-bold text-muted-foreground">
-        {checked ? 'EN' : 'ES'}
-      </span>
-    </div>
-  </div>
-);
-
-
 interface SettingsRowProps {
   icon: React.ElementType;
   title: string;
   subtitle: string;
   trailing?:
     | { type: 'toggle'; checked: boolean; onCheckedChange: (checked: boolean) => void }
-    | { type: 'language-toggle'; checked: boolean; onCheckedChange: (checked: boolean) => void }
     | { type: 'chevron' }
     | { type: 'text'; value: string };
   href?: string;
@@ -69,9 +42,6 @@ export function SettingsRow({ icon: Icon, title, subtitle, trailing, href, onCli
         <div className="flex items-center">
           {trailing.type === 'toggle' && (
             <IOSSwitch checked={trailing.checked} onCheckedChange={trailing.onCheckedChange} />
-          )}
-          {trailing.type === 'language-toggle' && (
-             <LanguageToggle checked={trailing.checked} onCheckedChange={trailing.onCheckedChange} />
           )}
           {trailing.type === 'chevron' && <ChevronRight className="h-5 w-5 text-muted-foreground" />}
           {trailing.type === 'text' && (

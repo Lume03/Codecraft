@@ -49,13 +49,6 @@ export default function SettingsPage() {
     setIsDarkTheme(checked);
   };
   
-  const handleLanguageChange = (checked: boolean) => {
-    const newLang = checked ? 'en' : 'es';
-    setLanguage(newLang);
-    // En una app real, aquí llamarías a tu librería de i18n para cambiar el idioma.
-    localStorage.setItem('language', newLang);
-  };
-
   const handleLogout = async () => {
     if (auth) {
       await signOut(auth);
@@ -88,12 +81,9 @@ export default function SettingsPage() {
           <SettingsRow
             icon={Languages}
             title="Idioma"
-            subtitle={language === 'es' ? 'Español' : 'English'}
-            trailing={{
-              type: 'language-toggle',
-              checked: language === 'en',
-              onCheckedChange: handleLanguageChange,
-            }}
+            subtitle="Español"
+            trailing={{ type: 'text', value: 'Cambiar' }}
+            href="#"
           />
         </SettingsSection>
 
