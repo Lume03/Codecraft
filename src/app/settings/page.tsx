@@ -29,9 +29,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -43,13 +53,15 @@ export default function SettingsPage() {
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(false);
   const [language, setLanguage] = useState('es');
+  const [reminderTime, setReminderTime] = useState('19:00');
+  const [tempHour, setTempHour] = useState('19');
+  const [tempMinute, setTempMinute] = useState('00');
 
   const auth = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
-    // Asume que el idioma por defecto es español si no hay nada guardado
     const savedLanguage = localStorage.getItem('language') || 'es';
     setLanguage(savedLanguage);
     setIsDarkTheme(theme === 'dark');
@@ -65,6 +77,10 @@ export default function SettingsPage() {
       await signOut(auth);
       router.push('/auth');
     }
+  };
+
+  const handleSaveReminder = () => {
+    setReminderTime(`${tempHour}:${tempMinute}`);
   };
   
   if (!mounted) {
@@ -169,13 +185,61 @@ export default function SettingsPage() {
             subtitle="Recibe un ejercicio cada día para mantener el hábito"
             trailing={{ type: 'toggle', checked: dailyChallenge, onCheckedChange: setDailyChallenge }}
           />
-          <SettingsRow
-            icon={CalendarClock}
-            title="Recordatorios"
-            subtitle="Programa tu hora ideal para estudiar"
-            trailing={{ type: 'text', value: '19:00' }}
-            isButton
-          />
+          <Dialog>
+            <DialogTrigger asChild>
+              <div>
+                <SettingsRow
+                  icon={CalendarClock}
+                  title="Recordatorios"
+                  subtitle="Programa tu hora ideal para estudiar"
+                  trailing={{ type: 'text', value: reminderTime }}
+                  isButton
+                />
+              </div>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Configurar recordatorio</DialogTitle>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-4 py-4">
+                <div className="space-y-2">
+                  <Label>Hora</Label>
+                  <Select value={tempHour} onValueChange={setTempHour}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 24 }).map((_, i) => (
+                        <SelectItem key={i} value={String(i).padStart(2, '0')}>
+                          {String(i).padStart(2, '0')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Minuto</Label>
+                   <Select value={tempMinute} onValueChange={setTempMinute}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['00', '15', '30', '45'].map((min) => (
+                        <SelectItem key={min} value={min}>
+                          {min}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button onClick={handleSaveReminder}>Guardar</Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </SettingsSection>
 
         <SettingsSection title="Notificaciones">
