@@ -6,7 +6,7 @@ import {
   ChevronRight,
   CodeXml,
   Puzzle,
-  FileCode,
+  Bug,
   Flame,
   Settings,
 } from 'lucide-react';
@@ -37,13 +37,13 @@ const practiceModes = [
   {
     title: 'Depuración',
     description: 'Encuentra 3 errores',
-    icon: Puzzle,
+    icon: Bug,
     href: '#',
   },
   {
     title: 'Completado de código',
     description: 'Arrastra bloques',
-    icon: FileCode,
+    icon: Puzzle,
     href: '/practice/code-completion/py-drag-1',
   },
 ];
