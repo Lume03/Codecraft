@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -21,6 +22,15 @@ import { SettingsRow } from '@/components/settings/settings-row';
 import { useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -76,15 +86,46 @@ export default function SettingsPage() {
             title="Tamaño de fuente"
             subtitle="Base 15px · Equilibrio entre legibilidad y contenido"
             trailing={{ type: 'text', value: 'Medio' }}
-            href="#"
+            isButton
           />
-          <SettingsRow
-            icon={Languages}
-            title="Idioma"
-            subtitle="Español"
-            trailing={{ type: 'text', value: 'Cambiar' }}
-            href="#"
-          />
+           <Dialog>
+            <DialogTrigger asChild>
+              <div>
+                <SettingsRow
+                    icon={Languages}
+                    title="Idioma"
+                    subtitle="Español"
+                    trailing={{ type: 'text', value: 'Cambiar' }}
+                    isButton
+                />
+              </div>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Selecciona un idioma</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <RadioGroup defaultValue="es" className="space-y-2">
+                  <div className="flex items-center space-x-2 rounded-md border p-4">
+                    <RadioGroupItem value="es" id="lang-es" />
+                    <Label htmlFor="lang-es" className="flex-1 cursor-pointer">Español</Label>
+                  </div>
+                   <div className="flex items-center space-x-2 rounded-md border p-4">
+                    <RadioGroupItem value="en" id="lang-en" />
+                    <Label htmlFor="lang-en" className="flex-1 cursor-pointer">Inglés</Label>
+                  </div>
+                   <div className="flex items-center space-x-2 rounded-md border p-4">
+                    <RadioGroupItem value="pt" id="lang-pt" />
+                    <Label htmlFor="lang-pt" className="flex-1 cursor-pointer">Portugués</Label>
+                  </div>
+                   <div className="flex items-center space-x-2 rounded-md border p-4">
+                    <RadioGroupItem value="zh" id="lang-zh" />
+                    <Label htmlFor="lang-zh" className="flex-1 cursor-pointer">Chino</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </DialogContent>
+          </Dialog>
         </SettingsSection>
 
         <SettingsSection title="Aprendizaje">
@@ -105,7 +146,7 @@ export default function SettingsPage() {
             title="Recordatorios"
             subtitle="Programa tu hora ideal para estudiar"
             trailing={{ type: 'text', value: '19:00' }}
-            href="#"
+            isButton
           />
         </SettingsSection>
 
@@ -137,7 +178,7 @@ export default function SettingsPage() {
             title="Privacidad"
             subtitle="Controla datos y permisos"
             trailing={{ type: 'text', value: 'Gestionar' }}
-            href="#"
+            isButton
           />
           <SettingsRow
             icon={LogOut}

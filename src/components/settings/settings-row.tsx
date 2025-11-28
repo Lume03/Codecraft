@@ -28,7 +28,7 @@ export function SettingsRow({ icon: Icon, title, subtitle, trailing, href, onCli
       aria-label={`Abrir ${title}`}
       className={cn(
         "group flex items-center gap-3 px-4 py-3 md:py-4 h-[72px] md:h-[76px] w-full text-left",
-        (href || onClick) && "transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:bg-white/5"
+        (href || onClick || isButton) && "transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:bg-white/5"
       )}
     >
       <div className="flex size-10 items-center justify-center rounded-xl border">
