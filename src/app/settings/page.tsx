@@ -31,18 +31,29 @@ export default function SettingsPage() {
   const [dailyChallenge, setDailyChallenge] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(false);
+  const [language, setLanguage] = useState('es');
 
   const auth = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
+    // Asume que el idioma por defecto es español si no hay nada guardado
+    const savedLanguage = localStorage.getItem('language') || 'es';
+    setLanguage(savedLanguage);
     setIsDarkTheme(theme === 'dark');
   }, [theme]);
 
   const handleThemeChange = (checked: boolean) => {
     setTheme(checked ? 'dark' : 'light');
     setIsDarkTheme(checked);
+  };
+  
+  const handleLanguageChange = (checked: boolean) => {
+    const newLang = checked ? 'en' : 'es';
+    setLanguage(newLang);
+    // En una app real, aquí llamarías a tu librería de i18n para cambiar el idioma.
+    localStorage.setItem('language', newLang);
   };
 
   const handleLogout = async () => {
@@ -77,9 +88,12 @@ export default function SettingsPage() {
           <SettingsRow
             icon={Languages}
             title="Idioma"
-            subtitle="Español"
-            trailing={{ type: 'text', value: 'Cambiar' }}
-            href="#"
+            subtitle={language === 'es' ? 'Español' : 'English'}
+            trailing={{
+              type: 'language-toggle',
+              checked: language === 'en',
+              onCheckedChange: handleLanguageChange,
+            }}
           />
         </SettingsSection>
 
