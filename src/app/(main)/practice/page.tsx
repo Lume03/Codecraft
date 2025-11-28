@@ -17,6 +17,7 @@ import { useUser, useFirestore, useDoc } from '@/firebase';
 import { useState, useEffect, useMemo } from 'react';
 import { doc } from 'firebase/firestore';
 import { recalculateLives, MAX_LIVES } from '@/lib/lives';
+import { cn } from '@/lib/utils';
 
 
 const practiceModes = [
@@ -65,12 +66,17 @@ const recommendedChallenges = [
 const StatChip = ({
   icon: Icon,
   value,
+  isFlame,
 }: {
   icon: React.ElementType;
   value: string | number;
+  isFlame?: boolean;
 }) => (
   <div className="inline-flex h-8 items-center gap-2 rounded-full border border-border bg-card px-3 text-[13px] text-foreground">
-    <Icon className="h-4 w-4" />
+    <Icon className={cn(
+        "h-4 w-4",
+        isFlame && (value > 0 ? "text-orange-500" : "text-muted-foreground")
+    )} />
     <span>{value}</span>
   </div>
 );
@@ -130,7 +136,7 @@ export default function PracticePage() {
         title="Practicar"
         action={
             <div className="flex items-center gap-2">
-                <StatChip icon={Flame} value={streak} />
+                <StatChip icon={Flame} value={streak} isFlame />
                 <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
                 <Button variant="ghost" size="icon" asChild>
                 <Link href="/settings">

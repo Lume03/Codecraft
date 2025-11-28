@@ -11,6 +11,7 @@ import { doc } from 'firebase/firestore';
 import { LivesIndicator } from '@/components/lives-indicator';
 import { recalculateLives, MAX_LIVES } from '@/lib/lives';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface CourseWithProgress extends Course {
   progress: number;
@@ -19,12 +20,17 @@ interface CourseWithProgress extends Course {
 const StatChip = ({
   icon: Icon,
   value,
+  isFlame,
 }: {
   icon: React.ElementType;
   value: string | number;
+  isFlame?: boolean;
 }) => (
   <div className="inline-flex h-8 items-center gap-2 rounded-full border border-border bg-card px-3 text-[13px] text-foreground">
-    <Icon className="h-4 w-4" />
+    <Icon className={cn(
+        "h-4 w-4",
+        isFlame && (value > 0 ? "text-orange-500" : "text-muted-foreground")
+    )} />
     <span>{value}</span>
   </div>
 );
@@ -107,7 +113,7 @@ export default function LearnPage() {
         subtitle={streak > 0 ? `🔥 ¡Vamos a mantener esa racha de ${streak} días!` : "¡Es un gran día para aprender algo nuevo!"}
         action={
           <div className="flex items-center gap-2">
-            <StatChip icon={Flame} value={streak} />
+            <StatChip icon={Flame} value={streak} isFlame />
             <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
             <Button variant="ghost" size="icon" asChild>
               <Link href="/settings">
