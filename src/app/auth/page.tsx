@@ -94,6 +94,7 @@ export default function AuthPage() {
         achievements: [],
         lives: 5,
         lastLifeUpdate: serverTimestamp(),
+        lastStreakUpdate: serverTimestamp(),
         progress: {},
     };
     

@@ -3,7 +3,8 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { handlePractice, PracticeInput, PracticeOutput } from '@/ai/flows/practice-flow';
 import { adminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { isSameDay, subDays } from 'date-fns';
 
 export async function POST(request: Request) {
     try {
@@ -23,12 +24,15 @@ export async function POST(request: Request) {
 
         const { approved, score, results } = gradeResult;
 
-        // --- User progress logic in Firestore ---
+        // --- User progress and streak logic in Firestore ---
         const userRef = adminDb.collection('users').doc(userId);
         
         let unlockedNextLessonId: string | null = null;
         
         if (approved) {
+            const userSnap = await userRef.get();
+            const userData = userSnap.data();
+
             const client = await clientPromise;
             const db = client.db('ravencode');
             const modulesCollection = db.collection('modules');
@@ -56,7 +60,25 @@ export async function POST(request: Request) {
             if (unlockedNextLessonId) {
                 updates[`progress.${courseId}.unlockedLessons`] = FieldValue.arrayUnion(unlockedNextLessonId);
             }
-             await userRef.update(updates);
+
+            // Streak Logic
+            const now = new Date();
+            const lastStreakUpdate = (userData?.lastStreakUpdate as Timestamp)?.toDate();
+            let currentStreak = userData?.streak || 0;
+
+            if (lastStreakUpdate && isSameDay(now, lastStreakUpdate)) {
+                // Already practiced today, do nothing to the streak
+            } else if (lastStreakUpdate && isSameDay(subDays(now, 1), lastStreakUpdate)) {
+                // Practiced yesterday, increment streak
+                updates['streak'] = FieldValue.increment(1);
+                updates['lastStreakUpdate'] = Timestamp.fromDate(now);
+            } else {
+                // Did not practice yesterday, reset streak to 1
+                updates['streak'] = 1;
+                updates['lastStreakUpdate'] = Timestamp.fromDate(now);
+            }
+            
+            await userRef.update(updates);
         }
         
         // Save practice result to a subcollection (optional but good for history)

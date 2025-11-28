@@ -40,6 +40,7 @@ export default function ProfileSetupPage() {
         achievements: [],
         lives: 5,
         lastLifeUpdate: serverTimestamp(),
+        lastStreakUpdate: serverTimestamp(),
       }, { merge: true });
       router.push('/learn');
     }
