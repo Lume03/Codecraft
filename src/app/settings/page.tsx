@@ -16,6 +16,7 @@ import {
   Sparkles,
   BookOpen,
   CalendarClock,
+  Type,
 } from 'lucide-react';
 import { SettingsSection } from '@/components/settings/settings-section';
 import { SettingsRow } from '@/components/settings/settings-row';
@@ -81,13 +82,40 @@ export default function SettingsPage() {
             subtitle={isDarkTheme ? 'Oscuro' : 'Claro'}
             trailing={{ type: 'toggle', checked: isDarkTheme, onCheckedChange: handleThemeChange }}
           />
-          <SettingsRow
-            icon={Languages}
-            title="Tamaño de fuente"
-            subtitle="Base 15px · Equilibrio entre legibilidad y contenido"
-            trailing={{ type: 'text', value: 'Medio' }}
-            isButton
-          />
+           <Dialog>
+            <DialogTrigger asChild>
+              <div>
+                <SettingsRow
+                    icon={Type}
+                    title="Tamaño de fuente"
+                    subtitle="Base 15px · Equilibrio entre legibilidad y contenido"
+                    trailing={{ type: 'text', value: 'Medio' }}
+                    isButton
+                />
+              </div>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Selecciona un tamaño de fuente</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <RadioGroup defaultValue="md" className="space-y-2">
+                  <div className="flex items-center space-x-2 rounded-md border p-4">
+                    <RadioGroupItem value="sm" id="font-sm" />
+                    <Label htmlFor="font-sm" className="flex-1 cursor-pointer">Pequeño</Label>
+                  </div>
+                   <div className="flex items-center space-x-2 rounded-md border p-4">
+                    <RadioGroupItem value="md" id="font-md" />
+                    <Label htmlFor="font-md" className="flex-1 cursor-pointer">Medio</Label>
+                  </div>
+                   <div className="flex items-center space-x-2 rounded-md border p-4">
+                    <RadioGroupItem value="lg" id="font-lg" />
+                    <Label htmlFor="font-lg" className="flex-1 cursor-pointer">Grande</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </DialogContent>
+          </Dialog>
            <Dialog>
             <DialogTrigger asChild>
               <div>

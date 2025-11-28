@@ -18,17 +18,17 @@ interface SettingsRowProps {
 }
 
 export function SettingsRow({ icon: Icon, title, subtitle, trailing, href, onClick, isButton }: SettingsRowProps) {
-  const Element = isButton ? 'button' : 'div';
+  const Element = isButton ? 'div' : 'div'; // Use 'div' for layout, but handled by DialogTrigger
   
   const content = (
     <Element
       onClick={onClick}
-      role={href || onClick ? 'button' : undefined}
-      tabIndex={href || onClick ? 0 : undefined}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
       aria-label={`Abrir ${title}`}
       className={cn(
         "group flex items-center gap-3 px-4 py-3 md:py-4 h-[72px] md:h-[76px] w-full text-left",
-        (href || onClick || isButton) && "transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:bg-white/5"
+        (href || onClick || isButton) && "cursor-pointer transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:bg-white/5"
       )}
     >
       <div className="flex size-10 items-center justify-center rounded-xl border">
@@ -64,5 +64,7 @@ export function SettingsRow({ icon: Icon, title, subtitle, trailing, href, onCli
     );
   }
 
+  // If it's a button but not a link, it's likely a DialogTrigger, so just return the content.
+  // The DialogTrigger wrapper will handle the click.
   return content;
 }
