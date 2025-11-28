@@ -26,6 +26,20 @@ import { doc } from 'firebase/firestore';
 import { recalculateLives, MAX_LIVES } from '@/lib/lives';
 import { LivesIndicator } from '@/components/lives-indicator';
 
+const StatChip = ({
+  icon: Icon,
+  value,
+}: {
+  icon: React.ElementType;
+  value: string | number;
+}) => (
+  <div className="inline-flex h-8 items-center gap-2 rounded-full border border-border bg-card px-3 text-[13px] text-foreground">
+    <Icon className="h-4 w-4" />
+    <span>{value}</span>
+  </div>
+);
+
+
 const QuickActionChip = ({
   icon: Icon,
   label,
@@ -148,7 +162,8 @@ export default function ProfilePage() {
             <span className="text-xl">RavenCode</span>
           </Link>
           <div className="flex items-center gap-2">
-             <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
+            <StatChip icon={Flame} value={streak} />
+            <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
             <Button variant="ghost" size="icon" asChild>
               <Link href="/settings">
                 <Settings className="h-5 w-5" />

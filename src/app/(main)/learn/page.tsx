@@ -3,7 +3,7 @@
 import { CourseCard } from '@/components/course-card';
 import { Header } from '@/components/header';
 import type { Course, Module } from '@/lib/data';
-import { Settings } from 'lucide-react';
+import { Settings, Flame } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
@@ -15,6 +15,19 @@ import { Button } from '@/components/ui/button';
 interface CourseWithProgress extends Course {
   progress: number;
 }
+
+const StatChip = ({
+  icon: Icon,
+  value,
+}: {
+  icon: React.ElementType;
+  value: string | number;
+}) => (
+  <div className="inline-flex h-8 items-center gap-2 rounded-full border border-border bg-card px-3 text-[13px] text-foreground">
+    <Icon className="h-4 w-4" />
+    <span>{value}</span>
+  </div>
+);
 
 export default function LearnPage() {
   const [courses, setCourses] = useState<CourseWithProgress[]>([]);
@@ -93,7 +106,8 @@ export default function LearnPage() {
         title={`¡Hola, ${displayName.split(' ')[0]}!`}
         subtitle={streak > 0 ? `🔥 ¡Vamos a mantener esa racha de ${streak} días!` : "¡Es un gran día para aprender algo nuevo!"}
         action={
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <StatChip icon={Flame} value={streak} />
             <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
             <Button variant="ghost" size="icon" asChild>
               <Link href="/settings">
