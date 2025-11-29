@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { notFound, useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Header } from '@/components/header';
 import { Progress } from '@/components/ui/progress';
@@ -21,6 +21,7 @@ export default function PracticeSessionPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const user = useUser();
+  const practiceStartedRef = useRef(false);
 
   const { lessonId } = params as { lessonId: string };
   const courseId = searchParams.get('courseId');
@@ -34,9 +35,7 @@ export default function PracticeSessionPage() {
   const [isAnswered, setIsAnswered] = useState(false);
   
   useEffect(() => {
-    if (!lessonId || !courseId || !user) return;
-
-    let ignore = false;
+    if (!lessonId || !courseId || !user || practiceStartedRef.current) return;
 
     const startPractice = async () => {
       try {
@@ -54,9 +53,7 @@ export default function PracticeSessionPage() {
         if (!response.ok) {
           throw new Error(data.message || 'Error al iniciar la práctica');
         }
-
-        if (ignore) return;
-
+        
         if (data.questions) {
           setQuestions(data.questions);
         } else {
@@ -65,21 +62,16 @@ export default function PracticeSessionPage() {
 
       } catch (err: any) {
         console.error(err);
-        if (!ignore) {
-            setError(err.message);
-        }
+        setError(err.message);
       } finally {
-        if (!ignore) {
-            setLoading(false);
-        }
+        setLoading(false);
       }
     };
-
+    
+    // Mark that the practice has started to prevent refetching
+    practiceStartedRef.current = true;
     startPractice();
 
-    return () => {
-        ignore = true;
-    }
   }, [lessonId, courseId, user]);
 
 

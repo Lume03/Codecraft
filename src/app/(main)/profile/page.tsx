@@ -22,7 +22,6 @@ import { useTheme } from 'next-themes';
 import { useEffect, useState, useMemo } from 'react';
 import { useUser } from '@/firebase';
 import { placeholderImages } from '@/lib/placeholder-images';
-import { recalculateLives } from '@/lib/lives';
 import { LivesIndicator } from '@/components/lives-indicator';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -40,7 +39,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useTranslation } from '@/context/language-provider';
-
+import { Progress } from '@/components/ui/progress';
 
 interface UserStats {
   averageScore: number;
@@ -99,7 +98,7 @@ const StatCard = ({
 }) => {
   if (isLoading) {
     return (
-       <Card className="flex items-center gap-3 p-4">
+       <Card className="flex items-center gap-4 p-4">
         <Skeleton className="h-8 w-8 rounded-lg" />
         <div className="space-y-1">
           <Skeleton className="h-6 w-12" />
@@ -197,6 +196,8 @@ export default function ProfilePage() {
           if (res.ok) {
             const data = await res.json();
             setUserProfile(data);
+            setCurrentLives(data.lives ?? 0);
+            setLastLifeUpdate(data.lastLifeUpdate ? new Date(data.lastLifeUpdate) : new Date());
           } else if (res.status === 404) {
             // If user not found in DB, create them
             const postRes = await fetch('/api/users', {
@@ -228,14 +229,6 @@ export default function ProfilePage() {
       fetchUserProfile();
     }
   }, [user]);
-
-  useEffect(() => {
-    if (userProfile) {
-      const recalculated = recalculateLives(userProfile);
-      setCurrentLives(recalculated.lives);
-      setLastLifeUpdate(recalculated.lastLifeUpdate);
-    }
-  }, [userProfile]);
 
   useEffect(() => {
     if (user?.uid) {
@@ -451,7 +444,7 @@ export default function ProfilePage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <QuickActionChip
+           <QuickActionChip
             icon={Bell}
             label={t('notifications')}
             href="/settings"
@@ -474,11 +467,12 @@ export default function ProfilePage() {
             >
               {t('overall_progress_title')}
             </h2>
-            <div>
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{t('total_progress_label')}</span>
-                <span>{overallProgress}%</span>
-              </div>
+             <div className="space-y-2">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{t('total_progress_label')}</span>
+                    <span>{overallProgress}%</span>
+                </div>
+                <Progress value={overallProgress} className="h-2" aria-label={`${t('total_progress_label')}: ${overallProgress}%`} />
             </div>
             {overallProgress === 0 && (
               <p
