@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Heart, Infinity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MAX_LIVES, REFILL_MINUTES } from '@/lib/lives';
+import { useTranslation } from '@/context/language-provider';
 
 interface LivesIndicatorProps {
   lives: number;
@@ -25,6 +26,7 @@ const formatTime = (seconds: number) => {
 export function LivesIndicator({ lives: initialLives, lastLifeUpdate }: LivesIndicatorProps) {
   const [currentLives, setCurrentLives] = useState(initialLives);
   const [countdown, setCountdown] = useState(0);
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Sincroniza el estado local con las props cuando cambian (ej. al cargar datos de Firestore)
@@ -69,10 +71,10 @@ export function LivesIndicator({ lives: initialLives, lastLifeUpdate }: LivesInd
   const isInfinite = initialLives === Infinity;
 
   const label = isInfinite
-    ? 'Vidas infinitas'
+    ? t('infinite_lives_label')
     : isFull
-    ? 'Vidas al máximo'
-    : `Tienes ${currentLives} de ${MAX_LIVES} vidas`;
+    ? t('full_lives_label')
+    : t('lives_remaining_label', { count: currentLives, max: MAX_LIVES });
 
   return (
     <Popover>
@@ -92,8 +94,8 @@ export function LivesIndicator({ lives: initialLives, lastLifeUpdate }: LivesInd
       </PopoverTrigger>
       <PopoverContent className="w-64 text-center">
         <div className="space-y-2">
-          <p className="font-bold">{isFull ? '¡Tienes todas tus vidas!' : 'Vidas'}</p>
-          <div className="flex justify-center gap-2" role="status" aria-label={`${currentLives} de ${MAX_LIVES} vidas restantes`}>
+          <p className="font-bold">{isFull ? t('lives_full_title') : t('lives_popover_title')}</p>
+          <div className="flex justify-center gap-2" role="status" aria-label={t('lives_remaining_label', { count: currentLives, max: MAX_LIVES })}>
             {Array.from({ length: MAX_LIVES }).map((_, i) => (
               <Heart
                 key={i}
@@ -103,10 +105,10 @@ export function LivesIndicator({ lives: initialLives, lastLifeUpdate }: LivesInd
             ))}
           </div>
           {isFull ? (
-             <p className="text-sm text-muted-foreground">¡Estás listo para aprender sin parar!</p>
+             <p className="text-sm text-muted-foreground">{t('lives_full_subtitle')}</p>
           ) : (
             <div aria-live="polite">
-                 <p className="text-sm text-muted-foreground">Recuperarás una vida en:</p>
+                 <p className="text-sm text-muted-foreground">{t('lives_recharge_message')}</p>
                  <p className="text-lg font-bold">{formatTime(countdown)}</p>
             </div>
           )}

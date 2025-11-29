@@ -11,6 +11,7 @@ import { LivesIndicator } from '@/components/lives-indicator';
 import { recalculateLives } from '@/lib/lives';
 import { cn } from '@/lib/utils';
 import type { UserProfile } from '@/docs/backend-types';
+import { useTranslation } from '@/context/language-provider';
 
 interface CourseWithProgress extends Course {
   progress: number;
@@ -49,6 +50,7 @@ export default function LearnPage() {
   const [loading, setLoading] = useState(true);
   const user = useUser();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const { t } = useTranslation();
 
   const [currentLives, setCurrentLives] = useState(0);
   const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(new Date());
@@ -145,8 +147,8 @@ export default function LearnPage() {
 
   }, [userProfile]);
   
-  const welcomeMessage = `¡Hola, ${displayName.split(' ')[0]}!`;
-  const streakMessage = streak > 0 ? `🔥 ¡Vamos a mantener esa racha de ${streak} días!` : "Es un gran día para aprender algo nuevo";
+  const welcomeMessage = t('hello_user', { name: displayName.split(' ')[0] });
+  const streakMessage = streak > 0 ? t('streak_on_fire', {days: streak}) : t('great_day_to_learn');
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 p-4 md:p-8">
@@ -158,7 +160,7 @@ export default function LearnPage() {
             <StatChip
               icon={Flame}
               value={streak}
-              label={`Racha de ${streak} días`}
+              label={t('days_streak_label', { count: streak })}
               isFlame
             />
             <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
@@ -166,17 +168,17 @@ export default function LearnPage() {
         }
       />
       <div>
-        <h2 className="mb-4 text-2xl font-bold text-foreground">Cursos</h2>
-        {loading && <p aria-live="polite">Cargando cursos...</p>}
+        <h2 className="mb-4 text-2xl font-bold text-foreground">{t('courses')}</h2>
+        {loading && <p aria-live="polite">{t('loading_courses')}</p>}
         {!loading && courses.length === 0 && (
           <div className="text-center text-muted-foreground" aria-live="polite">
-            <p>No hay cursos disponibles.</p>
+            <p>{t('no_courses_available')}</p>
             <p>
-              Ve al{' '}
+              {t('go_to_admin_panel_pre')}{' '}
               <Link href="/admin" className="text-primary underline">
-                panel de administrador
+                {t('admin_panel_link')}
               </Link>{' '}
-              para agregar uno.
+              {t('go_to_admin_panel_post')}
             </p>
           </div>
         )}
