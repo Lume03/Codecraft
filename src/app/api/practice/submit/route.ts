@@ -63,17 +63,16 @@ export async function POST(request: Request) {
         // Streak Logic
         const now = new Date();
         const lastStreakUpdate = user.lastStreakUpdate ? new Date(user.lastStreakUpdate) : null;
-        let currentStreak = user.streak || 0;
-
+        
         if (!lastStreakUpdate || !isSameDay(now, lastStreakUpdate)) {
-          if (lastStreakUpdate && isSameDay(subDays(now, 1), lastStreakUpdate)) {
-              // Practiced yesterday, increment streak
-              updates.$inc = { streak: 1 };
-          } else {
-              // Did not practice yesterday or first practice ever, reset streak to 1
-              updates.$set.streak = 1;
-          }
-          updates.$set.lastStreakUpdate = now;
+            if (lastStreakUpdate && isSameDay(subDays(now, 1), lastStreakUpdate)) {
+                // Practiced yesterday, increment streak
+                updates.$inc = { ...updates.$inc, streak: 1 };
+            } else {
+                // Did not practice yesterday or first practice ever, reset streak to 1
+                updates.$set.streak = 1;
+            }
+            updates.$set.lastStreakUpdate = now;
         }
         
         // Atomically update user document if there are changes

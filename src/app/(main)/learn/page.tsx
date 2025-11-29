@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
 import { useUser } from '@/firebase';
 import { LivesIndicator } from '@/components/lives-indicator';
-import { recalculateLives } from '@/lib/lives';
 import { cn } from '@/lib/utils';
 import type { UserProfile } from '@/docs/backend-types';
 import { useTranslation } from '@/context/language-provider';
@@ -52,8 +51,8 @@ export default function LearnPage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const { t } = useTranslation();
 
-  const [currentLives, setCurrentLives] = useState(0);
-  const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(new Date());
+  const currentLives = userProfile?.lives ?? 0;
+  const lastLifeUpdate = userProfile?.lastLifeUpdate ? new Date(userProfile.lastLifeUpdate) : new Date();
   
   const streak = userProfile?.streak ?? 0;
   const displayName = userProfile?.displayName ?? user?.displayName ?? 'Aprende';
@@ -97,14 +96,6 @@ export default function LearnPage() {
       fetchUserProfile();
     }
   }, [user]);
-
-  useEffect(() => {
-    if(userProfile) {
-      const recalculated = recalculateLives(userProfile);
-      setCurrentLives(recalculated.lives);
-      setLastLifeUpdate(recalculated.lastLifeUpdate);
-    }
-  }, [userProfile]);
 
   useEffect(() => {
     const fetchCoursesAndProgress = async () => {

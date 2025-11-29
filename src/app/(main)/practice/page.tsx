@@ -14,7 +14,6 @@ import Link from 'next/link';
 import { LivesIndicator } from '@/components/lives-indicator';
 import { useUser } from '@/firebase';
 import { useState, useEffect } from 'react';
-import { recalculateLives } from '@/lib/lives';
 import { cn } from '@/lib/utils';
 import type { UserProfile } from '@/docs/backend-types';
 import { useTranslation } from '@/context/language-provider';
@@ -125,8 +124,8 @@ export default function PracticePage() {
       },
     ];
 
-    const [currentLives, setCurrentLives] = useState(0);
-    const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(new Date());
+    const currentLives = userProfile?.lives ?? 0;
+    const lastLifeUpdate = userProfile?.lastLifeUpdate ? new Date(userProfile.lastLifeUpdate) : new Date();
     const streak = userProfile?.streak ?? 0;
 
     useEffect(() => {
@@ -168,14 +167,6 @@ export default function PracticePage() {
             fetchUserProfile();
         }
     }, [user]);
-
-    useEffect(() => {
-        if(userProfile) {
-        const recalculated = recalculateLives(userProfile);
-        setCurrentLives(recalculated.lives);
-        setLastLifeUpdate(recalculated.lastLifeUpdate);
-        }
-    }, [userProfile]);
 
   return (
     <div>
