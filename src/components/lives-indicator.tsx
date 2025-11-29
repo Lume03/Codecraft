@@ -87,7 +87,7 @@ export function LivesIndicator({ lives: initialLives, lastLifeUpdate }: LivesInd
       </PopoverTrigger>
       <PopoverContent className="w-64 text-center">
         <div className="space-y-2">
-          <p className="font-bold">{isFull ? '¡Tienes todas tus vidas!' : t('lives')}</p>
+          <p className="font-bold">{isFull ? t('lives_full_title') : t('lives')}</p>
           <div className="flex justify-center gap-2">
             {Array.from({ length: MAX_LIVES }).map((_, i) => (
               <Heart
@@ -97,10 +97,10 @@ export function LivesIndicator({ lives: initialLives, lastLifeUpdate }: LivesInd
             ))}
           </div>
           {isFull ? (
-             <p className="text-sm text-muted-foreground">¡Estás listo para aprender sin parar!</p>
+             <p className="text-sm text-muted-foreground">{t('lives_full_subtitle')}</p>
           ) : (
             <div>
-                 <p className="text-sm text-muted-foreground">Recuperarás una vida en:</p>
+                 <p className="text-sm text-muted-foreground">{t('lives_recharge_message')}</p>
                  <p className="text-lg font-bold">{formatTime(countdown)}</p>
             </div>
           )}

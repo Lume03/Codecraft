@@ -145,5 +145,8 @@
     "privacy": "Privacidad",
     "privacy_desc": "Controla datos y permisos",
     "manage": "Gestionar",
-    "logout_desc": "Desvincula este dispositivo"
+    "logout_desc": "Desvincula este dispositivo",
+    "lives_full_title": "¡Tienes todas tus vidas!",
+    "lives_full_subtitle": "¡Estás listo para aprender sin parar!",
+    "lives_recharge_message": "Recuperarás una vida en:"
 }

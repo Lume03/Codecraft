@@ -145,5 +145,8 @@
     "privacy": "Privacy",
     "privacy_desc": "Control data and permissions",
     "manage": "Manage",
-    "logout_desc": "Unlink this device"
+    "logout_desc": "Unlink this device",
+    "lives_full_title": "You have full lives!",
+    "lives_full_subtitle": "You're ready to learn without stopping!",
+    "lives_recharge_message": "You'll get a life back in:"
 }
