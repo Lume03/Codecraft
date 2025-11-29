@@ -13,6 +13,7 @@ import {
   BarChart,
   Check,
   BrainCircuit,
+  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { GoalProgress } from '@/components/goal-progress';
@@ -46,34 +47,6 @@ interface UserStats {
   completedSections: number;
   totalAttempts: number;
 }
-
-const StatChip = ({
-  icon: Icon,
-  value,
-  label,
-  isFlame,
-}: {
-  icon: React.ElementType;
-  value: string | number;
-  label: string;
-  isFlame?: boolean;
-}) => (
-  <div
-    className="inline-flex h-8 items-center gap-2 rounded-full border border-border bg-card px-3 text-[13px] text-foreground"
-    role="status"
-    aria-label={label}
-  >
-    <Icon
-      className={cn(
-        'h-4 w-4',
-        isFlame &&
-          (Number(value) > 0 ? 'text-orange-500' : 'text-muted-foreground')
-      )}
-      aria-hidden="true"
-    />
-    <span>{value}</span>
-  </div>
-);
 
 const QuickActionChip = ({
   icon: Icon,
@@ -356,23 +329,18 @@ export default function ProfilePage() {
     <div className="flex flex-col">
       <header className="sticky top-0 z-20 flex h-14 items-center border-b border-border bg-background/80 px-4 backdrop-blur-sm md:h-16 md:px-6">
         <div className="mx-auto flex w-full max-w-[420px] items-center justify-between md:max-w-[720px] xl:max-w-[960px]">
-          <Link
-            href="/learn"
-            className="flex items-center gap-2 font-bold"
-            aria-label="Ir a la página principal de RavenCode"
-          >
-          </Link>
           <div className="flex items-center gap-2">
-            <StatChip
-              icon={Flame}
-              value={streak}
-              label={`Racha de ${streak} días`}
-              isFlame
-            />
             <LivesIndicator
               lives={currentLives}
               lastLifeUpdate={lastLifeUpdate}
             />
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" asChild>
+                <Link href="/settings" aria-label="Ir a la página de ajustes">
+                    <Settings className="h-5 w-5" />
+                </Link>
+            </Button>
           </div>
         </div>
       </header>
@@ -570,5 +538,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
