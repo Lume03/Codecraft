@@ -78,16 +78,14 @@ const QuickActionChip = ({
       role="button"
       tabIndex={0}
       aria-label={label}
-      className="group flex h-14 w-full flex-row items-center justify-start gap-4 rounded-2xl border bg-secondary/60 p-4 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      className="group inline-flex h-10 items-center justify-center gap-2 rounded-full border bg-secondary/60 px-4 text-sm font-semibold text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onClick?.();
       }}
     >
-      <Icon className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
-      <span className="text-sm font-semibold text-foreground">
-        {label}
-      </span>
+      <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+      <span>{label}</span>
     </div>
   );
 
@@ -413,7 +411,7 @@ export default function ProfilePage() {
         {/* Quick Actions */}
         <nav
           aria-label="Acciones rápidas"
-          className="grid grid-cols-3 items-center gap-3"
+          className="flex items-center gap-2"
         >
           <QuickActionChip
             icon={theme === 'dark' ? Moon : Sun}
