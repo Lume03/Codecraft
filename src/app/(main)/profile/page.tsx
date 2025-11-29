@@ -331,12 +331,13 @@ export default function ProfilePage() {
       <header className="sticky top-0 z-20 flex h-14 items-center border-b border-border bg-background/80 px-4 backdrop-blur-sm md:h-16 md:px-6">
         <div className="mx-auto flex w-full max-w-[420px] items-center justify-between md:max-w-[720px] xl:max-w-[960px]">
           <div className="flex items-center gap-2">
-            <LivesIndicator
+            {/* Placeholder for left side if needed */}
+          </div>
+          <div className="flex items-center gap-2">
+             <LivesIndicator
               lives={currentLives}
               lastLifeUpdate={lastLifeUpdate}
             />
-          </div>
-          <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" asChild>
                 <Link href="/settings" aria-label={t('settings')}>
                     <Settings className="h-5 w-5" />
