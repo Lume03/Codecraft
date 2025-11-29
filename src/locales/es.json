@@ -148,5 +148,7 @@
     "logout_desc": "Desvincula este dispositivo",
     "lives_full_title": "¡Tienes todas tus vidas!",
     "lives_full_subtitle": "¡Estás listo para aprender sin parar!",
-    "lives_recharge_message": "Recuperarás una vida en:"
+    "lives_recharge_message": "Recuperarás una vida en:",
+    "challenge_python_types": "Tipa correctamente variables en Python",
+    "challenge_js_loop": "Completa el bucle \"for\" en JavaScript"
 }

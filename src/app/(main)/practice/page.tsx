@@ -104,13 +104,13 @@ export default function PracticePage() {
     
     const recommendedChallenges = [
       {
-        title: 'Tipa correctamente variables en Python',
+        title: t('challenge_python_types'),
         meta: 'Python',
         icon: CodeXml,
         href: '#',
       },
       {
-        title: 'Completa el bucle "for" en JavaScript',
+        title: t('challenge_js_loop'),
         meta: 'JavaScript',
         icon: CodeXml,
         href: '#',

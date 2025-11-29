@@ -148,5 +148,7 @@
     "logout_desc": "Unlink this device",
     "lives_full_title": "You have full lives!",
     "lives_full_subtitle": "You're ready to learn without stopping!",
-    "lives_recharge_message": "You'll get a life back in:"
+    "lives_recharge_message": "You'll get a life back in:",
+    "challenge_python_types": "Correctly type variables in Python",
+    "challenge_js_loop": "Complete the 'for' loop in JavaScript"
 }
