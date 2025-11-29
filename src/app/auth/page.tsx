@@ -233,14 +233,6 @@ export default function AuthPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Contraseña</Label>
-                  {isLogin && (
-                    <Link
-                      href="#"
-                      className="text-sm text-primary hover:underline"
-                    >
-                      ¿Olvidaste tu contraseña?
-                    </Link>
-                  )}
                 </div>
                 <div className="relative">
                   <Input
@@ -319,6 +311,17 @@ export default function AuthPage() {
               )}
             </CardFooter>
           </Card>
+          
+          {isLogin && (
+            <div className="text-center text-sm">
+                <Link
+                    href="#"
+                    className="text-primary hover:underline"
+                >
+                    ¿Olvidaste tu contraseña?
+                </Link>
+            </div>
+          )}
 
           <div className="relative w-full">
             <div className="absolute inset-0 flex items-center">
@@ -358,3 +361,4 @@ export default function AuthPage() {
       </main>
     </div>
   );
+}
