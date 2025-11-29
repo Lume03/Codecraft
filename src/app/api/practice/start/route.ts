@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { handlePractice } from '@/ai/flows/practice-flow';
-import { adminDb } from '@/lib/firebase-admin';
 import { recalculateLives, MAX_LIVES } from '@/lib/lives';
 
 export async function POST(request: Request) {
@@ -17,50 +16,44 @@ export async function POST(request: Request) {
              return NextResponse.json({ message: 'El ID de la lección o del curso es inválido.' }, { status: 400 });
         }
 
-        // --- User logic with Firestore ---
-        const userRef = adminDb.collection('users').doc(userId);
-        const userSnap = await userRef.get();
+        const client = await clientPromise;
+        const db = client.db('ravencode');
+        const usersCollection = db.collection('users');
 
-        if (!userSnap.exists) {
+        const user = await usersCollection.findOne({ firebaseUid: userId });
+
+        if (!user) {
             return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
         }
         
-        const userData = userSnap.data()!;
-        // Recalculate lives based on the time passed
         const recalculated = recalculateLives({
-            lives: userData.lives,
-            lastLifeUpdate: userData.lastLifeUpdate?.toDate?.() ?? userData.lastLifeUpdate,
+            lives: user.lives,
+            lastLifeUpdate: user.lastLifeUpdate,
         });
 
-        // If after recalculating, the user still has no lives, prevent practice
         if (recalculated.lives <= 0) {
-            // Save the recalculated (but still 0) lives state before returning
-            await userRef.update({
-                lives: recalculated.lives,
-                lastLifeUpdate: recalculated.lastLifeUpdate,
-            });
+            await usersCollection.updateOne(
+                { firebaseUid: userId },
+                { $set: { 
+                    lives: recalculated.lives,
+                    lastLifeUpdate: recalculated.lastLifeUpdate,
+                }}
+            );
             return NextResponse.json({ message: 'No tienes vidas suficientes para iniciar la práctica.' }, { status: 403 });
         }
         
-        // Correct logic for consuming a life
         const hadFullLives = recalculated.lives >= MAX_LIVES;
         const newLives = recalculated.lives - 1;
-        
-        // Only reset the timer if the user was at full lives.
-        // Otherwise, keep the old timer to not punish the user.
         const newLastLifeUpdate = hadFullLives ? new Date() : recalculated.lastLifeUpdate;
 
-        await userRef.update({ 
-            lives: newLives,
-            lastLifeUpdate: newLastLifeUpdate,
-        });
-        // --- End of Firestore user logic ---
+        await usersCollection.updateOne(
+            { firebaseUid: userId },
+            { $set: {
+                lives: newLives,
+                lastLifeUpdate: newLastLifeUpdate,
+            }}
+        );
 
-
-        // --- Course content logic from MongoDB ---
-        const client = await clientPromise;
-        const db = client.db('ravencode');
-        
         const module = await db.collection('modules').findOne({ _id: new ObjectId(lessonId) });
         if (!module || module.type !== 'theory') {
             return NextResponse.json({ message: 'Lección no encontrada o no es de tipo teoría' }, { status: 404 });
@@ -85,10 +78,7 @@ export async function POST(request: Request) {
         if (!theoryContent) {
             return NextResponse.json({ message: 'El contenido de la lección está vacío.' }, { status: 404 });
         }
-        // --- End of MongoDB content logic ---
 
-
-        // --- AI Logic ---
         const aiPayload = {
             mode: 'generate' as const,
             courseTitle: course.title,

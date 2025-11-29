@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -26,7 +25,6 @@ import {
 import { useRouter } from 'next/navigation';
 import { useAuth, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useTranslation } from '@/context/language-provider';
 
 function GoogleIcon() {
@@ -69,54 +67,25 @@ export default function AuthPage() {
 
   const router = useRouter();
   const auth = useAuth();
-  const firestore = useFirestore(); 
   const { toast } = useToast();
   const { t } = useTranslation();
   
   useEffect(() => {
-    if(auth && firestore) {
+    if(auth) {
       setIsFirebaseReady(true);
     }
-  }, [auth, firestore])
+  }, [auth])
 
   const upsertUserDocument = async (user: User, isNewUser = false) => {
-    if (!firestore) return;
-    const userRef = doc(firestore, 'users', user.uid);
-    
-    const baseData = {
+    const mongoData = {
+        firebaseUid: user.uid,
         displayName: user.displayName || fullname,
         email: user.email,
         photoURL: user.photoURL,
-        firebaseUid: user.uid,
+        username: fullname.replace(/\s+/g, '.').toLowerCase() || user.email?.split('@')[0],
     };
 
-    const initialData = {
-        level: 1,
-        streak: 0,
-        achievements: [],
-        lives: 5,
-        lastLifeUpdate: serverTimestamp(),
-        lastStreakUpdate: serverTimestamp(),
-        progress: {},
-    };
-    
     try {
-        if (isNewUser) {
-            await setDoc(userRef, { ...baseData, ...initialData });
-        } else {
-            await setDoc(userRef, { ...baseData, ...initialData }, { merge: true });
-        }
-
-        const mongoData = {
-            ...baseData,
-            level: 1,
-            streak: 0,
-            achievements: [],
-            lives: 5,
-            lastLifeUpdate: new Date(),
-            lastStreakUpdate: new Date(),
-        };
-
         await fetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -124,7 +93,7 @@ export default function AuthPage() {
         });
 
     } catch (error) {
-      console.error("Failed to create/update user document:", error);
+      console.error("Failed to create/update user document in MongoDB:", error);
       toast({
         variant: 'destructive',
         title: t('account_error'),
@@ -135,7 +104,7 @@ export default function AuthPage() {
 
 
   const handleAuthAction = async () => {
-    if (!auth || !firestore) return;
+    if (!auth) return;
     try {
       if (isLogin) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -156,7 +125,7 @@ export default function AuthPage() {
   };
 
   const handleGoogleSignIn = async () => {
-    if (!auth || !firestore) return;
+    if (!auth) return;
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);

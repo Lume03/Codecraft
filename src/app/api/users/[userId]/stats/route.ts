@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
+import clientPromise from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
 
 export async function GET(
   request: NextRequest,
@@ -14,14 +15,14 @@ export async function GET(
         { status: 400 }
       );
     }
+    
+    const client = await clientPromise;
+    const db = client.db('ravencode');
 
-    const practiceHistoryRef = adminDb
-      .collection('users')
-      .doc(userId)
-      .collection('practiceHistory');
-    const snapshot = await practiceHistoryRef.get();
+    const practiceHistoryRef = db.collection('practiceHistory');
+    const snapshot = await practiceHistoryRef.find({ firebaseUid: userId }).toArray();
 
-    if (snapshot.empty) {
+    if (snapshot.length === 0) {
       return NextResponse.json({
         averageScore: 0,
         completedSections: 0,
@@ -33,21 +34,18 @@ export async function GET(
     const completedSections = new Set<string>();
 
     snapshot.forEach((doc) => {
-      const data = doc.data();
-      // Asegurarse de que el score sea un número y no NaN o undefined
-      const score = Number(data.score) || 0;
-      const maxScore = Number(data.maxScore) || 5; // Asumir 5 si no está presente
+      const score = Number(doc.score) || 0;
+      const maxScore = Number(doc.maxScore) || 5;
 
-      // Calcular el score porcentual para normalizarlo
       const percentageScore = maxScore > 0 ? (score / maxScore) * 100 : 0;
       totalScore += percentageScore;
 
-      if (data.approved && data.lessonId) {
-        completedSections.add(data.lessonId);
+      if (doc.approved && doc.lessonId) {
+        completedSections.add(doc.lessonId.toString());
       }
     });
 
-    const totalAttempts = snapshot.size;
+    const totalAttempts = snapshot.length;
     const averageScore = totalAttempts > 0 ? totalScore / totalAttempts : 0;
 
     return NextResponse.json({

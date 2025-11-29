@@ -8,33 +8,30 @@ import {
   Sun,
   Edit,
   Languages,
-  Settings,
   Bell,
   Trophy,
   CodeXml,
   BarChart,
   Check,
   Target,
+  BrainCircuit,
 } from 'lucide-react';
 import Link from 'next/link';
-import { Progress } from '@/components/ui/progress';
 import { GoalProgress } from '@/components/goal-progress';
 import { AchievementBadge } from '@/components/achievement-badge';
 import { useTheme } from 'next-themes';
 import { useEffect, useState, useMemo } from 'react';
-import { useUser, useDoc, useFirestore } from '@/firebase';
+import { useUser } from '@/firebase';
 import { placeholderImages } from '@/lib/placeholder-images';
-import { doc } from 'firebase/firestore';
 import { recalculateLives } from '@/lib/lives';
 import { LivesIndicator } from '@/components/lives-indicator';
 import { cn } from '@/lib/utils';
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { UserProfile } from '@/docs/backend-types';
 
 interface UserStats {
   averageScore: number;
@@ -171,7 +168,7 @@ const StatsDashboard = ({
           isLoading={isLoading}
         />
         <StatCard
-          icon={Target}
+          icon={BrainCircuit}
           value={stats?.totalAttempts ?? 0}
           label="Prácticas Totales"
           isLoading={isLoading}
@@ -186,16 +183,7 @@ export default function ProfilePage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const user = useUser();
-  const firestore = useFirestore();
-
-  const userProfileRef = useMemo(() => {
-    if (user && firestore) {
-      return doc(firestore, `users/${user.uid}`);
-    }
-    return null;
-  }, [user, firestore]);
-
-  const { data: userProfile } = useDoc(userProfileRef);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const [currentLives, setCurrentLives] = useState(0);
   const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(
@@ -204,6 +192,28 @@ export default function ProfilePage() {
   
   const [stats, setStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?.uid) {
+      const fetchUserProfile = async () => {
+        try {
+          const res = await fetch(`/api/users?firebaseUid=${user.uid}`);
+          if (res.ok) {
+            const data = await res.json();
+            setUserProfile(data);
+          } else {
+            console.error("Failed to fetch user profile");
+            setUserProfile(null);
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+          setUserProfile(null);
+        }
+      };
+      fetchUserProfile();
+    }
+  }, [user]);
+
 
   useEffect(() => {
     if (userProfile) {
@@ -409,35 +419,31 @@ export default function ProfilePage() {
         <StatsDashboard stats={stats} streak={streak} isLoading={statsLoading} />
 
         {/* Course Progress Card */}
-        <section aria-labelledby="course-progress-title" className="space-y-4">
-          <h2
-            id="course-progress-title"
-            className="text-sm font-bold uppercase tracking-wider text-muted-foreground"
-          >
-            Progreso de Curso
-          </h2>
-          <div className="rounded-2xl border bg-card p-4 md:p-5">
-            <div>
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Progreso General</span>
-                <span>{overallProgress}%</span>
-              </div>
-              <Progress
-                value={overallProgress}
-                className="mt-2 h-1.5"
-                aria-label={`Progreso general: ${overallProgress}%`}
-              />
-            </div>
-            {overallProgress === 0 && (
-              <p
-                className="mt-3 text-center text-sm text-muted-foreground"
-                aria-live="polite"
-              >
-                ¡Completa tu primera lección para ver tu progreso!
-              </p>
-            )}
-          </div>
-        </section>
+        <Card>
+            <CardContent className="p-4 md:p-5">
+                 <h2
+                    id="course-progress-title"
+                    className="mb-2 text-sm font-bold uppercase tracking-wider text-muted-foreground"
+                >
+                    Progreso General
+                </h2>
+                <div>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Avance Total</span>
+                    <span>{overallProgress}%</span>
+                </div>
+                </div>
+                 {overallProgress === 0 && (
+                <p
+                    className="mt-3 text-center text-sm text-muted-foreground"
+                    aria-live="polite"
+                >
+                    ¡Completa tu primera lección para ver tu progreso!
+                </p>
+                )}
+            </CardContent>
+        </Card>
+
 
         {/* Goals and Achievements */}
         <section aria-labelledby="goals-title" className="space-y-4">

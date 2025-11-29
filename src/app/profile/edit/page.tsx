@@ -12,47 +12,60 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useUser, useFirestore, useDoc } from '@/firebase';
+import { useUser } from '@/firebase';
 import { placeholderImages } from '@/lib/placeholder-images';
-import { doc, setDoc } from 'firebase/firestore';
 import { Camera } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '@/context/language-provider';
+import type { UserProfile } from '@/docs/backend-types';
 
 export default function ProfileEditPage() {
   const user = useUser();
-  const firestore = useFirestore();
   const router = useRouter();
   const { t } = useTranslation();
 
-  const userProfileRef =
-    user && firestore ? doc(firestore, `users/${user.uid}`) : null;
-  const { data: userProfile, loading } = useDoc(userProfileRef);
-
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
   
   useEffect(() => {
-    if (userProfile) {
-      setDisplayName(userProfile.displayName || '');
-      setUsername(userProfile.username || '');
-    } else if (user && !loading && !userProfile) {
-      setDisplayName(user.displayName || '');
+     if (user?.uid) {
+      const fetchUserProfile = async () => {
+        try {
+          const res = await fetch(`/api/users?firebaseUid=${user.uid}`);
+          if (res.ok) {
+            const data = await res.json();
+            setUserProfile(data);
+            setDisplayName(data.displayName || '');
+            setUsername(data.username || '');
+          } else {
+             if (user) {
+                setDisplayName(user.displayName || '');
+             }
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      };
+      fetchUserProfile();
     }
-  }, [userProfile, user, loading]);
+  }, [user]);
 
   const handleSaveChanges = async () => {
-    if (userProfileRef) {
-      await setDoc(
-        userProfileRef,
-        {
-          displayName: displayName,
-          username: username,
-        },
-        { merge: true }
-      );
-      router.push('/profile');
+     if (user) {
+        await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                firebaseUid: user.uid,
+                email: user.email,
+                displayName: displayName,
+                username: username,
+                photoURL: user.photoURL,
+            }),
+        });
+        router.push('/profile');
     }
   };
   

@@ -15,8 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useUser, useFirestore } from '@/firebase';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useUser } from '@/firebase';
 import { useTranslation } from '@/context/language-provider';
 
 export default function ProfileSetupPage() {
@@ -25,25 +24,22 @@ export default function ProfileSetupPage() {
   const [reminders, setReminders] = useState(true);
   const router = useRouter();
   const user = useUser();
-  const firestore = useFirestore();
   const { t } = useTranslation();
 
   const handleSave = async () => {
-    if (user && firestore) {
-      const userRef = doc(firestore, 'users', user.uid);
-      await setDoc(userRef, {
-        displayName,
-        username,
-        reminders,
-        email: user.email,
-        photoURL: user.photoURL,
-        level: 1,
-        streak: 0,
-        achievements: [],
-        lives: 5,
-        lastLifeUpdate: serverTimestamp(),
-        lastStreakUpdate: serverTimestamp(),
-      }, { merge: true });
+    if (user) {
+        await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                firebaseUid: user.uid,
+                displayName,
+                username,
+                email: user.email,
+                photoURL: user.photoURL,
+                reminders,
+            }),
+        });
       router.push('/learn');
     }
   };

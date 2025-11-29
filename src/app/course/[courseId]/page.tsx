@@ -11,30 +11,40 @@ import { useEffect, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { placeholderImages } from '@/lib/placeholder-images';
 import type { Course, Module } from '@/lib/data';
-import { useUser, useFirestore, useDoc } from '@/firebase';
-import { doc, DocumentReference } from 'firebase/firestore';
+import { useUser } from '@/firebase';
 import { useTranslation } from '@/context/language-provider';
+import type { UserProfile } from '@/docs/backend-types';
 
 export default function CourseDetailPage() {
   const params = useParams();
   const { courseId } = params as { courseId: string };
   
   const user = useUser();
-  const firestore = useFirestore();
   const { t } = useTranslation();
   
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-  const userProfileRef = useMemo(() => {
-    if (user && firestore) {
-      return doc(firestore, `users/${user.uid}`);
+  useEffect(() => {
+    if (user?.uid) {
+      const fetchUserProfile = async () => {
+        try {
+          const res = await fetch(`/api/users?firebaseUid=${user.uid}`);
+          if (res.ok) {
+            const data = await res.json();
+            setUserProfile(data);
+          } else {
+            console.error("Failed to fetch user profile");
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      };
+      fetchUserProfile();
     }
-    return null;
-  }, [user, firestore]) as DocumentReference | null;
-
-  const { data: userProfile } = useDoc(userProfileRef);
+  }, [user]);
 
   useEffect(() => {
     async function fetchData() {

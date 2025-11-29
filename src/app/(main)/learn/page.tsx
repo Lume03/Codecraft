@@ -3,15 +3,14 @@
 import { CourseCard } from '@/components/course-card';
 import { Header } from '@/components/header';
 import type { Course, Module } from '@/lib/data';
-import { Settings, Flame } from 'lucide-react';
+import { Flame } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
-import { useUser, useFirestore, useDoc } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser } from '@/firebase';
 import { LivesIndicator } from '@/components/lives-indicator';
 import { recalculateLives } from '@/lib/lives';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import type { UserProfile } from '@/docs/backend-types';
 
 interface CourseWithProgress extends Course {
   progress: number;
@@ -48,24 +47,35 @@ const StatChip = ({
 export default function LearnPage() {
   const [courses, setCourses] = useState<CourseWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
-  
   const user = useUser();
-  const firestore = useFirestore();
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-  const userProfileRef = useMemo(() => {
-    if (user && firestore) {
-      return doc(firestore, `users/${user.uid}`);
-    }
-    return null;
-  }, [user, firestore]);
-
-  const { data: userProfile } = useDoc(userProfileRef);
-  
   const [currentLives, setCurrentLives] = useState(0);
   const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(new Date());
   
   const streak = userProfile?.streak ?? 0;
   const displayName = userProfile?.displayName ?? user?.displayName ?? 'Aprende';
+
+  useEffect(() => {
+    if (user?.uid) {
+      const fetchUserProfile = async () => {
+        try {
+          const res = await fetch(`/api/users?firebaseUid=${user.uid}`);
+          if (res.ok) {
+            const data = await res.json();
+            setUserProfile(data);
+          } else {
+            console.error("Failed to fetch user profile");
+            setUserProfile(null);
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+          setUserProfile(null);
+        }
+      };
+      fetchUserProfile();
+    }
+  }, [user]);
 
   useEffect(() => {
     if(userProfile) {

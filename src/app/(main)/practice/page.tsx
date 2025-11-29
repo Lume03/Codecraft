@@ -8,16 +8,15 @@ import {
   Puzzle,
   Bug,
   Flame,
-  Settings,
+  BrainCircuit,
 } from 'lucide-react';
 import Link from 'next/link';
 import { LivesIndicator } from '@/components/lives-indicator';
-import { Button } from '@/components/ui/button';
-import { useUser, useFirestore, useDoc } from '@/firebase';
-import { useState, useEffect, useMemo } from 'react';
-import { doc } from 'firebase/firestore';
+import { useUser } from '@/firebase';
+import { useState, useEffect } from 'react';
 import { recalculateLives } from '@/lib/lives';
 import { cn } from '@/lib/utils';
+import type { UserProfile } from '@/docs/backend-types';
 
 const StatChip = ({
   icon: Icon,
@@ -79,7 +78,7 @@ const PracticeTile = ({
 
 export default function PracticePage() {
     const user = useUser();
-    const firestore = useFirestore();
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
     const practiceModes = [
       {
@@ -124,18 +123,30 @@ export default function PracticePage() {
       },
     ];
 
-    const userProfileRef = useMemo(() => {
-        if (user && firestore) {
-        return doc(firestore, `users/${user.uid}`);
-        }
-        return null;
-    }, [user, firestore]);
-
-    const { data: userProfile } = useDoc(userProfileRef);
-    
     const [currentLives, setCurrentLives] = useState(0);
     const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(new Date());
     const streak = userProfile?.streak ?? 0;
+
+    useEffect(() => {
+        if (user?.uid) {
+            const fetchUserProfile = async () => {
+                try {
+                const res = await fetch(`/api/users?firebaseUid=${user.uid}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setUserProfile(data);
+                } else {
+                    console.error("Failed to fetch user profile");
+                    setUserProfile(null);
+                }
+                } catch (error) {
+                console.error("Error fetching user profile:", error);
+                setUserProfile(null);
+                }
+            };
+            fetchUserProfile();
+        }
+    }, [user]);
 
     useEffect(() => {
         if(userProfile) {
