@@ -79,7 +79,6 @@ export default function AuthPage() {
     if (!firestore) return;
     const userRef = doc(firestore, 'users', user.uid);
     
-    // Base data that is always updated on login/signup to keep it fresh
     const baseData = {
         displayName: user.displayName || fullname,
         email: user.email,
@@ -87,7 +86,6 @@ export default function AuthPage() {
         firebaseUid: user.uid,
     };
 
-    // Data that is only set on creation or if it's missing (the "reset")
     const initialData = {
         level: 1,
         streak: 0,
@@ -100,15 +98,11 @@ export default function AuthPage() {
     
     try {
         if (isNewUser) {
-            // For new users, create the full document
             await setDoc(userRef, { ...baseData, ...initialData });
         } else {
-            // For existing users, update base data and only add initial data if missing.
-            // Using merge: true ensures we don't overwrite existing progress, lives, etc.
             await setDoc(userRef, { ...baseData, ...initialData }, { merge: true });
         }
 
-        // Also create/update in MongoDB
         const mongoData = {
             ...baseData,
             level: 1,
@@ -116,6 +110,7 @@ export default function AuthPage() {
             achievements: [],
             lives: 5,
             lastLifeUpdate: new Date(),
+            lastStreakUpdate: new Date(),
         };
 
         await fetch('/api/users', {
@@ -140,11 +135,11 @@ export default function AuthPage() {
     try {
       if (isLogin) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        await upsertUserDocument(userCredential.user); // Ensure user doc is up-to-date
+        await upsertUserDocument(userCredential.user); 
         router.push('/learn');
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await upsertUserDocument(userCredential.user, true); // It's a new user
+        await upsertUserDocument(userCredential.user, true);
         router.push('/profile/setup');
       }
     } catch (error: any) {
@@ -231,9 +226,7 @@ export default function AuthPage() {
                 />
               </div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Contraseña</Label>
-                </div>
+                <Label htmlFor="password">Contraseña</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -258,6 +251,16 @@ export default function AuthPage() {
                     </span>
                   </Button>
                 </div>
+                 {isLogin && (
+                  <div className="text-right">
+                    <Link
+                      href="#"
+                      className="text-sm text-primary hover:underline"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {!isLogin && (
@@ -311,17 +314,6 @@ export default function AuthPage() {
               )}
             </CardFooter>
           </Card>
-          
-          {isLogin && (
-            <div className="text-center text-sm">
-                <Link
-                    href="#"
-                    className="text-primary hover:underline"
-                >
-                    ¿Olvidaste tu contraseña?
-                </Link>
-            </div>
-          )}
 
           <div className="relative w-full">
             <div className="absolute inset-0 flex items-center">
