@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react';
 import { recalculateLives } from '@/lib/lives';
 import { cn } from '@/lib/utils';
 import type { UserProfile } from '@/docs/backend-types';
+import { useTranslation } from '@/context/language-provider';
 
 const StatChip = ({
   icon: Icon,
@@ -79,30 +80,31 @@ const PracticeTile = ({
 export default function PracticePage() {
     const user = useUser();
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const { t } = useTranslation();
 
     const practiceModes = [
       {
-        title: 'Quiz Rápido',
-        subtitle: '5 preguntas',
-        description: '3 min',
+        title: t('quiz_title'),
+        subtitle: t('quiz_subtitle_practice'),
+        description: t('quiz_desc_practice'),
         icon: BookCheck,
         href: '/quiz/js-quiz-1',
       },
       {
-        title: 'Reto de Código',
-        description: 'Dificultad: Fácil',
+        title: t('code_challenge_title'),
+        description: t('code_challenge_desc'),
         icon: CodeXml,
         href: '#',
       },
       {
-        title: 'Depuración',
-        description: 'Encuentra 3 errores',
+        title: t('debugging_title'),
+        description: t('debugging_desc'),
         icon: Bug,
         href: '#',
       },
       {
-        title: 'Completar Código',
-        description: 'Arrastra y suelta',
+        title: t('code_completion_title'),
+        description: t('code_completion_desc'),
         icon: Puzzle,
         href: '/practice/code-completion/py-drag-1',
       },
@@ -110,13 +112,13 @@ export default function PracticePage() {
     
     const recommendedChallenges = [
       {
-        title: 'Tipa correctamente variables en Python',
+        title: t('challenge_python_types'),
         meta: 'Python',
         icon: CodeXml,
         href: '#',
       },
       {
-        title: 'Completa el bucle "for" en JavaScript',
+        title: t('challenge_js_loop'),
         meta: 'JavaScript',
         icon: CodeXml,
         href: '#',
@@ -178,13 +180,13 @@ export default function PracticePage() {
   return (
     <div>
       <Header
-        title="Practicar"
+        title={t('practice')}
         action={
             <div className="flex items-center gap-2">
                 <StatChip
                   icon={Flame}
                   value={streak}
-                  label={`Racha de ${streak} días`}
+                  label={t('days_streak_label', { count: streak })}
                   isFlame
                 />
                 <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
@@ -195,9 +197,9 @@ export default function PracticePage() {
         {/* Main Practice Card */}
         <section aria-labelledby="practice-title" className="rounded-2xl border border-border bg-card p-4 md:p-5">
           <div className="mb-4">
-            <h2 id="practice-title" className="text-xl font-bold">Elige tu práctica</h2>
+            <h2 id="practice-title" className="text-xl font-bold">{t('choose_your_practice')}</h2>
             <p className="text-muted-foreground">
-              Refuerza lo aprendido con ejercicios rápidos y desafíos guiados.
+              {t('practice_subtitle')}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -209,7 +211,7 @@ export default function PracticePage() {
 
         {/* Recommended Challenges Card */}
         <section aria-labelledby="recommended-title" className="rounded-2xl border border-border bg-card p-4 md:p-5">
-          <h2 id="recommended-title" className="mb-4 text-xl font-bold">Desafíos recomendados</h2>
+          <h2 id="recommended-title" className="mb-4 text-xl font-bold">{t('recommended_challenges')}</h2>
           <div className="space-y-3">
             {recommendedChallenges.map((challenge, index) => (
               <Link
@@ -232,7 +234,7 @@ export default function PracticePage() {
             ))}
           </div>
           <button className="mt-4 flex h-12 w-full items-center justify-center rounded-full border border-border bg-transparent text-foreground transition-colors hover:bg-secondary disabled:opacity-50 disabled:pointer-events-none">
-            Ver historial de práctica
+            {t('view_practice_history')}
           </button>
         </section>
       </div>
