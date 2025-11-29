@@ -36,6 +36,8 @@ export default function PracticeSessionPage() {
   useEffect(() => {
     if (!lessonId || !courseId || !user) return;
 
+    let ignore = false;
+
     const startPractice = async () => {
       try {
         setLoading(true);
@@ -53,6 +55,8 @@ export default function PracticeSessionPage() {
           throw new Error(data.message || 'Error al iniciar la práctica');
         }
 
+        if (ignore) return;
+
         if (data.questions) {
           setQuestions(data.questions);
         } else {
@@ -61,13 +65,21 @@ export default function PracticeSessionPage() {
 
       } catch (err: any) {
         console.error(err);
-        setError(err.message);
+        if (!ignore) {
+            setError(err.message);
+        }
       } finally {
-        setLoading(false);
+        if (!ignore) {
+            setLoading(false);
+        }
       }
     };
 
     startPractice();
+
+    return () => {
+        ignore = true;
+    }
   }, [lessonId, courseId, user]);
 
 
