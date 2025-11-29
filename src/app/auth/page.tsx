@@ -226,7 +226,17 @@ export default function AuthPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Contraseña</Label>
+                  {isLogin && (
+                    <Link
+                      href="#"
+                      className="text-sm text-primary hover:underline"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                  )}
+                </div>
                 <div className="relative">
                   <Input
                     id="password"
@@ -251,16 +261,6 @@ export default function AuthPage() {
                     </span>
                   </Button>
                 </div>
-                 {isLogin && (
-                  <div className="text-right">
-                    <Link
-                      href="#"
-                      className="text-sm text-primary hover:underline"
-                    >
-                      ¿Olvidaste tu contraseña?
-                    </Link>
-                  </div>
-                )}
               </div>
 
               {!isLogin && (
