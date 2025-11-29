@@ -32,6 +32,8 @@ import { useTranslation } from '@/context/language-provider';
 function GoogleIcon() {
   return (
     <svg
+      role="img"
+      aria-label="Google icon"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 48 48"
       width="24px"
@@ -180,7 +182,7 @@ export default function AuthPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background p-4 md:p-6">
       <header className="mb-8 flex justify-center pt-6">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2" aria-label={`Ir a la página de inicio de ${t('app_title')}`}>
           <CodeXml className="h-8 w-8 text-primary" />
           <span className="text-2xl font-bold">{t('app_title')}</span>
         </Link>
@@ -214,6 +216,7 @@ export default function AuthPage() {
                     placeholder={t('full_name_placeholder')}
                     value={fullname}
                     onChange={(e) => setFullname(e.target.value)}
+                    autoComplete="name"
                   />
                 </div>
               )}
@@ -225,6 +228,7 @@ export default function AuthPage() {
                   placeholder={t('email_placeholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
                 />
               </div>
               <div className="space-y-2">
@@ -245,6 +249,7 @@ export default function AuthPage() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete={isLogin ? "current-password" : "new-password"}
                   />
                   <Button
                     type="button"
@@ -252,15 +257,13 @@ export default function AuthPage() {
                     size="icon"
                     className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
                     ) : (
                       <Eye className="h-4 w-4" />
                     )}
-                    <span className="sr-only">
-                      {showPassword ? 'Ocultar' : 'Mostrar'} contraseña
-                    </span>
                   </Button>
                 </div>
               </div>
@@ -273,21 +276,22 @@ export default function AuthPage() {
                       {t('date_of_birth_desc')}
                     </p>
                     <div className="flex gap-2">
-                      <Input id="dd" placeholder={t('dd')} className="text-center" />
-                      <Input id="mm" placeholder={t('mm')} className="text-center" />
+                      <Input id="dd" placeholder={t('dd')} className="text-center" aria-label="Día de nacimiento" />
+                      <Input id="mm" placeholder={t('mm')} className="text-center" aria-label="Mes de nacimiento" />
                       <Input
                         id="aaaa"
                         placeholder={t('yyyy')}
                         className="text-center"
+                        aria-label="Año de nacimiento"
                       />
                     </div>
                   </div>
                   <div className="flex items-center justify-between rounded-lg border p-3">
-                    <Label htmlFor="reminders">{t('daily_reminders')}</Label>
+                    <Label htmlFor="reminders" className="cursor-pointer">{t('daily_reminders')}</Label>
                     <Switch id="reminders" />
                   </div>
                   <div className="flex items-center justify-between rounded-lg border p-3">
-                    <Label htmlFor="contrast-mode">
+                    <Label htmlFor="contrast-mode" className="cursor-pointer">
                       {t('contrast_mode')}
                     </Label>
                     <Switch id="contrast-mode" />
@@ -316,7 +320,7 @@ export default function AuthPage() {
             </CardFooter>
           </Card>
 
-          <div className="relative w-full">
+          <div className="relative w-full" role="separator">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>

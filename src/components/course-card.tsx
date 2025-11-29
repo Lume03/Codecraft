@@ -36,9 +36,10 @@ export function CourseCard({ course }: { course: CourseWithProgress }) {
       className="group block"
       aria-label={`Abrir curso: ${course.title}`}
     >
-      <div
+      <article
         role="button"
         tabIndex={0}
+        aria-label={`Curso: ${course.title}, Progreso: ${progress}%`}
         className='card-gamified flex h-full flex-col rounded-2xl bg-card p-4 text-foreground'
       >
         <div className="flex items-center gap-4">
@@ -68,13 +69,14 @@ export function CourseCard({ course }: { course: CourseWithProgress }) {
                 <Progress
                     value={progress}
                     className={cn('h-3 flex-1', accent.progress)}
+                    aria-label={`Progreso: ${progress}%`}
                 />
-                <span className="text-sm font-semibold text-muted-foreground">
+                <span className="text-sm font-semibold text-muted-foreground" aria-hidden="true">
                     {progress}%
                 </span>
             </div>
         </div>
-      </div>
+      </article>
     </Link>
   );
 }

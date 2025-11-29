@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
        <header className="absolute top-0 left-0 right-0 mb-8 flex justify-center pt-6">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2" aria-label={`Ir a la página de inicio de ${t('app_title')}`}>
           <CodeXml className="h-8 w-8 text-primary" />
           <span className="text-2xl font-bold">{t('app_title')}</span>
         </Link>
@@ -62,6 +62,7 @@ export default function AdminLoginPage() {
               placeholder={t('admin_login_email_placeholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
             />
           </div>
           <div className="space-y-2">
@@ -71,6 +72,7 @@ export default function AdminLoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
             />
           </div>
         </CardContent>

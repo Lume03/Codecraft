@@ -107,9 +107,9 @@ export default async function TheoryLessonPage({
       const basePath = `/course/${courseId}/theory/${theoryId}`;
       return (
         <div className="flex min-h-screen flex-col items-center justify-center">
-          <p>Page not found.</p>
+          <p aria-live="polite">Página no encontrada.</p>
           <Link href={`${basePath}?page=1`} className="text-primary underline">
-            Go to the first page
+            Ir a la primera página
           </Link>
         </div>
       );
@@ -129,37 +129,38 @@ export default async function TheoryLessonPage({
       <Header title={theory.title} showBackButton backButtonHref={coursePath} />
 
       <main className="mx-auto w-full max-w-2xl flex-1 space-y-4 px-4 pb-32 md:p-6 md:pb-32">
-        <div className="mb-4 flex items-center justify-center gap-2">
+        <div className="mb-4 flex items-center justify-center gap-2" role="progressbar" aria-valuenow={currentPage} aria-valuemin={1} aria-valuemax={totalPages} aria-label={`Página ${currentPage} de ${totalPages}`}>
           {Array.from({ length: totalPages }).map((_, index) => (
             <Link
               key={index}
               href={`${basePath}?page=${index + 1}`}
               className="flex-1"
+              aria-label={`Ir a la página ${index + 1}`}
             >
               <div
                 className={cn(
                   'h-1.5 w-full rounded-full bg-secondary',
                   index < currentPage && 'bg-primary'
                 )}
-                aria-label={`Ir a la página ${index + 1}`}
+                aria-hidden="true"
               />
             </Link>
           ))}
         </div>
-        <div className="prose prose-lg mx-auto max-w-none leading-relaxed dark:prose-invert">
+        <article className="prose prose-lg mx-auto max-w-none leading-relaxed dark:prose-invert">
           <ContentRenderer content={pageContent} />
-        </div>
+        </article>
       </main>
 
       <footer className="fixed inset-x-0 bottom-0 z-10 border-t bg-background/80 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-4">
+        <nav aria-label="Navegación de la lección" className="mx-auto flex max-w-2xl items-center justify-between gap-4">
           <Button
             variant="outline"
             disabled={!hasPrev}
             asChild
             className="flex-1 rounded-full"
           >
-            <Link href={`${basePath}?page=${currentPage - 1}`}>
+            <Link href={`${basePath}?page=${currentPage - 1}`} aria-disabled={!hasPrev}>
               <ChevronLeft className="mr-2 h-4 w-4" /> Previous
             </Link>
           </Button>
@@ -187,12 +188,12 @@ export default async function TheoryLessonPage({
                 boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
               }}
             >
-              <Link href={`${basePath}?page=${currentPage + 1}`}>
+              <Link href={`${basePath}?page=${currentPage + 1}`} aria-disabled={!hasNext}>
                 Next <ChevronRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           )}
-        </div>
+        </nav>
       </footer>
 
       {/* AI Tutor Widget Integration */}

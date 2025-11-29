@@ -117,7 +117,7 @@ export default function LearnPage() {
           <div className="flex items-center gap-2">
             <StatChip icon={Flame} value={streak} isFlame />
             <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
-            <Button variant="ghost" size="icon" asChild>
+            <Button variant="ghost" size="icon" asChild aria-label={t('settings')}>
               <Link href="/settings">
                 <Settings className="h-6 w-6" />
                 <span className="sr-only">{t('settings')}</span>
@@ -128,9 +128,9 @@ export default function LearnPage() {
       />
       <div>
         <h2 className="mb-4 text-2xl font-bold text-foreground">{t('courses')}</h2>
-        {loading && <p>{t('loading_courses')}</p>}
+        {loading && <p aria-live="polite">{t('loading_courses')}</p>}
         {!loading && courses.length === 0 && (
-          <div className="text-center text-muted-foreground">
+          <div className="text-center text-muted-foreground" aria-live="polite">
             <p>{t('no_courses_available')}</p>
             <p>
               {t('go_to_admin_panel').split('para')[0]}

@@ -84,7 +84,7 @@ export default function SettingsPage() {
   };
 
   const handleLanguageSave = () => {
-    setLanguage(currentLanguage);
+    setLanguage(currentLanguage as 'es' | 'en');
   };
   
   if (!mounted) {
@@ -160,7 +160,7 @@ export default function SettingsPage() {
                 <DialogTitle>{t('select_language')}</DialogTitle>
               </DialogHeader>
               <div className="py-4">
-                <RadioGroup value={currentLanguage} onValueChange={(val) => setCurrentLanguage(val as 'es' | 'en')} className="space-y-2">
+                <RadioGroup value={currentLanguage} onValueChange={(val) => setCurrentLanguage(val as 'es' | 'en' | 'pt' | 'zh')} className="space-y-2">
                   <div className="flex items-center space-x-2 rounded-md border p-4">
                     <RadioGroupItem value="es" id="lang-es" />
                     <Label htmlFor="lang-es" className="flex-1 cursor-pointer">{languageMap.es}</Label>
@@ -219,9 +219,9 @@ export default function SettingsPage() {
               </DialogHeader>
               <div className="grid grid-cols-2 gap-4 py-4">
                 <div className="space-y-2">
-                  <Label>{t('hour')}</Label>
+                  <Label htmlFor="reminder-hour">{t('hour')}</Label>
                   <Select value={tempHour} onValueChange={setTempHour}>
-                    <SelectTrigger>
+                    <SelectTrigger id="reminder-hour" aria-label={t('hour')}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -234,9 +234,9 @@ export default function SettingsPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>{t('minute')}</Label>
+                  <Label htmlFor="reminder-minute">{t('minute')}</Label>
                    <Select value={tempMinute} onValueChange={setTempMinute}>
-                    <SelectTrigger>
+                    <SelectTrigger id="reminder-minute" aria-label={t('minute')}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

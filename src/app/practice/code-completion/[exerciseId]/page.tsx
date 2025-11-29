@@ -94,11 +94,11 @@ export default function CodeCompletionPage() {
         <div className="mx-auto max-w-2xl">
            <div className="mb-4">
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>
+              <span aria-live="polite">
                 Pregunta {currentIndex + 1} de {totalExercises}
               </span>
             </div>
-            <Progress value={progress} className="mt-2 h-2" />
+            <Progress value={progress} className="mt-2 h-2" aria-label={`Progreso: ${progress}%`} />
           </div>
 
           <p className="text-center text-muted-foreground">{exercise.instruction}</p>
@@ -112,6 +112,7 @@ export default function CodeCompletionPage() {
                   variant={block ? 'default' : 'secondary'}
                   className={cn('h-12 flex-grow basis-24 font-code text-base', block && 'cursor-pointer')}
                   onClick={() => handleRemoveBlock(index)}
+                  aria-label={block ? `Bloque colocado: ${block}. Pulsa para devolver.` : `Espacio vacío ${index + 1}`}
                 >
                   {block ?? '?'}
                 </Button>
@@ -128,6 +129,7 @@ export default function CodeCompletionPage() {
                   variant="outline"
                   className="h-12 flex-grow basis-24 bg-card font-code text-base"
                   onClick={() => handlePlaceBlock(block, index)}
+                  aria-label={`Bloque disponible: ${block}. Pulsa para colocar.`}
                 >
                   {block}
                 </Button>
@@ -137,7 +139,7 @@ export default function CodeCompletionPage() {
 
           {/* Hint Section */}
           {showHint && (
-            <Alert className="mt-4">
+            <Alert className="mt-4" aria-live="polite">
               <Lightbulb className="h-4 w-4" />
               <AlertTitle>Pista</AlertTitle>
               <AlertDescription>{exercise.hint}</AlertDescription>
@@ -172,7 +174,7 @@ export default function CodeCompletionPage() {
           )}
           
           {status !== 'idle' && (
-             <Alert variant={status === 'correct' ? 'default' : 'destructive'} className={cn(status === 'correct' && 'border-green-500 bg-green-500/10 text-green-500')}>
+             <Alert variant={status === 'correct' ? 'default' : 'destructive'} className={cn(status === 'correct' && 'border-green-500 bg-green-500/10 text-green-500')} role="alert">
               <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                       {status === 'correct' ? <CheckCircle className="h-6 w-6 text-green-500" /> : <XCircle className="h-6 w-6 text-destructive" />}

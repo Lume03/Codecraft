@@ -92,7 +92,7 @@ export default function CourseDetailPage() {
   const currentLessonIndex = nextLesson ? modules.findIndex(m => m.id === nextLesson.id) : -1;
 
   if (loading) {
-    return <div>{t('loading')}</div>;
+    return <div aria-live="polite">{t('loading')}</div>;
   }
 
   if (!course) {
@@ -107,7 +107,7 @@ export default function CourseDetailPage() {
 
       <main className="flex-1 space-y-6 p-4 pb-28 md:p-6">
         {/* Main Course Info Card */}
-        <div className="rounded-2xl border bg-card p-5">
+        <section aria-labelledby="course-title" className="rounded-2xl border bg-card p-5">
           <div className="flex items-start gap-4">
             {courseImage && (
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-card-foreground/5 p-1">
@@ -123,7 +123,7 @@ export default function CourseDetailPage() {
             )}
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">{course.title}</h2>
+                <h2 id="course-title" className="text-xl font-bold">{course.title}</h2>
                 <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
                   {t('course')}
                 </span>
@@ -134,7 +134,7 @@ export default function CourseDetailPage() {
             </div>
           </div>
           <div className="mt-4 space-y-2">
-            <Progress value={progressPercentage} className="h-2" />
+            <Progress value={progressPercentage} className="h-2" aria-label={`Progreso del curso: ${progressPercentage}%`} />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>
                 {completedLessons.length === 1
@@ -151,15 +151,15 @@ export default function CourseDetailPage() {
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Next Lesson Card */}
         {nextLesson && (
-          <div className="flex items-center justify-between rounded-2xl border bg-card p-4">
+          <section aria-labelledby="next-lesson-title" className="flex items-center justify-between rounded-2xl border bg-card p-4">
             <div className="flex items-center gap-3">
               <Code className="h-6 w-6 text-muted-foreground" />
               <div>
-                <p className="text-sm text-muted-foreground">
+                <p id="next-lesson-title" className="text-sm text-muted-foreground">
                   {t('next_lesson', { title: nextLesson.title })}
                 </p>
                 <p className="text-sm font-semibold">
@@ -170,16 +170,17 @@ export default function CourseDetailPage() {
             <Button variant="outline" size="sm" asChild>
               <Link
                 href={`/course/${courseId}/theory/${nextLesson.contentId}?lessonId=${nextLesson.id}`}
+                aria-label={`${t('review')} ${nextLesson.title}`}
               >
                 {t('review')}
               </Link>
             </Button>
-          </div>
+          </section>
         )}
 
         {/* Course Content Section */}
-        <div>
-          <h3 className="mb-4 text-xl font-bold">{t('course_content')}</h3>
+        <section aria-labelledby="course-content-title">
+          <h3 id="course-content-title" className="mb-4 text-xl font-bold">{t('course_content')}</h3>
           <div className="space-y-2 rounded-2xl border bg-card p-2">
             {modules?.map((module, index) => {
               const isCompleted = completedLessons.includes(module.id);
@@ -200,6 +201,7 @@ export default function CourseDetailPage() {
                   )}
                   aria-disabled={!isUnlocked}
                   tabIndex={isUnlocked ? 0 : -1}
+                  aria-label={`${module.title}, ${statusText}`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -222,22 +224,22 @@ export default function CourseDetailPage() {
                       </div>
                     </div>
                      {status === 'completed' ? (
-                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <CheckCircle className="h-5 w-5 text-green-500" aria-hidden="true" />
                     ) : status === 'unlocked' ? (
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      <ChevronRight className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
                     ) : (
-                      <Lock className="h-5 w-5 text-muted-foreground" />
+                      <Lock className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
                     )}
                   </div>
                 </Link>
               );
             })}
           </div>
-        </div>
+        </section>
       </main>
 
       {nextLesson && (
-        <div className="fixed inset-x-0 bottom-0 z-10 border-t bg-background/80 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm">
+        <nav aria-label="Navegación de lección" className="fixed inset-x-0 bottom-0 z-10 border-t bg-background/80 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm">
           <Button
             size="lg"
             className="w-full"
@@ -253,7 +255,7 @@ export default function CourseDetailPage() {
               {t('start_lesson', { number: currentLessonIndex + 1 })}
             </Link>
           </Button>
-        </div>
+        </nav>
       )}
     </div>
   );

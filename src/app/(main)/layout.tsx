@@ -18,11 +18,11 @@ export default function MainLayout({
       </aside>
 
       {/* Contenido Principal */}
-      <div className="flex flex-1 flex-col md:pl-60">
-        <main className="flex-1 pb-28 md:pb-0">
+      <main className="flex flex-1 flex-col md:pl-60" role="main">
+        <div className="flex-1 pb-28 md:pb-0">
             {children}
-        </main>
-      </div>
+        </div>
+      </main>
 
       {/* FooterNav existente (solo visible en móvil) */}
       <div className="md:hidden">

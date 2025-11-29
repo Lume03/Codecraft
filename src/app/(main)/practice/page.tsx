@@ -146,20 +146,20 @@ export default function PracticePage() {
             <div className="flex items-center gap-2">
                 <StatChip icon={Flame} value={streak} isFlame />
                 <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
-                <Button variant="ghost" size="icon" asChild>
-                <Link href="/settings">
-                    <Settings className="h-5 w-5" />
-                    <span className="sr-only">{t('settings')}</span>
-                </Link>
+                <Button variant="ghost" size="icon" asChild aria-label={t('settings')}>
+                  <Link href="/settings">
+                      <Settings className="h-5 w-5" />
+                      <span className="sr-only">{t('settings')}</span>
+                  </Link>
                 </Button>
             </div>
         }
       />
       <div className="space-y-4 p-4">
         {/* Main Practice Card */}
-        <div className="rounded-2xl border border-border bg-card p-4 md:p-5">
+        <section aria-labelledby="practice-title" className="rounded-2xl border border-border bg-card p-4 md:p-5">
           <div className="mb-4">
-            <h2 className="text-xl font-bold">{t('choose_your_practice')}</h2>
+            <h2 id="practice-title" className="text-xl font-bold">{t('choose_your_practice')}</h2>
             <p className="text-muted-foreground">
               {t('practice_subtitle')}
             </p>
@@ -169,11 +169,11 @@ export default function PracticePage() {
               <PracticeTile key={mode.title} mode={mode} />
             ))}
           </div>
-        </div>
+        </section>
 
         {/* Recommended Challenges Card */}
-        <div className="rounded-2xl border border-border bg-card p-4 md:p-5">
-          <h2 className="mb-4 text-xl font-bold">{t('recommended_challenges')}</h2>
+        <section aria-labelledby="recommended-title" className="rounded-2xl border border-border bg-card p-4 md:p-5">
+          <h2 id="recommended-title" className="mb-4 text-xl font-bold">{t('recommended_challenges')}</h2>
           <div className="space-y-3">
             {recommendedChallenges.map((challenge, index) => (
               <Link
@@ -198,7 +198,7 @@ export default function PracticePage() {
           <button className="mt-4 flex h-12 w-full items-center justify-center rounded-full border border-border bg-transparent text-foreground transition-colors hover:bg-secondary disabled:opacity-50 disabled:pointer-events-none">
             {t('view_practice_history')}
           </button>
-        </div>
+        </section>
       </div>
     </div>
   );

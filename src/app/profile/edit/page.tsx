@@ -73,7 +73,7 @@ export default function ProfileEditPage() {
                 <Avatar className="h-24 w-24 border-2 border-primary">
                   <AvatarImage
                     src={avatarSrc}
-                    alt={user?.displayName ?? 'User avatar'}
+                    alt={t('profile_desc')}
                   />
                   <AvatarFallback>
                     {user?.displayName?.charAt(0)}
@@ -82,6 +82,7 @@ export default function ProfileEditPage() {
                 <Button
                   size="icon"
                   className="absolute bottom-0 right-0 h-8 w-8 rounded-full"
+                  aria-label={t('change_photo')}
                 >
                   <Camera className="h-4 w-4" />
                   <span className="sr-only">{t('change_photo')}</span>
@@ -95,6 +96,7 @@ export default function ProfileEditPage() {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder={t('display_name_placeholder')}
+                autoComplete="name"
               />
             </div>
             <div className="space-y-2">
@@ -104,6 +106,7 @@ export default function ProfileEditPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder={t('username_placeholder')}
+                autoComplete="username"
               />
             </div>
           </CardContent>

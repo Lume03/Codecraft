@@ -62,7 +62,7 @@ const QuickActionChip = ({
     <div
       role="button"
       tabIndex={0}
-      aria-label={`Action: ${label}`}
+      aria-label={label}
       className="group flex h-9 items-center justify-center gap-2 rounded-full border bg-secondary/60 px-4 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       onClick={onClick}
       onKeyDown={(e) => {
@@ -75,7 +75,7 @@ const QuickActionChip = ({
   );
 
   if (href) {
-    return <Link href={href}>{content}</Link>;
+    return <Link href={href} aria-label={label}>{content}</Link>;
   }
 
   return content;
@@ -165,14 +165,14 @@ export default function ProfilePage() {
     <div className="flex flex-col">
        <header className="sticky top-0 z-20 flex h-14 items-center border-b border-border bg-background/80 px-4 backdrop-blur-sm md:h-16 md:px-6">
         <div className="mx-auto flex w-full max-w-[420px] items-center justify-between md:max-w-[720px] xl:max-w-[960px]">
-          <Link href="/learn" className="flex items-center gap-2 font-bold">
+          <Link href="/learn" className="flex items-center gap-2 font-bold" aria-label={`Ir a la página de ${t('app_title')}`}>
             <CodeXml className="h-7 w-7 text-primary" />
             <span className="text-xl">{t('app_title')}</span>
           </Link>
           <div className="flex items-center gap-2">
             <StatChip icon={Flame} value={streak} isFlame />
             <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
-            <Button variant="ghost" size="icon" asChild>
+            <Button variant="ghost" size="icon" asChild aria-label={t('settings')}>
               <Link href="/settings">
                 <Settings className="h-5 w-5" />
                 <span className="sr-only">{t('settings')}</span>
@@ -184,15 +184,15 @@ export default function ProfilePage() {
 
       <main className="mx-auto w-full max-w-[420px] flex-1 space-y-8 px-4 pb-28 md:max-w-[720px] md:space-y-10 md:px-6 md:pb-32">
         {/* Profile Header */}
-        <div className="flex items-center gap-4 pt-4 md:gap-5">
+        <section aria-labelledby="profile-header" className="flex items-center gap-4 pt-4 md:gap-5">
             <Avatar className="h-20 w-20 border-2 border-primary">
-                <AvatarImage src={avatarSrc} alt={userProfile?.displayName ?? user?.displayName ?? 'User avatar'} />
+                <AvatarImage src={avatarSrc} alt={t('profile_desc')} />
                 <AvatarFallback>{userProfile?.displayName?.charAt(0) ?? user?.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
             </Avatar>
             <div className="flex-1 space-y-1">
                 <div className='flex items-center gap-2'>
-                    <h1 className="text-xl font-bold">{userProfile?.displayName ?? user?.displayName ?? 'New User'}</h1>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+                    <h1 id="profile-header" className="text-xl font-bold">{userProfile?.displayName ?? user?.displayName ?? 'New User'}</h1>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label={t('edit_profile')}>
                         <Link href="/profile/edit"><Edit className="h-4 w-4" /></Link>
                     </Button>
                 </div>
@@ -206,10 +206,10 @@ export default function ProfilePage() {
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
         {/* Quick Actions */}
-        <div className="flex items-center gap-3 overflow-x-auto pb-2">
+        <nav aria-label="Acciones rápidas" className="flex items-center gap-3 overflow-x-auto pb-2">
           <QuickActionChip 
               icon={theme === 'dark' ? Moon : Sun} 
               label={theme === 'dark' ? t('quick_actions_theme_dark') : t('quick_actions_theme_light')}
@@ -217,29 +217,29 @@ export default function ProfilePage() {
             />
             <QuickActionChip icon={Settings} label={t('settings')} href="/settings" />
             <QuickActionChip icon={Bell} label={t('notifications')} href="/settings" />
-        </div>
+        </nav>
 
 
         {/* Course Progress Card */}
-        <div className="space-y-4">
-           <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('course_progress')}</h2>
+        <section aria-labelledby="course-progress-title" className="space-y-4">
+           <h2 id="course-progress-title" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('course_progress')}</h2>
             <div className="rounded-2xl border bg-card p-4 md:p-5">
                 <div>
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>{t('overall_progress')}</span>
                     <span>{overallProgress}%</span>
                   </div>
-                  <Progress value={overallProgress} className="mt-2 h-1.5" />
+                  <Progress value={overallProgress} className="mt-2 h-1.5" aria-label={`${t('overall_progress')} ${overallProgress}%`} />
                 </div>
                 {overallProgress === 0 && (
-                    <p className="mt-3 text-center text-sm text-muted-foreground">{t('complete_first_lesson')}</p>
+                    <p className="mt-3 text-center text-sm text-muted-foreground" aria-live="polite">{t('complete_first_lesson')}</p>
                 )}
             </div>
-        </div>
+        </section>
         
         {/* Goals and Achievements */}
-        <div className="space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('goals_and_achievements')}</h2>
+        <section aria-labelledby="goals-title" className="space-y-4">
+          <h2 id="goals-title" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('goals_and_achievements')}</h2>
           <div className="space-y-3 rounded-2xl border bg-card p-2">
             {goals.map((goal) => (
               <GoalProgress
@@ -257,7 +257,7 @@ export default function ProfilePage() {
                 <AchievementBadge key={ach} icon={Trophy} label={ach} />
               ))}
               {achievements.length > 3 && (
-                 <div className="flex h-8 items-center justify-center rounded-full border border-dashed border-border bg-secondary px-3 text-xs font-semibold text-muted-foreground">
+                 <div className="flex h-8 items-center justify-center rounded-full border border-dashed border-border bg-secondary px-3 text-xs font-semibold text-muted-foreground" aria-label={`${achievements.length - 3} ${t('more_achievements', { count: achievements.length - 3 })}`}>
                     {t('more_achievements', { count: achievements.length - 3 })}
                 </div>
               )}
@@ -266,7 +266,7 @@ export default function ProfilePage() {
               {t('view_all_achievements')}
             </Button>
           </div>
-        </div>
+        </section>
       </main>
     </div>
   );

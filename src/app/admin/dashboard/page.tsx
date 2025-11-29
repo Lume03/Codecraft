@@ -95,20 +95,21 @@ function NewCourseForm({ onCourseAdded }: { onCourseAdded: () => void }) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label>Título del Curso</Label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Label htmlFor="new-course-title">Título del Curso</Label>
+          <Input id="new-course-title" value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label>Descripción</Label>
+          <Label htmlFor="new-course-desc">Descripción</Label>
           <Textarea
+            id="new-course-desc"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
         <div className="space-y-2">
-          <Label>Imagen del Curso</Label>
+          <Label htmlFor="new-course-image">Imagen del Curso</Label>
           <Select value={imageId} onValueChange={setImageId}>
-            <SelectTrigger>
+            <SelectTrigger id="new-course-image">
               <SelectValue placeholder="Selecciona una imagen" />
             </SelectTrigger>
             <SelectContent>
@@ -209,13 +210,13 @@ function NewTheoryForm({
       <div className="max-h-[80vh] overflow-y-auto p-1 pr-4">
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Título de la Lección</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Label htmlFor="new-lesson-title">Título de la Lección</Label>
+            <Input id="new-lesson-title" value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Módulo</Label>
+            <Label htmlFor="new-lesson-module">Módulo</Label>
             <Select value={module} onValueChange={setModule}>
-              <SelectTrigger>
+              <SelectTrigger id="new-lesson-module">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -238,18 +239,22 @@ function NewTheoryForm({
                   size="icon"
                   className="absolute -top-3 -right-3 h-7 w-7"
                   onClick={() => handleRemovePage(index)}
+                  aria-label={`Eliminar página ${index + 1}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-                <Label>Página {index + 1}</Label>
+                <Label htmlFor={`page-title-${index}`}>Página {index + 1}</Label>
                 <Input
+                  id={`page-title-${index}`}
                   placeholder="Título de la página"
                   value={page.title}
                   onChange={(e) =>
                     handlePageChange(index, 'title', e.target.value)
                   }
                 />
+                 <Label htmlFor={`page-content-${index}`} className="sr-only">Contenido de la Página {index + 1}</Label>
                 <Textarea
+                  id={`page-content-${index}`}
                   placeholder="Contenido en Markdown..."
                   value={page.content}
                   onChange={(e) =>
@@ -326,12 +331,12 @@ function NewPageForm({ theoryId, onPageAdded }: { theoryId: string; onPageAdded:
       </DialogHeader>
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label>Título de la Página</Label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Label htmlFor="new-page-title">Título de la Página</Label>
+          <Input id="new-page-title" value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label>Contenido (Markdown)</Label>
-          <Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={8} />
+          <Label htmlFor="new-page-content">Contenido (Markdown)</Label>
+          <Textarea id="new-page-content" value={content} onChange={(e) => setContent(e.target.value)} rows={8} />
         </div>
         <DialogClose asChild>
           <Button onClick={handleSavePage} className="w-full">Guardar Página</Button>
@@ -398,12 +403,13 @@ function EditPageDialog({
       </DialogHeader>
       <div className="max-h-[80vh] overflow-y-auto space-y-4 p-1 pr-4">
         <div className="space-y-2">
-          <Label>Título de la Página</Label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Label htmlFor="edit-page-title">Título de la Página</Label>
+          <Input id="edit-page-title" value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label>Contenido (Markdown)</Label>
+          <Label htmlFor="edit-page-content">Contenido (Markdown)</Label>
           <Textarea
+            id="edit-page-content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={10}
@@ -491,8 +497,8 @@ function EditModuleDialog({
       </DialogHeader>
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label>Título de la Lección</Label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Label htmlFor="edit-module-title">Título de la Lección</Label>
+          <Input id="edit-module-title" value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
         <div className="flex justify-between">
           <DialogClose asChild>
@@ -554,7 +560,7 @@ function EditCourseDialog({ course, onCourseUpdated, onCourseDeleted }: { course
             if (!res.ok) throw new Error('Failed to delete course');
             toast({ title: 'Curso eliminado' });
             onCourseDeleted();
-        } catch (error)_category
+        } catch (error) {
             toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
         }
     };
@@ -566,17 +572,17 @@ function EditCourseDialog({ course, onCourseUpdated, onCourseDeleted }: { course
             </DialogHeader>
             <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 space-y-4">
                 <div className="space-y-2">
-                    <Label>Título del Curso</Label>
-                    <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+                    <Label htmlFor="edit-course-title">Título del Curso</Label>
+                    <Input id="edit-course-title" value={title} onChange={(e) => setTitle(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                    <Label>Descripción</Label>
-                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+                    <Label htmlFor="edit-course-desc">Descripción</Label>
+                    <Textarea id="edit-course-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                    <Label>Imagen del Curso</Label>
+                    <Label htmlFor="edit-course-image">Imagen del Curso</Label>
                     <Select value={imageId} onValueChange={setImageId}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger id="edit-course-image"><SelectValue /></SelectTrigger>
                         <SelectContent>
                         {placeholderImages.map((img) => (
                             <SelectItem key={img.id} value={img.id}>
@@ -652,7 +658,7 @@ function PageList({ theoryId, onRefresh }: { theoryId: string; onRefresh: () => 
 
   if (loading)
     return (
-      <p className="px-4 py-2 text-sm text-muted-foreground">
+      <p className="px-4 py-2 text-sm text-muted-foreground" aria-live="polite">
         Cargando páginas...
       </p>
     );
@@ -660,7 +666,7 @@ function PageList({ theoryId, onRefresh }: { theoryId: string; onRefresh: () => 
   return (
     <div className="space-y-2">
       {pages.length === 0 && (
-        <p className="px-4 py-2 text-center text-sm text-muted-foreground">
+        <p className="px-4 py-2 text-center text-sm text-muted-foreground" aria-live="polite">
           No hay páginas en esta lección.
         </p>
       )}
@@ -674,7 +680,7 @@ function PageList({ theoryId, onRefresh }: { theoryId: string; onRefresh: () => 
           </span>
           <Dialog onOpenChange={(open) => !open && onRefresh()}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+              <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} aria-label={`Editar página ${page.title}`}>
                 <Edit className="h-4 w-4" />
               </Button>
             </DialogTrigger>
@@ -726,12 +732,12 @@ function ModuleList({
     fetchModules();
   }, [courseId, onRefresh]);
 
-  if (loading) return <p>Cargando lecciones...</p>;
+  if (loading) return <p aria-live="polite">Cargando lecciones...</p>;
 
   return (
     <div className="space-y-2">
       {modules.length === 0 && (
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-center text-sm text-muted-foreground" aria-live="polite">
           No hay lecciones en este curso.
         </p>
       )}
@@ -749,6 +755,7 @@ function ModuleList({
                       size="icon"
                       className="mr-2"
                       onClick={(e) => e.stopPropagation()}
+                      aria-label={`Editar lección ${module.title}`}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -798,7 +805,7 @@ function CourseManager({
                     </AccordionTrigger>
                     <Dialog onOpenChange={(open) => !open && onRefresh()}>
                         <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} aria-label={`Gestionar curso ${course.title}`}>
                                 <Settings className="h-4 w-4" />
                             </Button>
                         </DialogTrigger>
@@ -873,7 +880,7 @@ export default function AdminDashboard() {
       <Header
         title={t('admin_dashboard_title')}
         action={
-          <Button variant="ghost" size="icon" onClick={handleLogout}>
+          <Button variant="ghost" size="icon" onClick={handleLogout} aria-label={t('log_out')}>
             <LogOut className="h-5 w-5" />
             <span className="sr-only">{t('log_out')}</span>
           </Button>
@@ -883,7 +890,7 @@ export default function AdminDashboard() {
         <NewCourseForm onCourseAdded={handleRefresh} />
 
         {loading ? (
-          <p>{t('loading_courses')}</p>
+          <p aria-live="polite">{t('loading_courses')}</p>
         ) : (
           <CourseManager courses={courses} onRefresh={handleRefresh} />
         )}

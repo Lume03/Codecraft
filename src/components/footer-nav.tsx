@@ -20,7 +20,7 @@ export function FooterNav() {
 
 function FooterNavSkeleton() {
   return (
-    <nav className="mx-auto grid h-full max-w-md grid-cols-3 items-center gap-2 px-2">
+    <nav className="mx-auto grid h-full max-w-md grid-cols-3 items-center gap-2 px-2" aria-label="Cargando navegación principal">
       {[...Array(3)].map((_, i) => (
         <div key={i} className="flex flex-col items-center justify-center gap-1 p-2">
           <Skeleton className="h-6 w-6 rounded-md" />

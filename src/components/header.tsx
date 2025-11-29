@@ -40,9 +40,9 @@ export function Header({
           size="icon"
           className="h-11 w-11 shrink-0"
           onClick={!backButtonHref ? handleBack : undefined}
+          aria-label="Volver a la página anterior"
         >
           <ChevronLeft className="h-6 w-6" />
-          <span className="sr-only">Volver</span>
         </Button>
       );
     return (
@@ -54,7 +54,7 @@ export function Header({
         >
             <div className="flex flex-1 items-center gap-4 overflow-hidden">
                 {backButtonHref ? (
-                    <Link href={backButtonHref} passHref>
+                    <Link href={backButtonHref} passHref aria-label="Volver a la página anterior">
                         <BackButton />
                     </Link>
                 ) : (
@@ -77,7 +77,7 @@ export function Header({
   }
 
   return (
-    <div className={cn('flex items-start justify-between p-4 md:p-8', className)}>
+    <header className={cn('flex items-start justify-between p-4 md:p-8', className)}>
       <div className="flex-1 overflow-hidden">
         <h1 className="truncate text-3xl font-bold tracking-tight">
           {title}
@@ -89,6 +89,6 @@ export function Header({
         )}
       </div>
       <div className="pl-4">{action}</div>
-    </div>
+    </header>
   );
 }
