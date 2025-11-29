@@ -13,7 +13,6 @@ import {
   BarChart,
   Check,
   BrainCircuit,
-  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { GoalProgress } from '@/components/goal-progress';
@@ -79,14 +78,14 @@ const QuickActionChip = ({
       role="button"
       tabIndex={0}
       aria-label={label}
-      className="group flex h-16 w-full flex-col items-center justify-center gap-1 rounded-2xl border bg-secondary/60 p-2 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      className="group flex h-14 w-full flex-row items-center justify-start gap-4 rounded-2xl border bg-secondary/60 p-4 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onClick?.();
       }}
     >
-      <Icon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-      <span className="text-xs font-semibold text-muted-foreground">
+      <Icon className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+      <span className="text-sm font-semibold text-foreground">
         {label}
       </span>
     </div>
