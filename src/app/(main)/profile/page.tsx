@@ -114,7 +114,7 @@ const StatCard = ({
         <Icon className={cn("h-6 w-6", iconClassName)} />
         <div>
             <p className="text-lg font-bold">{value}</p>
-            <p className="text-[12px] text-muted-foreground">{label}</p>
+            <p className="text-[12px] text-muted-foreground min-h-[2.5em]">{label}</p>
         </div>
      </Card>
   );
@@ -162,7 +162,7 @@ const StatsDashboard = ({
         />
         <StatCard
           icon={Flame}
-          value={streak}
+          value={`${streak} ${t('days')}`}
           label={t('consistency_label')}
           isLoading={isLoading}
           iconClassName={cn(streak > 0 ? "text-orange-500" : "text-muted-foreground")}

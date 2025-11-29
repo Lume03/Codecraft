@@ -166,5 +166,6 @@
     "total_progress_label": "Total Progress",
     "complete_first_lesson_prompt": "Complete your first lesson to see your progress!",
     "goals_achievements_title": "GOALS & ACHIEVEMENTS",
-    "view_all_achievements": "View all achievements"
+    "view_all_achievements": "View all achievements",
+    "days": "Days"
 }

@@ -166,5 +166,6 @@
     "total_progress_label": "Avance Total",
     "complete_first_lesson_prompt": "¡Completa tu primera lección para ver tu progreso!",
     "goals_achievements_title": "METAS Y LOGROS",
-    "view_all_achievements": "Ver todos los logros"
+    "view_all_achievements": "Ver todos los logros",
+    "days": "Días"
 }
