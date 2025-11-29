@@ -13,6 +13,7 @@ import {
   Trophy,
   CodeXml,
   Edit,
+  Languages,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
@@ -219,11 +220,11 @@ export default function ProfilePage() {
         <nav aria-label="Acciones rápidas" className="flex items-center gap-3 overflow-x-auto pb-2">
           <QuickActionChip 
               icon={theme === 'dark' ? Moon : Sun} 
-              label={theme === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+              label="Tema"
               onClick={toggleTheme} 
             />
-            <QuickActionChip icon={Settings} label="Ajustes de cuenta" href="/settings" />
-            <QuickActionChip icon={Bell} label="Gestionar notificaciones" href="/settings" />
+            <QuickActionChip icon={Languages} label="Idioma" href="/settings" />
+            <QuickActionChip icon={Bell} label="Notificaciones" href="/settings" />
         </nav>
 
 
