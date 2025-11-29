@@ -158,11 +158,6 @@ export default function PracticePage() {
                   isFlame
                 />
                 <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
-                <Button variant="ghost" size="icon" asChild aria-label="Abrir ajustes">
-                  <Link href="/settings">
-                      <Settings className="h-5 w-5" />
-                  </Link>
-                </Button>
             </div>
         }
       />

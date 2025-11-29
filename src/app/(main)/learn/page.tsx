@@ -133,11 +133,6 @@ export default function LearnPage() {
               isFlame
             />
             <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
-            <Button variant="ghost" size="icon" asChild aria-label="Abrir ajustes">
-              <Link href="/settings">
-                <Settings className="h-6 w-6" />
-              </Link>
-            </Button>
           </div>
         }
       />
