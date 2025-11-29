@@ -64,8 +64,8 @@ export async function POST(request: Request) {
         const now = new Date();
         const lastStreakUpdate = user.lastStreakUpdate ? new Date(user.lastStreakUpdate) : null;
         
-        // Only update streak if it hasn't been updated today
-        if (!lastStreakUpdate || !isSameDay(now, lastStreakUpdate)) {
+        // Only update streak if it hasn't been updated today and the practice was approved
+        if (approved && (!lastStreakUpdate || !isSameDay(now, lastStreakUpdate))) {
             // If user practiced yesterday, increment streak
             if (lastStreakUpdate && isSameDay(subDays(now, 1), lastStreakUpdate)) {
                 updates.$inc = { ...updates.$inc, streak: 1 };

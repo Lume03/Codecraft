@@ -40,6 +40,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useTranslation } from '@/context/language-provider';
 import { Progress } from '@/components/ui/progress';
+import type { Course, Module } from '@/lib/data';
 
 interface UserStats {
   averageScore: number;
@@ -187,6 +188,9 @@ export default function ProfilePage() {
 
   const [stats, setStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
+  const [allModules, setAllModules] = useState<Module[]>([]);
 
   useEffect(() => {
     if (user?.uid) {
@@ -249,6 +253,27 @@ export default function ProfilePage() {
       fetchStats();
     }
   }, [user?.uid]);
+  
+  // Fetch all courses and modules for progress calculation
+  useEffect(() => {
+    const fetchCourseData = async () => {
+      try {
+        const coursesRes = await fetch('/api/courses');
+        const coursesData: Course[] = await coursesRes.json();
+        setAllCourses(coursesData);
+
+        const modulesPromises = coursesData.map(course => 
+          fetch(`/api/courses/${course.id}/modules`).then(res => res.json())
+        );
+        const modulesDataArrays: Module[][] = await Promise.all(modulesPromises);
+        setAllModules(modulesDataArrays.flat());
+
+      } catch (error) {
+        console.error("Failed to fetch all course data for progress calc:", error);
+      }
+    };
+    fetchCourseData();
+  }, []);
 
   const goals = [
     {
@@ -286,24 +311,20 @@ export default function ProfilePage() {
   const level = userProfile?.level ?? 1;
 
   const overallProgress = useMemo(() => {
-    if (!userProfile?.progress) return 0;
-
-    const coursesProgress = Object.values(userProfile.progress);
-    if (coursesProgress.length === 0) return 0;
-
-    // Asumimos 10 lecciones por curso para el cálculo
-    const totalPossibleLessons = coursesProgress.length * 10;
-    const totalCompletedLessons = coursesProgress.reduce(
+    if (!userProfile?.progress || allModules.length === 0) return 0;
+    
+    const totalPossibleLessons = allModules.length;
+    
+    const totalCompletedLessons = Object.values(userProfile.progress).reduce(
       (sum, course) => sum + (course.completedLessons?.length ?? 0),
       0
     );
 
     if (totalPossibleLessons === 0) return 0;
+    
+    return Math.round((totalCompletedLessons / totalPossibleLessons) * 100);
 
-    return Math.round(
-      (totalCompletedLessons / totalPossibleLessons) * 100
-    );
-  }, [userProfile?.progress]);
+  }, [userProfile?.progress, allModules]);
 
   if (!mounted) {
     return null;
