@@ -52,15 +52,17 @@ const QuickActionChip = ({
   icon: Icon,
   label,
   onClick,
+  href,
 }: {
   icon: React.ElementType;
   label: string;
   onClick?: () => void;
+  href?: string;
 }) => {
-  return (
+  const content = (
     <div
-      role="button"
-      tabIndex={onClick ? 0 : -1}
+      role={onClick ? 'button' : 'link'}
+      tabIndex={0}
       aria-label={label}
       className="group inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-full border bg-secondary/60 px-4 text-sm font-semibold text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       onClick={onClick}
@@ -72,7 +74,14 @@ const QuickActionChip = ({
       <span className="text-xs">{label}</span>
     </div>
   );
+
+  if (href) {
+    return <Link href={href}>{content}</Link>;
+  }
+
+  return content;
 };
+
 
 
 const StatCard = ({
@@ -101,15 +110,13 @@ const StatCard = ({
   }
 
   return (
-     <Card className="flex items-center gap-3 p-4">
-      <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", iconClassName)}>
-        <Icon className="h-5 w-5 text-white" />
-      </div>
-      <div>
-        <p className="text-lg font-bold">{value}</p>
-        <p className="text-[12px] text-muted-foreground">{label}</p>
-      </div>
-    </Card>
+     <Card className="flex items-center gap-4 p-4">
+        <Icon className={cn("h-6 w-6", iconClassName)} />
+        <div>
+            <p className="text-lg font-bold">{value}</p>
+            <p className="text-[12px] text-muted-foreground">{label}</p>
+        </div>
+     </Card>
   );
 };
 
@@ -137,28 +144,28 @@ const StatsDashboard = ({
           value={`${Math.round(stats?.averageScore ?? 0)}%`}
           label={t('average_score_label')}
           isLoading={isLoading}
-          iconClassName="bg-blue-500"
+          iconClassName="text-blue-500"
         />
         <StatCard
           icon={Check}
           value={stats?.completedSections ?? 0}
           label={t('completed_sections_label')}
           isLoading={isLoading}
-          iconClassName="bg-green-500"
+          iconClassName="text-green-500"
         />
         <StatCard
           icon={BrainCircuit}
           value={stats?.totalAttempts ?? 0}
           label={t('total_attempts_label')}
           isLoading={isLoading}
-          iconClassName="bg-primary"
+          iconClassName="text-primary"
         />
         <StatCard
           icon={Flame}
-          value={t('days_streak', { count: streak })}
+          value={streak}
           label={t('consistency_label')}
           isLoading={isLoading}
-          iconClassName={cn(streak > 0 ? "bg-orange-500" : "bg-muted-foreground")}
+          iconClassName={cn(streak > 0 ? "text-orange-500" : "text-muted-foreground")}
         />
       </div>
     </section>
@@ -444,12 +451,11 @@ export default function ProfilePage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <Button variant="ghost" asChild className="h-9 rounded-full px-4">
-            <Link href="/settings">
-              <Bell className="h-4 w-4 mr-2 text-muted-foreground" />
-              <span className="text-xs font-semibold">{t('notifications')}</span>
-            </Link>
-          </Button>
+          <QuickActionChip
+            icon={Bell}
+            label={t('notifications')}
+            href="/settings"
+          />
         </nav>
 
         {/* Stats Dashboard */}
