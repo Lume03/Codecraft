@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -42,9 +41,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/context/language-provider';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const { language, setLanguage, t } = useTranslation();
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -52,20 +53,19 @@ export default function SettingsPage() {
   const [dailyChallenge, setDailyChallenge] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(false);
-  const [language, setLanguage] = useState('es');
   const [reminderTime, setReminderTime] = useState('19:00');
   const [tempHour, setTempHour] = useState('19');
   const [tempMinute, setTempMinute] = useState('00');
+  const [currentLanguage, setCurrentLanguage] = useState(language);
 
   const auth = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
-    const savedLanguage = localStorage.getItem('language') || 'es';
-    setLanguage(savedLanguage);
     setIsDarkTheme(theme === 'dark');
-  }, [theme]);
+    setCurrentLanguage(language);
+  }, [theme, language]);
 
   const handleThemeChange = (checked: boolean) => {
     setTheme(checked ? 'dark' : 'light');
@@ -82,20 +82,31 @@ export default function SettingsPage() {
   const handleSaveReminder = () => {
     setReminderTime(`${tempHour}:${tempMinute}`);
   };
+
+  const handleLanguageSave = () => {
+    setLanguage(currentLanguage);
+  };
   
   if (!mounted) {
     return null; // or a loading spinner
   }
 
+  const languageMap = {
+    es: t('language_es'),
+    en: t('language_en'),
+    pt: t('language_pt'),
+    zh: t('language_zh'),
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
-      <Header title="Ajustes" showBackButton />
+      <Header title={t('settings')} showBackButton />
       <main className="mx-auto w-full max-w-[420px] flex-1 space-y-4 px-4 pb-28 md:max-w-[720px] md:space-y-6 md:px-6 md:pb-32">
         <SettingsSection title="General">
           <SettingsRow
             icon={isDarkTheme ? Moon : Sun}
-            title="Tema"
-            subtitle={isDarkTheme ? 'Oscuro' : 'Claro'}
+            title={t('theme')}
+            subtitle={isDarkTheme ? t('quick_actions_theme_dark') : t('quick_actions_theme_light')}
             trailing={{ type: 'toggle', checked: isDarkTheme, onCheckedChange: handleThemeChange }}
           />
            <Dialog>
@@ -103,30 +114,30 @@ export default function SettingsPage() {
               <div>
                 <SettingsRow
                     icon={Type}
-                    title="Tamaño de fuente"
-                    subtitle="Base 15px · Equilibrio entre legibilidad y contenido"
-                    trailing={{ type: 'text', value: 'Medio' }}
+                    title={t('font_size')}
+                    subtitle={t('font_size_desc')}
+                    trailing={{ type: 'text', value: t('font_size_medium') }}
                     isButton
                 />
               </div>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Selecciona un tamaño de fuente</DialogTitle>
+                <DialogTitle>{t('font_size_select')}</DialogTitle>
               </DialogHeader>
               <div className="py-4">
                 <RadioGroup defaultValue="md" className="space-y-2">
                   <div className="flex items-center space-x-2 rounded-md border p-4">
                     <RadioGroupItem value="sm" id="font-sm" />
-                    <Label htmlFor="font-sm" className="flex-1 cursor-pointer">Pequeño</Label>
+                    <Label htmlFor="font-sm" className="flex-1 cursor-pointer">{t('font_size_small')}</Label>
                   </div>
                    <div className="flex items-center space-x-2 rounded-md border p-4">
                     <RadioGroupItem value="md" id="font-md" />
-                    <Label htmlFor="font-md" className="flex-1 cursor-pointer">Medio</Label>
+                    <Label htmlFor="font-md" className="flex-1 cursor-pointer">{t('font_size_medium')}</Label>
                   </div>
                    <div className="flex items-center space-x-2 rounded-md border p-4">
                     <RadioGroupItem value="lg" id="font-lg" />
-                    <Label htmlFor="font-lg" className="flex-1 cursor-pointer">Grande</Label>
+                    <Label htmlFor="font-lg" className="flex-1 cursor-pointer">{t('font_size_large')}</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -137,52 +148,57 @@ export default function SettingsPage() {
               <div>
                 <SettingsRow
                     icon={Languages}
-                    title="Idioma"
-                    subtitle="Español"
-                    trailing={{ type: 'text', value: 'Cambiar' }}
+                    title={t('language')}
+                    subtitle={languageMap[language]}
+                    trailing={{ type: 'text', value: t('change') }}
                     isButton
                 />
               </div>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Selecciona un idioma</DialogTitle>
+                <DialogTitle>{t('select_language')}</DialogTitle>
               </DialogHeader>
               <div className="py-4">
-                <RadioGroup defaultValue="es" className="space-y-2">
+                <RadioGroup value={currentLanguage} onValueChange={(val) => setCurrentLanguage(val as 'es' | 'en')} className="space-y-2">
                   <div className="flex items-center space-x-2 rounded-md border p-4">
                     <RadioGroupItem value="es" id="lang-es" />
-                    <Label htmlFor="lang-es" className="flex-1 cursor-pointer">Español</Label>
+                    <Label htmlFor="lang-es" className="flex-1 cursor-pointer">{languageMap.es}</Label>
                   </div>
                    <div className="flex items-center space-x-2 rounded-md border p-4">
                     <RadioGroupItem value="en" id="lang-en" />
-                    <Label htmlFor="lang-en" className="flex-1 cursor-pointer">Inglés</Label>
+                    <Label htmlFor="lang-en" className="flex-1 cursor-pointer">{languageMap.en}</Label>
                   </div>
-                   <div className="flex items-center space-x-2 rounded-md border p-4">
-                    <RadioGroupItem value="pt" id="lang-pt" />
-                    <Label htmlFor="lang-pt" className="flex-1 cursor-pointer">Portugués</Label>
+                   <div className="flex items-center space-x-2 rounded-md border p-4 opacity-50">
+                    <RadioGroupItem value="pt" id="lang-pt" disabled />
+                    <Label htmlFor="lang-pt" className="flex-1 cursor-not-allowed">{languageMap.pt}</Label>
                   </div>
-                   <div className="flex items-center space-x-2 rounded-md border p-4">
-                    <RadioGroupItem value="zh" id="lang-zh" />
-                    <Label htmlFor="lang-zh" className="flex-1 cursor-pointer">Chino</Label>
+                   <div className="flex items-center space-x-2 rounded-md border p-4 opacity-50">
+                    <RadioGroupItem value="zh" id="lang-zh" disabled />
+                    <Label htmlFor="lang-zh" className="flex-1 cursor-not-allowed">{languageMap.zh}</Label>
                   </div>
                 </RadioGroup>
               </div>
+              <DialogFooter>
+                 <DialogClose asChild>
+                    <Button onClick={handleLanguageSave}>{t('save')}</Button>
+                 </DialogClose>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
         </SettingsSection>
 
-        <SettingsSection title="Aprendizaje">
+        <SettingsSection title={t('learning')}>
           <SettingsRow
             icon={Sparkles}
-            title="Modo didáctico"
-            subtitle="Explicaciones extendidas y ejemplos paso a paso"
+            title={t('didactic_mode')}
+            subtitle={t('didactic_mode_desc')}
             trailing={{ type: 'toggle', checked: didacticMode, onCheckedChange: setDidacticMode }}
           />
           <SettingsRow
             icon={BookOpen}
-            title="Reto diario"
-            subtitle="Recibe un ejercicio cada día para mantener el hábito"
+            title={t('daily_challenge')}
+            subtitle={t('daily_challenge_desc')}
             trailing={{ type: 'toggle', checked: dailyChallenge, onCheckedChange: setDailyChallenge }}
           />
           <Dialog>
@@ -190,8 +206,8 @@ export default function SettingsPage() {
               <div>
                 <SettingsRow
                   icon={CalendarClock}
-                  title="Recordatorios"
-                  subtitle="Programa tu hora ideal para estudiar"
+                  title={t('reminders')}
+                  subtitle={t('reminders_desc')}
                   trailing={{ type: 'text', value: reminderTime }}
                   isButton
                 />
@@ -199,11 +215,11 @@ export default function SettingsPage() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Configurar recordatorio</DialogTitle>
+                <DialogTitle>{t('configure_reminder')}</DialogTitle>
               </DialogHeader>
               <div className="grid grid-cols-2 gap-4 py-4">
                 <div className="space-y-2">
-                  <Label>Hora</Label>
+                  <Label>{t('hour')}</Label>
                   <Select value={tempHour} onValueChange={setTempHour}>
                     <SelectTrigger>
                       <SelectValue />
@@ -218,7 +234,7 @@ export default function SettingsPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Minuto</Label>
+                  <Label>{t('minute')}</Label>
                    <Select value={tempMinute} onValueChange={setTempMinute}>
                     <SelectTrigger>
                       <SelectValue />
@@ -235,47 +251,47 @@ export default function SettingsPage() {
               </div>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button onClick={handleSaveReminder}>Guardar</Button>
+                  <Button onClick={handleSaveReminder}>{t('save')}</Button>
                 </DialogClose>
               </DialogFooter>
             </DialogContent>
           </Dialog>
         </SettingsSection>
 
-        <SettingsSection title="Notificaciones">
+        <SettingsSection title={t('notifications')}>
           <SettingsRow
             icon={Bell}
-            title="Push"
-            subtitle="Progreso, retos y recordatorios"
+            title={t('push_notifications')}
+            subtitle={t('push_notifications_desc')}
             trailing={{ type: 'toggle', checked: pushNotifications, onCheckedChange: setPushNotifications }}
           />
           <SettingsRow
             icon={Mail}
-            title="Correo"
-            subtitle="Resumen semanal de aprendizaje"
+            title={t('email_notifications')}
+            subtitle={t('email_notifications_desc')}
             trailing={{ type: 'toggle', checked: emailNotifications, onCheckedChange: setEmailNotifications }}
           />
         </SettingsSection>
 
-        <SettingsSection title="Cuenta">
+        <SettingsSection title={t('account')}>
           <SettingsRow
             icon={User}
-            title="Perfil"
-            subtitle="Nombre, nivel, XP y logros"
+            title={t('profile')}
+            subtitle={t('profile_desc')}
             trailing={{ type: 'chevron' }}
             href="/profile"
           />
           <SettingsRow
             icon={ShieldCheck}
-            title="Privacidad"
-            subtitle="Controla datos y permisos"
-            trailing={{ type: 'text', value: 'Gestionar' }}
+            title={t('privacy')}
+            subtitle={t('privacy_desc')}
+            trailing={{ type: 'text', value: t('manage') }}
             isButton
           />
           <SettingsRow
             icon={LogOut}
-            title="Cerrar sesión"
-            subtitle="Desvincula este dispositivo"
+            title={t('log_out')}
+            subtitle={t('logout_desc')}
             onClick={handleLogout}
             isButton={true}
           />

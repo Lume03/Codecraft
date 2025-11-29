@@ -12,6 +12,7 @@ import { LivesIndicator } from '@/components/lives-indicator';
 import { recalculateLives, MAX_LIVES } from '@/lib/lives';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/context/language-provider';
 
 interface CourseWithProgress extends Course {
   progress: number;
@@ -38,6 +39,7 @@ const StatChip = ({
 export default function LearnPage() {
   const [courses, setCourses] = useState<CourseWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
   
   const user = useUser();
   const firestore = useFirestore();
@@ -109,8 +111,8 @@ export default function LearnPage() {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 p-4 md:p-8">
       <Header
-        title={`¡Hola, ${displayName.split(' ')[0]}!`}
-        subtitle={streak > 0 ? `🔥 ¡Vamos a mantener esa racha de ${streak} días!` : "¡Es un gran día para aprender algo nuevo!"}
+        title={t('hello_user', { name: displayName.split(' ')[0] })}
+        subtitle={streak > 0 ? t('streak_on_fire', { days: streak }) : t('great_day_to_learn')}
         action={
           <div className="flex items-center gap-2">
             <StatChip icon={Flame} value={streak} isFlame />
@@ -118,24 +120,24 @@ export default function LearnPage() {
             <Button variant="ghost" size="icon" asChild>
               <Link href="/settings">
                 <Settings className="h-6 w-6" />
-                <span className="sr-only">Ajustes</span>
+                <span className="sr-only">{t('settings')}</span>
               </Link>
             </Button>
           </div>
         }
       />
       <div>
-        <h2 className="mb-4 text-2xl font-bold text-foreground">Cursos</h2>
-        {loading && <p>Cargando cursos...</p>}
+        <h2 className="mb-4 text-2xl font-bold text-foreground">{t('courses')}</h2>
+        {loading && <p>{t('loading_courses')}</p>}
         {!loading && courses.length === 0 && (
           <div className="text-center text-muted-foreground">
-            <p>No hay cursos disponibles.</p>
+            <p>{t('no_courses_available')}</p>
             <p>
-              Ve al{' '}
+              {t('go_to_admin_panel').split('para')[0]}
               <Link href="/admin" className="text-primary underline">
                 panel de administrador
               </Link>{' '}
-              para agregar uno.
+              {t('go_to_admin_panel').split('para')[1]}
             </p>
           </div>
         )}

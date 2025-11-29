@@ -26,6 +26,7 @@ import { doc } from 'firebase/firestore';
 import { recalculateLives, MAX_LIVES } from '@/lib/lives';
 import { LivesIndicator } from '@/components/lives-indicator';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/context/language-provider';
 
 const StatChip = ({
   icon: Icon,
@@ -85,6 +86,7 @@ export default function ProfilePage() {
   const [mounted, setMounted] = useState(false);
   const user = useUser();
   const firestore = useFirestore();
+  const { t } = useTranslation();
 
   const userProfileRef = useMemo(() => {
     if (user && firestore) {
@@ -108,17 +110,17 @@ export default function ProfilePage() {
 
   const goals = [
     {
-      title: 'Practicar 3 días seguidos',
+      title: t('streak_goal_3'),
       target: 3,
       icon: Flame,
     },
     {
-      title: 'Practicar 7 días seguidos',
+      title: t('streak_goal_7'),
       target: 7,
       icon: Flame,
     },
     {
-      title: 'Practicar 10 días seguidos',
+      title: t('streak_goal_10'),
       target: 10,
       icon: Flame,
     },
@@ -165,7 +167,7 @@ export default function ProfilePage() {
         <div className="mx-auto flex w-full max-w-[420px] items-center justify-between md:max-w-[720px] xl:max-w-[960px]">
           <Link href="/learn" className="flex items-center gap-2 font-bold">
             <CodeXml className="h-7 w-7 text-primary" />
-            <span className="text-xl">RavenCode</span>
+            <span className="text-xl">{t('app_title')}</span>
           </Link>
           <div className="flex items-center gap-2">
             <StatChip icon={Flame} value={streak} isFlame />
@@ -173,7 +175,7 @@ export default function ProfilePage() {
             <Button variant="ghost" size="icon" asChild>
               <Link href="/settings">
                 <Settings className="h-5 w-5" />
-                <span className="sr-only">Ajustes</span>
+                <span className="sr-only">{t('settings')}</span>
               </Link>
             </Button>
           </div>
@@ -197,10 +199,10 @@ export default function ProfilePage() {
                 <p className="text-sm text-muted-foreground">@{userProfile?.username ?? 'new.user'}</p>
                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
                     <div className="inline-flex items-center text-sm font-semibold">
-                        Nivel {level}
+                        {t('level', { level })}
                     </div>
                     <div className="inline-flex items-center text-sm font-semibold">
-                        {achievements.length} Logros
+                        {t('achievements_count', { count: achievements.length })}
                     </div>
                 </div>
             </div>
@@ -210,34 +212,34 @@ export default function ProfilePage() {
         <div className="flex items-center gap-3 overflow-x-auto pb-2">
           <QuickActionChip 
               icon={theme === 'dark' ? Moon : Sun} 
-              label={theme === 'dark' ? 'Oscuro' : 'Claro'}
+              label={theme === 'dark' ? t('quick_actions_theme_dark') : t('quick_actions_theme_light')}
               onClick={toggleTheme} 
             />
-            <QuickActionChip icon={Settings} label="Ajustes" href="/settings" />
-            <QuickActionChip icon={Bell} label="Notificaciones" href="/settings" />
+            <QuickActionChip icon={Settings} label={t('settings')} href="/settings" />
+            <QuickActionChip icon={Bell} label={t('notifications')} href="/settings" />
         </div>
 
 
         {/* Course Progress Card */}
         <div className="space-y-4">
-           <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Progreso de Curso</h2>
+           <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('course_progress')}</h2>
             <div className="rounded-2xl border bg-card p-4 md:p-5">
                 <div>
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>General</span>
+                    <span>{t('overall_progress')}</span>
                     <span>{overallProgress}%</span>
                   </div>
                   <Progress value={overallProgress} className="mt-2 h-1.5" />
                 </div>
                 {overallProgress === 0 && (
-                    <p className="mt-3 text-center text-sm text-muted-foreground">¡Completa tu primera lección para ver tu progreso!</p>
+                    <p className="mt-3 text-center text-sm text-muted-foreground">{t('complete_first_lesson')}</p>
                 )}
             </div>
         </div>
         
         {/* Goals and Achievements */}
         <div className="space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Metas y Logros</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('goals_and_achievements')}</h2>
           <div className="space-y-3 rounded-2xl border bg-card p-2">
             {goals.map((goal) => (
               <GoalProgress
@@ -256,12 +258,12 @@ export default function ProfilePage() {
               ))}
               {achievements.length > 3 && (
                  <div className="flex h-8 items-center justify-center rounded-full border border-dashed border-border bg-secondary px-3 text-xs font-semibold text-muted-foreground">
-                    +{achievements.length - 3} más
+                    {t('more_achievements', { count: achievements.length - 3 })}
                 </div>
               )}
             </div>
             <Button variant="outline" className="h-11 w-full justify-center rounded-full border-border hover:bg-secondary md:h-12">
-              Ver todos los logros
+              {t('view_all_achievements')}
             </Button>
           </div>
         </div>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Heart, Infinity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MAX_LIVES, REFILL_MINUTES } from '@/lib/lives';
+import { useTranslation } from '@/context/language-provider';
 
 interface LivesIndicatorProps {
   lives: number;
@@ -26,6 +26,7 @@ const formatTime = (seconds: number) => {
 export function LivesIndicator({ lives: initialLives, lastLifeUpdate }: LivesIndicatorProps) {
   const [currentLives, setCurrentLives] = useState(initialLives);
   const [countdown, setCountdown] = useState(0);
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Sincroniza el estado local con las props cuando cambian (ej. al cargar datos de Firestore)
@@ -86,7 +87,7 @@ export function LivesIndicator({ lives: initialLives, lastLifeUpdate }: LivesInd
       </PopoverTrigger>
       <PopoverContent className="w-64 text-center">
         <div className="space-y-2">
-          <p className="font-bold">{isFull ? '¡Tienes todas tus vidas!' : 'Vidas'}</p>
+          <p className="font-bold">{isFull ? '¡Tienes todas tus vidas!' : t('lives')}</p>
           <div className="flex justify-center gap-2">
             {Array.from({ length: MAX_LIVES }).map((_, i) => (
               <Heart

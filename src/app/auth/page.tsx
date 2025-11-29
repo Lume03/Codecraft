@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useTranslation } from '@/context/language-provider';
 
 function GoogleIcon() {
   return (
@@ -68,6 +69,7 @@ export default function AuthPage() {
   const auth = useAuth();
   const firestore = useFirestore(); 
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   useEffect(() => {
     if(auth && firestore) {
@@ -123,8 +125,8 @@ export default function AuthPage() {
       console.error("Failed to create/update user document:", error);
       toast({
         variant: 'destructive',
-        title: 'Error de cuenta',
-        description: 'No se pudo guardar la información del perfil.',
+        title: t('account_error'),
+        description: t('account_error_desc'),
       });
     }
   }
@@ -145,7 +147,7 @@ export default function AuthPage() {
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Error de autenticación',
+        title: t('auth_error'),
         description: error.message,
       });
     }
@@ -169,7 +171,7 @@ export default function AuthPage() {
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Error con Google',
+        title: t('google_error'),
         description: error.message,
       });
     }
@@ -180,7 +182,7 @@ export default function AuthPage() {
       <header className="mb-8 flex justify-center pt-6">
         <Link href="/" className="flex items-center gap-2">
           <CodeXml className="h-8 w-8 text-primary" />
-          <span className="text-2xl font-bold">RavenCode</span>
+          <span className="text-2xl font-bold">{t('app_title')}</span>
         </Link>
       </header>
 
@@ -188,16 +190,16 @@ export default function AuthPage() {
         <div className="w-full max-w-sm space-y-4">
           {isLogin ? (
             <>
-              <h1 className="text-3xl font-bold">Inicia sesión</h1>
+              <h1 className="text-3xl font-bold">{t('sign_in')}</h1>
               <p className="text-muted-foreground">
-                Vuelve a tu camino de aprendizaje y continúa tu racha.
+                {t('sign_in_subtitle')}
               </p>
             </>
           ) : (
             <>
-              <h1 className="text-3xl font-bold">Crear tu cuenta</h1>
+              <h1 className="text-3xl font-bold">{t('create_account')}</h1>
               <p className="text-muted-foreground px-4">
-                Completa tu perfil para personalizar tu aprendizaje.
+                {t('create_account_subtitle')}
               </p>
             </>
           )}
@@ -206,34 +208,34 @@ export default function AuthPage() {
             <CardContent className="space-y-4 pt-6">
               {!isLogin && (
                 <div className="space-y-2">
-                  <Label htmlFor="fullname">Nombre completo</Label>
+                  <Label htmlFor="fullname">{t('full_name')}</Label>
                   <Input
                     id="fullname"
-                    placeholder="Alonso Luque"
+                    placeholder={t('full_name_placeholder')}
                     value={fullname}
                     onChange={(e) => setFullname(e.target.value)}
                   />
                 </div>
               )}
               <div className="space-y-2">
-                <Label htmlFor="email">Correo electrónico</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="alonso@gmail.com"
+                  placeholder={t('email_placeholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Contraseña</Label>
+                  <Label htmlFor="password">{t('password')}</Label>
                   {isLogin && (
                     <Link
                       href="#"
                       className="text-sm text-primary hover:underline"
                     >
-                      ¿Olvidaste tu contraseña?
+                      {t('forgot_password')}
                     </Link>
                   )}
                 </div>
@@ -266,28 +268,27 @@ export default function AuthPage() {
               {!isLogin && (
                 <>
                   <div className="space-y-2">
-                    <Label>Fecha de nacimiento</Label>
+                    <Label>{t('date_of_birth')}</Label>
                     <p className="text-xs text-muted-foreground">
-                      Usaremos tu fecha para adaptar el contenido y proteger tu
-                      privacidad.
+                      {t('date_of_birth_desc')}
                     </p>
                     <div className="flex gap-2">
-                      <Input id="dd" placeholder="DD" className="text-center" />
-                      <Input id="mm" placeholder="MM" className="text-center" />
+                      <Input id="dd" placeholder={t('dd')} className="text-center" />
+                      <Input id="mm" placeholder={t('mm')} className="text-center" />
                       <Input
                         id="aaaa"
-                        placeholder="AAAA"
+                        placeholder={t('yyyy')}
                         className="text-center"
                       />
                     </div>
                   </div>
                   <div className="flex items-center justify-between rounded-lg border p-3">
-                    <Label htmlFor="reminders">Recordatorios diarios</Label>
+                    <Label htmlFor="reminders">{t('daily_reminders')}</Label>
                     <Switch id="reminders" />
                   </div>
                   <div className="flex items-center justify-between rounded-lg border p-3">
                     <Label htmlFor="contrast-mode">
-                      Modo accesible (alto contraste)
+                      {t('contrast_mode')}
                     </Label>
                     <Switch id="contrast-mode" />
                   </div>
@@ -305,11 +306,11 @@ export default function AuthPage() {
                   boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
                 }}
               >
-                {!isFirebaseReady ? "Cargando..." : isLogin ? 'Entrar' : 'Verificar y continuar'}
+                {!isFirebaseReady ? t('loading') : isLogin ? t('enter') : t('verify_and_continue')}
               </Button>
               {!isLogin && (
                 <Button variant="ghost" className="w-full" onClick={() => setIsLogin(true)}>
-                  Volver
+                  {t('back')}
                 </Button>
               )}
             </CardFooter>
@@ -321,7 +322,7 @@ export default function AuthPage() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
-                o {isLogin ? 'continúa con' : 'crea una cuenta con'}
+                {isLogin ? t('or_continue_with') : t('or_create_with')}
               </span>
             </div>
           </div>
@@ -336,18 +337,18 @@ export default function AuthPage() {
           </div>
 
           <div className="mt-4 text-center text-sm">
-            {isLogin ? '¿Nuevo en RavenCode?' : '¿Ya tienes una cuenta?'}
+            {isLogin ? t('new_to_ravencode') : t('already_have_account')}
             <Button
               variant="link"
               onClick={() => setIsLogin(!isLogin)}
               className="text-primary"
             >
-              {isLogin ? 'Crear cuenta' : 'Inicia sesión'}
+              {isLogin ? t('create_account') : t('sign_in')}
             </Button>
           </div>
 
           <p className="px-8 text-center text-xs text-muted-foreground">
-            Al continuar, aceptas los Términos y la Política de privacidad.
+            {t('terms_policy')}
           </p>
         </div>
       </main>

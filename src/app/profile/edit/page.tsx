@@ -18,11 +18,13 @@ import { doc, setDoc } from 'firebase/firestore';
 import { Camera } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useTranslation } from '@/context/language-provider';
 
 export default function ProfileEditPage() {
   const user = useUser();
   const firestore = useFirestore();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const userProfileRef =
     user && firestore ? doc(firestore, `users/${user.uid}`) : null;
@@ -59,11 +61,11 @@ export default function ProfileEditPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header title="Editar Perfil" showBackButton />
+      <Header title={t('edit_profile_title')} showBackButton />
       <main className="flex flex-1 items-center justify-center p-4">
         <Card className="w-full max-w-lg">
           <CardHeader>
-            <CardTitle>Actualiza tu información</CardTitle>
+            <CardTitle>{t('update_your_info')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center gap-4">
@@ -82,32 +84,32 @@ export default function ProfileEditPage() {
                   className="absolute bottom-0 right-0 h-8 w-8 rounded-full"
                 >
                   <Camera className="h-4 w-4" />
-                  <span className="sr-only">Cambiar foto</span>
+                  <span className="sr-only">{t('change_photo')}</span>
                 </Button>
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">Nombre</Label>
+              <Label htmlFor="name">{t('full_name')}</Label>
               <Input
                 id="name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Tu nombre para mostrar"
+                placeholder={t('display_name_placeholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="username">Nombre de usuario</Label>
+              <Label htmlFor="username">{t('username_placeholder')}</Label>
               <Input
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Tu @usuario"
+                placeholder={t('username_placeholder')}
               />
             </div>
           </CardContent>
           <CardFooter>
             <Button className="w-full" onClick={handleSaveChanges}>
-              Guardar cambios
+              {t('save_changes')}
             </Button>
           </CardFooter>
         </Card>

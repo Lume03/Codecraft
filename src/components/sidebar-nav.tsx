@@ -4,20 +4,10 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { BookOpen, Target, User, CodeXml, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from './ui/button';
 import { Separator } from './ui/separator';
+import { useTranslation } from '@/context/language-provider';
 
-const mainNavItems = [
-  { href: '/learn', label: 'Aprender', icon: BookOpen },
-  { href: '/practice', label: 'Practicar', icon: Target },
-  { href: '/profile', label: 'Perfil', icon: User },
-];
-
-const bottomNavItems = [
-    { href: '/settings', label: 'Ajustes', icon: Settings },
-];
-
-const NavItem = ({ item, isActive }: { item: typeof mainNavItems[0], isActive: boolean }) => (
+const NavItem = ({ item, isActive }: { item: { href: string; label: string; icon: React.ElementType; }, isActive: boolean }) => (
     <Link 
       href={item.href}
       className={cn(
@@ -33,6 +23,17 @@ const NavItem = ({ item, isActive }: { item: typeof mainNavItems[0], isActive: b
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const { t } = useTranslation();
+
+  const mainNavItems = [
+    { href: '/learn', label: t('learn'), icon: BookOpen },
+    { href: '/practice', label: t('practice'), icon: Target },
+    { href: '/profile', label: t('profile'), icon: User },
+  ];
+  
+  const bottomNavItems = [
+      { href: '/settings', label: t('settings'), icon: Settings },
+  ];
 
   return (
     <div className="flex h-full flex-col">
@@ -40,7 +41,7 @@ export function SidebarNav() {
         <div className="flex h-20 items-center px-4">
              <Link href="/learn" className="flex items-center gap-2 font-bold text-foreground">
                 <CodeXml className="h-7 w-7 text-primary" />
-                <span className="text-xl">RavenCode</span>
+                <span className="text-xl">{t('app_title')}</span>
             </Link>
         </div>
 

@@ -13,6 +13,7 @@ import { placeholderImages } from '@/lib/placeholder-images';
 import type { Course, Module } from '@/lib/data';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc, DocumentReference } from 'firebase/firestore';
+import { useTranslation } from '@/context/language-provider';
 
 export default function CourseDetailPage() {
   const params = useParams();
@@ -20,6 +21,7 @@ export default function CourseDetailPage() {
   
   const user = useUser();
   const firestore = useFirestore();
+  const { t } = useTranslation();
   
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
@@ -81,11 +83,8 @@ export default function CourseDetailPage() {
         }
     }
     
-    // If all unlocked lessons are completed, check if there's a next locked lesson to show.
-    // Otherwise, it means the course is finished.
     if (completedLessons.length === totalLessons) return null;
     
-    // Default to the first lesson if nothing else is available
     return isFirstLessonUnlockedByDefault ? modules[0] : null;
 
   }, [modules, completedLessons, unlockedLessons, totalLessons]);
@@ -93,7 +92,7 @@ export default function CourseDetailPage() {
   const currentLessonIndex = nextLesson ? modules.findIndex(m => m.id === nextLesson.id) : -1;
 
   if (loading) {
-    return <div>Cargando...</div>;
+    return <div>{t('loading')}</div>;
   }
 
   if (!course) {
@@ -126,7 +125,7 @@ export default function CourseDetailPage() {
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold">{course.title}</h2>
                 <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
-                  Curso
+                  {t('course')}
                 </span>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -138,15 +137,16 @@ export default function CourseDetailPage() {
             <Progress value={progressPercentage} className="h-2" />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>
-                {completedLessons.length}{' '}
                 {completedLessons.length === 1
-                  ? 'lección completada'
-                  : 'lecciones completadas'}
+                  ? t('completed_lessons_count', { count: completedLessons.length })
+                  : t('completed_lessons_count_plural', { count: completedLessons.length })}
               </span>
               <div className="flex items-center gap-2">
                 <Clock className="h-3 w-3" />
                 <span>
-                  {totalLessons} {totalLessons === 1 ? 'lección' : 'lecciones'}
+                  {totalLessons === 1
+                    ? t('total_lessons_count', { count: totalLessons })
+                    : t('total_lessons_count_plural', { count: totalLessons })}
                 </span>
               </div>
             </div>
@@ -160,10 +160,10 @@ export default function CourseDetailPage() {
               <Code className="h-6 w-6 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">
-                  Siguiente: {nextLesson.title}
+                  {t('next_lesson', { title: nextLesson.title })}
                 </p>
                 <p className="text-sm font-semibold">
-                  Lección {currentLessonIndex + 1}
+                  {t('lesson_number', { number: currentLessonIndex + 1 })}
                 </p>
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function CourseDetailPage() {
               <Link
                 href={`/course/${courseId}/theory/${nextLesson.contentId}?lessonId=${nextLesson.id}`}
               >
-                Revisar
+                {t('review')}
               </Link>
             </Button>
           </div>
@@ -179,15 +179,14 @@ export default function CourseDetailPage() {
 
         {/* Course Content Section */}
         <div>
-          <h3 className="mb-4 text-xl font-bold">Contenido del curso</h3>
+          <h3 className="mb-4 text-xl font-bold">{t('course_content')}</h3>
           <div className="space-y-2 rounded-2xl border bg-card p-2">
             {modules?.map((module, index) => {
               const isCompleted = completedLessons.includes(module.id);
-              // A lesson is unlocked if it's the first one, or if its ID is in the unlockedLessons array.
-              // A completed lesson is always considered unlocked for access.
               const isUnlocked = (isFirstLessonUnlocked && index === 0) || unlockedLessons.includes(module.id) || isCompleted;
               
               const status = isCompleted ? 'completed' : isUnlocked ? 'unlocked' : 'locked';
+              const statusText = isCompleted ? t('completed') : isUnlocked ? t('in_progress') : t('locked');
 
               return (
                 <Link
@@ -218,9 +217,7 @@ export default function CourseDetailPage() {
                       <div>
                         <p className="font-semibold">{module.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          {status === 'completed' && 'Completado'}
-                          {status === 'unlocked' && 'En curso'}
-                          {status === 'locked' && 'Bloqueado'}
+                          {statusText}
                         </p>
                       </div>
                     </div>
@@ -253,7 +250,7 @@ export default function CourseDetailPage() {
             <Link
               href={`/course/${courseId}/theory/${nextLesson.contentId}?lessonId=${nextLesson.id}`}
             >
-              Comenzar Lección {currentLessonIndex + 1}
+              {t('start_lesson', { number: currentLessonIndex + 1 })}
             </Link>
           </Button>
         </div>

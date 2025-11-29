@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -42,6 +41,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { useTranslation } from '@/context/language-provider';
 
 // --- FORMULARIOS Y DIÁLOGOS DE CREACIÓN ---
 
@@ -50,6 +50,7 @@ function NewCourseForm({ onCourseAdded }: { onCourseAdded: () => void }) {
   const [description, setDescription] = useState('');
   const [imageId, setImageId] = useState('');
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleAddCourse = async () => {
     if (!title || !description || !imageId) {
@@ -553,7 +554,7 @@ function EditCourseDialog({ course, onCourseUpdated, onCourseDeleted }: { course
             if (!res.ok) throw new Error('Failed to delete course');
             toast({ title: 'Curso eliminado' });
             onCourseDeleted();
-        } catch (error) {
+        } catch (error)_category
             toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
         }
     };
@@ -834,6 +835,7 @@ export default function AdminDashboard() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const { t } = useTranslation();
 
   const handleRefresh = () => setRefreshKey((k) => k + 1);
 
@@ -869,11 +871,11 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen flex-col">
       <Header
-        title="Dashboard del Administrador"
+        title={t('admin_dashboard_title')}
         action={
           <Button variant="ghost" size="icon" onClick={handleLogout}>
             <LogOut className="h-5 w-5" />
-            <span className="sr-only">Cerrar sesión</span>
+            <span className="sr-only">{t('log_out')}</span>
           </Button>
         }
       />
@@ -881,7 +883,7 @@ export default function AdminDashboard() {
         <NewCourseForm onCourseAdded={handleRefresh} />
 
         {loading ? (
-          <p>Cargando cursos...</p>
+          <p>{t('loading_courses')}</p>
         ) : (
           <CourseManager courses={courses} onRefresh={handleRefresh} />
         )}
@@ -889,5 +891,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
-    

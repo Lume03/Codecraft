@@ -1,8 +1,12 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { CodeXml } from 'lucide-react';
+import { useTranslation } from '@/context/language-provider';
 
 export default function OnboardingPage() {
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background text-center">
       <main className="flex flex-1 flex-col items-center justify-center p-4">
@@ -11,10 +15,10 @@ export default function OnboardingPage() {
             <CodeXml className="h-14 w-14 text-primary" />
           </div>
           <h1 className="text-4xl font-bold tracking-tighter text-foreground sm:text-5xl">
-            RavenCode
+            {t('app_title')}
           </h1>
           <p className="max-w-xs text-lg text-muted-foreground">
-            Aprende a programar de forma práctica
+            {t('app_subtitle')}
           </p>
         </div>
       </main>
@@ -29,10 +33,10 @@ export default function OnboardingPage() {
               boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
             }}
           >
-            <Link href="/auth">Empezar</Link>
+            <Link href="/auth">{t('get_started')}</Link>
           </Button>
           <Button asChild variant="link" size="sm">
-            <Link href="/admin">Acceso Administrador</Link>
+            <Link href="/admin">{t('admin_access')}</Link>
           </Button>
         </div>
       </footer>

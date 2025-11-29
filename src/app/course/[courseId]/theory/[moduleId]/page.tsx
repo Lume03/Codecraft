@@ -1,4 +1,3 @@
-
 'use server';
 
 import { Header } from '@/components/header';
@@ -12,6 +11,10 @@ import { ContentRenderer } from '@/components/content-renderer';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { TheoryChatWidget } from '@/components/theory-chat-widget';
+
+// This is a server component, so we cannot use the useTranslation hook.
+// We'll have to pass the translations from the page to the components if needed, or handle it differently.
+// For now, we will hardcode the English strings here and then figure out a better i18n story for Server Components.
 
 async function getTheoryData(theoryId: string): Promise<{
   theory: Theory;
@@ -84,7 +87,6 @@ export default async function TheoryLessonPage({
   const { theory, pages, lessonId } = data;
   const totalPages = pages.length;
   
-  // Concatenate all page content to provide full context to the bot
   const fullLessonContent = pages.map(p => `## ${p.title}\n${p.content}`).join('\n\n---\n\n');
 
 
@@ -105,9 +107,9 @@ export default async function TheoryLessonPage({
       const basePath = `/course/${courseId}/theory/${theoryId}`;
       return (
         <div className="flex min-h-screen flex-col items-center justify-center">
-          <p>Página no encontrada.</p>
+          <p>Page not found.</p>
           <Link href={`${basePath}?page=1`} className="text-primary underline">
-            Ir a la primera página
+            Go to the first page
           </Link>
         </div>
       );
@@ -158,7 +160,7 @@ export default async function TheoryLessonPage({
             className="flex-1 rounded-full"
           >
             <Link href={`${basePath}?page=${currentPage - 1}`}>
-              <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
+              <ChevronLeft className="mr-2 h-4 w-4" /> Previous
             </Link>
           </Button>
 
@@ -172,7 +174,7 @@ export default async function TheoryLessonPage({
               }}
             >
               <Link href={`/practice/session/${lessonId}?courseId=${courseId}`}>
-                 <BrainCircuit className="mr-2 h-4 w-4" /> Comenzar Práctica
+                 <BrainCircuit className="mr-2 h-4 w-4" /> Start Practice
               </Link>
             </Button>
           ) : (
@@ -186,7 +188,7 @@ export default async function TheoryLessonPage({
               }}
             >
               <Link href={`${basePath}?page=${currentPage + 1}`}>
-                Siguiente <ChevronRight className="ml-2 h-4 w-4" />
+                Next <ChevronRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           )}

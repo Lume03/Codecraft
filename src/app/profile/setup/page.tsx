@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useTranslation } from '@/context/language-provider';
 
 export default function ProfileSetupPage() {
   const [displayName, setDisplayName] = useState('');
@@ -25,6 +26,7 @@ export default function ProfileSetupPage() {
   const router = useRouter();
   const user = useUser();
   const firestore = useFirestore();
+  const { t } = useTranslation();
 
   const handleSave = async () => {
     if (user && firestore) {
@@ -48,18 +50,18 @@ export default function ProfileSetupPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header title="Completa tu perfil" />
+      <Header title={t('complete_your_profile')} />
       <main className="flex flex-1 items-center justify-center p-4">
         <Card className="w-full max-w-lg">
           <CardHeader>
-            <CardTitle>Un último paso...</CardTitle>
+            <CardTitle>{t('one_last_step')}</CardTitle>
             <CardDescription>
-              Configura tu perfil para personalizar tu experiencia de aprendizaje.
+              {t('profile_setup_desc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name">Nombre de pila</Label>
+              <Label htmlFor="name">{t('full_name')}</Label>
               <Input
                 id="name"
                 placeholder="John Doe"
@@ -68,7 +70,7 @@ export default function ProfileSetupPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="username">Nombre de usuario</Label>
+              <Label htmlFor="username">{t('username_placeholder')}</Label>
               <Input
                 id="username"
                 placeholder="johndoe"
@@ -79,10 +81,10 @@ export default function ProfileSetupPage() {
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <Label htmlFor="reminders" className="text-base">
-                  Recordatorios de aprendizaje
+                  {t('learning_reminders')}
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Recibe notificaciones diarias para mantener tu racha.
+                  {t('learning_reminders_desc')}
                 </p>
               </div>
               <Switch
@@ -94,7 +96,7 @@ export default function ProfileSetupPage() {
           </CardContent>
           <CardFooter>
             <Button className="w-full" onClick={handleSave}>
-              Guardar y continuar
+              {t('save_and_continue')}
             </Button>
           </CardFooter>
         </Card>

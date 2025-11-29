@@ -1,6 +1,5 @@
 import { SidebarNav } from '@/components/sidebar-nav';
 import { FooterNav } from '@/components/footer-nav';
-import { Header } from '@/components/header';
 import { Suspense } from 'react';
 import { SidebarNavSkeleton } from '@/components/sidebar-nav-skeleton';
 
