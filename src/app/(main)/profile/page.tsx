@@ -27,6 +27,19 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { UserProfile } from '@/docs/backend-types';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useTranslation } from '@/context/language-provider';
+
 
 interface UserStats {
   averageScore: number;
@@ -190,6 +203,9 @@ export default function ProfilePage() {
   const user = useUser();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
+  const { language, setLanguage, t } = useTranslation();
+  const [currentLanguage, setCurrentLanguage] = useState(language);
+
   const [currentLives, setCurrentLives] = useState(0);
   const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(
     new Date()
@@ -286,10 +302,15 @@ export default function ProfilePage() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    setCurrentLanguage(language);
+  }, [language]);
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+  
+  const handleLanguageSave = () => {
+    setLanguage(currentLanguage as 'es' | 'en');
   };
 
   const streak = userProfile?.streak ?? 0;
@@ -323,6 +344,13 @@ export default function ProfilePage() {
   const userAvatar = placeholderImages.find((p) => p.id === 'user-avatar');
   const avatarSrc =
     userProfile?.photoURL || user?.photoURL || userAvatar?.imageUrl;
+    
+  const languageMap = {
+    es: t('language_es'),
+    en: t('language_en'),
+    pt: t('language_pt'),
+    zh: t('language_zh'),
+  };
 
   return (
     <div className="flex flex-col">
@@ -418,7 +446,43 @@ export default function ProfilePage() {
             label="Tema"
             onClick={toggleTheme}
           />
-          <QuickActionChip icon={Languages} label="Idioma" href="/settings" />
+          <Dialog>
+             <DialogTrigger asChild>
+                <div>
+                   <QuickActionChip icon={Languages} label="Idioma" />
+                </div>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{t('select_language')}</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <RadioGroup value={currentLanguage} onValueChange={(val) => setCurrentLanguage(val as 'es' | 'en' | 'pt' | 'zh')} className="space-y-2">
+                  <div className="flex items-center space-x-2 rounded-md border p-4">
+                    <RadioGroupItem value="es" id="lang-es" />
+                    <Label htmlFor="lang-es" className="flex-1 cursor-pointer">{languageMap.es}</Label>
+                  </div>
+                   <div className="flex items-center space-x-2 rounded-md border p-4">
+                    <RadioGroupItem value="en" id="lang-en" />
+                    <Label htmlFor="lang-en" className="flex-1 cursor-pointer">{languageMap.en}</Label>
+                  </div>
+                   <div className="flex items-center space-x-2 rounded-md border p-4 opacity-50">
+                    <RadioGroupItem value="pt" id="lang-pt" disabled />
+                    <Label htmlFor="lang-pt" className="flex-1 cursor-not-allowed">{languageMap.pt}</Label>
+                  </div>
+                   <div className="flex items-center space-x-2 rounded-md border p-4 opacity-50">
+                    <RadioGroupItem value="zh" id="lang-zh" disabled />
+                    <Label htmlFor="lang-zh" className="flex-1 cursor-not-allowed">{languageMap.zh}</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <DialogFooter>
+                 <DialogClose asChild>
+                    <Button onClick={handleLanguageSave}>{t('save')}</Button>
+                 </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <QuickActionChip
             icon={Bell}
             label="Notificaciones"
@@ -506,3 +570,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
