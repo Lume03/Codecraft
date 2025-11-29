@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpen, Target, User } from 'lucide-react';
+import { BookOpen, BrainCircuit, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/context/language-provider';
 
@@ -12,7 +12,7 @@ export default function FooterNavItems() {
 
   const navItems = [
     { href: '/learn', label: t('learn'), icon: BookOpen },
-    { href: '/practice', label: t('practice'), icon: Target },
+    { href: '/practice', label: t('practice'), icon: BrainCircuit },
     { href: '/profile', label: t('profile'), icon: User },
   ];
 

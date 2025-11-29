@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpen, Target, User, CodeXml, Settings } from 'lucide-react';
+import { BookOpen, BrainCircuit, User, CodeXml, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from './ui/separator';
 import { useTranslation } from '@/context/language-provider';
@@ -28,7 +28,7 @@ export function SidebarNav() {
 
   const mainNavItems = [
     { href: '/learn', label: t('learn'), icon: BookOpen },
-    { href: '/practice', label: t('practice'), icon: Target },
+    { href: '/practice', label: t('practice'), icon: BrainCircuit },
     { href: '/profile', label: t('profile'), icon: User },
   ];
   
