@@ -9,10 +9,9 @@ import { useEffect, useState, useMemo } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { LivesIndicator } from '@/components/lives-indicator';
-import { recalculateLives, MAX_LIVES } from '@/lib/lives';
+import { recalculateLives } from '@/lib/lives';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useTranslation } from '@/context/language-provider';
 
 interface CourseWithProgress extends Course {
   progress: number;
@@ -21,25 +20,34 @@ interface CourseWithProgress extends Course {
 const StatChip = ({
   icon: Icon,
   value,
+  label,
   isFlame,
 }: {
   icon: React.ElementType;
   value: string | number;
+  label: string;
   isFlame?: boolean;
 }) => (
-  <div className="inline-flex h-8 items-center gap-2 rounded-full border border-border bg-card px-3 text-[13px] text-foreground">
-    <Icon className={cn(
-        "h-4 w-4",
-        isFlame && (value > 0 ? "text-orange-500" : "text-muted-foreground")
-    )} />
+  <div
+    className="inline-flex h-8 items-center gap-2 rounded-full border border-border bg-card px-3 text-[13px] text-foreground"
+    role="status"
+    aria-label={label}
+  >
+    <Icon
+      className={cn(
+        'h-4 w-4',
+        isFlame && (Number(value) > 0 ? 'text-orange-500' : 'text-muted-foreground')
+      )}
+      aria-hidden="true"
+    />
     <span>{value}</span>
   </div>
 );
 
+
 export default function LearnPage() {
   const [courses, setCourses] = useState<CourseWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
-  const { t } = useTranslation();
   
   const user = useUser();
   const firestore = useFirestore();
@@ -107,37 +115,44 @@ export default function LearnPage() {
     fetchCoursesAndProgress();
 
   }, [userProfile]);
+  
+  const welcomeMessage = `¡Hola, ${displayName.split(' ')[0]}!`;
+  const streakMessage = streak > 0 ? `🔥 ¡Vamos a mantener esa racha de ${streak} días!` : "Es un gran día para aprender algo nuevo";
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 p-4 md:p-8">
       <Header
-        title={t('hello_user', { name: displayName.split(' ')[0] })}
-        subtitle={streak > 0 ? t('streak_on_fire', { days: streak }) : t('great_day_to_learn')}
+        title={welcomeMessage}
+        subtitle={streakMessage}
         action={
           <div className="flex items-center gap-2">
-            <StatChip icon={Flame} value={streak} isFlame />
+            <StatChip
+              icon={Flame}
+              value={streak}
+              label={`Racha de ${streak} días`}
+              isFlame
+            />
             <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
-            <Button variant="ghost" size="icon" asChild aria-label={t('settings')}>
+            <Button variant="ghost" size="icon" asChild aria-label="Abrir ajustes">
               <Link href="/settings">
                 <Settings className="h-6 w-6" />
-                <span className="sr-only">{t('settings')}</span>
               </Link>
             </Button>
           </div>
         }
       />
       <div>
-        <h2 className="mb-4 text-2xl font-bold text-foreground">{t('courses')}</h2>
-        {loading && <p aria-live="polite">{t('loading_courses')}</p>}
+        <h2 className="mb-4 text-2xl font-bold text-foreground">Cursos</h2>
+        {loading && <p aria-live="polite">Cargando cursos...</p>}
         {!loading && courses.length === 0 && (
           <div className="text-center text-muted-foreground" aria-live="polite">
-            <p>{t('no_courses_available')}</p>
+            <p>No hay cursos disponibles.</p>
             <p>
-              {t('go_to_admin_panel').split('para')[0]}
+              Ve al{' '}
               <Link href="/admin" className="text-primary underline">
                 panel de administrador
               </Link>{' '}
-              {t('go_to_admin_panel').split('para')[1]}
+              para agregar uno.
             </p>
           </div>
         )}

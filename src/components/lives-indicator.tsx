@@ -5,7 +5,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Heart, Infinity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MAX_LIVES, REFILL_MINUTES } from '@/lib/lives';
-import { useTranslation } from '@/context/language-provider';
 
 interface LivesIndicatorProps {
   lives: number;
@@ -26,7 +25,6 @@ const formatTime = (seconds: number) => {
 export function LivesIndicator({ lives: initialLives, lastLifeUpdate }: LivesIndicatorProps) {
   const [currentLives, setCurrentLives] = useState(initialLives);
   const [countdown, setCountdown] = useState(0);
-  const { t } = useTranslation();
 
   useEffect(() => {
     // Sincroniza el estado local con las props cuando cambian (ej. al cargar datos de Firestore)
@@ -70,37 +68,45 @@ export function LivesIndicator({ lives: initialLives, lastLifeUpdate }: LivesInd
   const isFull = currentLives >= MAX_LIVES;
   const isInfinite = initialLives === Infinity;
 
+  const label = isInfinite
+    ? 'Vidas infinitas'
+    : isFull
+    ? 'Vidas al máximo'
+    : `Tienes ${currentLives} de ${MAX_LIVES} vidas`;
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <div
           role="button"
           tabIndex={0}
+          aria-label={label}
           className={cn(
             'flex cursor-pointer items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-sm font-semibold',
             isInfinite ? 'text-blue-500' : isFull ? 'text-red-500' : 'text-red-500'
           )}
         >
-          <Heart className="h-5 w-5 fill-current" />
-          {isInfinite ? <Infinity className="h-5 w-5" /> : <span>{currentLives}</span>}
+          <Heart className="h-5 w-5 fill-current" aria-hidden="true" />
+          {isInfinite ? <Infinity className="h-5 w-5" aria-hidden="true" /> : <span>{currentLives}</span>}
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-64 text-center">
         <div className="space-y-2">
-          <p className="font-bold">{isFull ? t('lives_full_title') : t('lives')}</p>
-          <div className="flex justify-center gap-2">
+          <p className="font-bold">{isFull ? '¡Tienes todas tus vidas!' : 'Vidas'}</p>
+          <div className="flex justify-center gap-2" role="status" aria-label={`${currentLives} de ${MAX_LIVES} vidas restantes`}>
             {Array.from({ length: MAX_LIVES }).map((_, i) => (
               <Heart
                 key={i}
                 className={cn('h-6 w-6', i < currentLives ? 'fill-red-500 text-red-500' : 'fill-muted text-muted-foreground')}
+                aria-hidden="true"
               />
             ))}
           </div>
           {isFull ? (
-             <p className="text-sm text-muted-foreground">{t('lives_full_subtitle')}</p>
+             <p className="text-sm text-muted-foreground">¡Estás listo para aprender sin parar!</p>
           ) : (
-            <div>
-                 <p className="text-sm text-muted-foreground">{t('lives_recharge_message')}</p>
+            <div aria-live="polite">
+                 <p className="text-sm text-muted-foreground">Recuperarás una vida en:</p>
                  <p className="text-lg font-bold">{formatTime(countdown)}</p>
             </div>
           )}

@@ -23,28 +23,37 @@ import { useEffect, useState, useMemo } from 'react';
 import { useUser, useDoc, useFirestore } from '@/firebase';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { doc } from 'firebase/firestore';
-import { recalculateLives, MAX_LIVES } from '@/lib/lives';
+import { recalculateLives } from '@/lib/lives';
 import { LivesIndicator } from '@/components/lives-indicator';
 import { cn } from '@/lib/utils';
-import { useTranslation } from '@/context/language-provider';
 
 const StatChip = ({
   icon: Icon,
   value,
+  label,
   isFlame,
 }: {
   icon: React.ElementType;
   value: string | number;
+  label: string;
   isFlame?: boolean;
 }) => (
-  <div className="inline-flex h-8 items-center gap-2 rounded-full border border-border bg-card px-3 text-[13px] text-foreground">
-    <Icon className={cn(
-        "h-4 w-4",
-        isFlame && (value > 0 ? "text-orange-500" : "text-muted-foreground")
-    )} />
+  <div
+    className="inline-flex h-8 items-center gap-2 rounded-full border border-border bg-card px-3 text-[13px] text-foreground"
+    role="status"
+    aria-label={label}
+  >
+    <Icon
+      className={cn(
+        'h-4 w-4',
+        isFlame && (Number(value) > 0 ? 'text-orange-500' : 'text-muted-foreground')
+      )}
+      aria-hidden="true"
+    />
     <span>{value}</span>
   </div>
 );
+
 
 
 const QuickActionChip = ({
@@ -69,7 +78,7 @@ const QuickActionChip = ({
         if (e.key === 'Enter' || e.key === ' ') onClick?.();
       }}
     >
-      <Icon className="h-4 w-4 text-muted-foreground" />
+      <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
       <span className="text-xs font-semibold text-muted-foreground">{label}</span>
     </div>
   );
@@ -86,7 +95,6 @@ export default function ProfilePage() {
   const [mounted, setMounted] = useState(false);
   const user = useUser();
   const firestore = useFirestore();
-  const { t } = useTranslation();
 
   const userProfileRef = useMemo(() => {
     if (user && firestore) {
@@ -97,7 +105,7 @@ export default function ProfilePage() {
 
   const { data: userProfile } = useDoc(userProfileRef);
 
-  const [currentLives, setCurrentLives] = useState(MAX_LIVES);
+  const [currentLives, setCurrentLives] = useState(0);
   const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(new Date());
 
   useEffect(() => {
@@ -110,17 +118,17 @@ export default function ProfilePage() {
 
   const goals = [
     {
-      title: t('streak_goal_3'),
+      title: 'Practica 3 días seguidos',
       target: 3,
       icon: Flame,
     },
     {
-      title: t('streak_goal_7'),
+      title: 'Practica 7 días seguidos',
       target: 7,
       icon: Flame,
     },
     {
-      title: t('streak_goal_10'),
+      title: 'Practica 10 días seguidos',
       target: 10,
       icon: Flame,
     },
@@ -165,44 +173,43 @@ export default function ProfilePage() {
     <div className="flex flex-col">
        <header className="sticky top-0 z-20 flex h-14 items-center border-b border-border bg-background/80 px-4 backdrop-blur-sm md:h-16 md:px-6">
         <div className="mx-auto flex w-full max-w-[420px] items-center justify-between md:max-w-[720px] xl:max-w-[960px]">
-          <Link href="/learn" className="flex items-center gap-2 font-bold" aria-label={`Ir a la página de ${t('app_title')}`}>
+          <Link href="/learn" className="flex items-center gap-2 font-bold" aria-label="Ir a la página principal de RavenCode">
             <CodeXml className="h-7 w-7 text-primary" />
-            <span className="text-xl">{t('app_title')}</span>
+            <span className="text-xl">RavenCode</span>
           </Link>
           <div className="flex items-center gap-2">
-            <StatChip icon={Flame} value={streak} isFlame />
+            <StatChip icon={Flame} value={streak} label={`Racha de ${streak} días`} isFlame />
             <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
-            <Button variant="ghost" size="icon" asChild aria-label={t('settings')}>
+            <Button variant="ghost" size="icon" asChild aria-label="Abrir ajustes">
               <Link href="/settings">
                 <Settings className="h-5 w-5" />
-                <span className="sr-only">{t('settings')}</span>
               </Link>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[420px] flex-1 space-y-8 px-4 pb-28 md:max-w-[720px] md:space-y-10 md:px-6 md:pb-32">
+      <main className="mx-auto w-full max-w-[420px] flex-1 space-y-8 px-4 pb-28 md:max-w-[720px] md:space-y-10 md:px-6 md:pb-32" role="main">
         {/* Profile Header */}
         <section aria-labelledby="profile-header" className="flex items-center gap-4 pt-4 md:gap-5">
             <Avatar className="h-20 w-20 border-2 border-primary">
-                <AvatarImage src={avatarSrc} alt={t('profile_desc')} />
+                <AvatarImage src={avatarSrc} alt="Avatar del perfil de usuario" />
                 <AvatarFallback>{userProfile?.displayName?.charAt(0) ?? user?.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
             </Avatar>
             <div className="flex-1 space-y-1">
                 <div className='flex items-center gap-2'>
                     <h1 id="profile-header" className="text-xl font-bold">{userProfile?.displayName ?? user?.displayName ?? 'New User'}</h1>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label={t('edit_profile')}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label="Editar perfil">
                         <Link href="/profile/edit"><Edit className="h-4 w-4" /></Link>
                     </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">@{userProfile?.username ?? 'new.user'}</p>
                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
-                    <div className="inline-flex items-center text-sm font-semibold">
-                        {t('level', { level })}
+                    <div className="inline-flex items-center text-sm font-semibold" role="status" aria-label={`Nivel ${level}`}>
+                        Nivel {level}
                     </div>
-                    <div className="inline-flex items-center text-sm font-semibold">
-                        {t('achievements_count', { count: achievements.length })}
+                    <div className="inline-flex items-center text-sm font-semibold" role="status" aria-label={`${achievements.length} logros`}>
+                        {achievements.length} Logros
                     </div>
                 </div>
             </div>
@@ -212,34 +219,34 @@ export default function ProfilePage() {
         <nav aria-label="Acciones rápidas" className="flex items-center gap-3 overflow-x-auto pb-2">
           <QuickActionChip 
               icon={theme === 'dark' ? Moon : Sun} 
-              label={theme === 'dark' ? t('quick_actions_theme_dark') : t('quick_actions_theme_light')}
+              label={theme === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
               onClick={toggleTheme} 
             />
-            <QuickActionChip icon={Settings} label={t('settings')} href="/settings" />
-            <QuickActionChip icon={Bell} label={t('notifications')} href="/settings" />
+            <QuickActionChip icon={Settings} label="Ajustes de cuenta" href="/settings" />
+            <QuickActionChip icon={Bell} label="Gestionar notificaciones" href="/settings" />
         </nav>
 
 
         {/* Course Progress Card */}
         <section aria-labelledby="course-progress-title" className="space-y-4">
-           <h2 id="course-progress-title" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('course_progress')}</h2>
+           <h2 id="course-progress-title" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Progreso de Curso</h2>
             <div className="rounded-2xl border bg-card p-4 md:p-5">
                 <div>
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>{t('overall_progress')}</span>
+                    <span>Progreso General</span>
                     <span>{overallProgress}%</span>
                   </div>
-                  <Progress value={overallProgress} className="mt-2 h-1.5" aria-label={`${t('overall_progress')} ${overallProgress}%`} />
+                  <Progress value={overallProgress} className="mt-2 h-1.5" aria-label={`Progreso general: ${overallProgress}%`} />
                 </div>
                 {overallProgress === 0 && (
-                    <p className="mt-3 text-center text-sm text-muted-foreground" aria-live="polite">{t('complete_first_lesson')}</p>
+                    <p className="mt-3 text-center text-sm text-muted-foreground" aria-live="polite">¡Completa tu primera lección para ver tu progreso!</p>
                 )}
             </div>
         </section>
         
         {/* Goals and Achievements */}
         <section aria-labelledby="goals-title" className="space-y-4">
-          <h2 id="goals-title" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('goals_and_achievements')}</h2>
+          <h2 id="goals-title" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Metas y Logros</h2>
           <div className="space-y-3 rounded-2xl border bg-card p-2">
             {goals.map((goal) => (
               <GoalProgress
@@ -257,13 +264,13 @@ export default function ProfilePage() {
                 <AchievementBadge key={ach} icon={Trophy} label={ach} />
               ))}
               {achievements.length > 3 && (
-                 <div className="flex h-8 items-center justify-center rounded-full border border-dashed border-border bg-secondary px-3 text-xs font-semibold text-muted-foreground" aria-label={`${achievements.length - 3} ${t('more_achievements', { count: achievements.length - 3 })}`}>
-                    {t('more_achievements', { count: achievements.length - 3 })}
+                 <div className="flex h-8 items-center justify-center rounded-full border border-dashed border-border bg-secondary px-3 text-xs font-semibold text-muted-foreground" aria-label={`${achievements.length - 3} logros más`}>
+                    +{achievements.length - 3} más
                 </div>
               )}
             </div>
             <Button variant="outline" className="h-11 w-full justify-center rounded-full border-border hover:bg-secondary md:h-12">
-              {t('view_all_achievements')}
+              Ver todos los logros
             </Button>
           </div>
         </section>
