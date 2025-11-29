@@ -10,7 +10,7 @@ const FooterNavItems = dynamic(() => import('./footer-nav-items'), {
 
 export function FooterNav() {
   return (
-    <footer className="fixed bottom-0 inset-x-0 z-20 h-16 border-t border-border bg-card/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)] md:hidden">
+    <footer className="fixed bottom-0 inset-x-0 z-20 h-16 border-t border-border bg-card/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)] md:hidden" role="navigation" aria-label="Navegación principal">
       <Suspense fallback={<FooterNavSkeleton />}>
         <FooterNavItems />
       </Suspense>

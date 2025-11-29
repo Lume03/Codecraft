@@ -466,7 +466,7 @@ function EditModuleDialog({
       if (!res.ok) throw new Error('Failed to update module');
       toast({ title: 'Lección actualizada' });
       onModuleUpdated();
-    } catch (error) {
+    } catch (error) => {
       toast({
         variant: 'destructive',
         title: 'Error',
