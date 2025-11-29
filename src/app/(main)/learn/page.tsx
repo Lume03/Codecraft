@@ -64,6 +64,25 @@ export default function LearnPage() {
           if (res.ok) {
             const data = await res.json();
             setUserProfile(data);
+          } else if (res.status === 404) {
+            // If user not found in DB, create them
+            const postRes = await fetch('/api/users', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                firebaseUid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+              }),
+            });
+            if (postRes.ok) {
+              const newUserProfile = await postRes.json();
+              setUserProfile(newUserProfile);
+            } else {
+               console.error("Failed to create user profile");
+               setUserProfile(null);
+            }
           } else {
             console.error("Failed to fetch user profile");
             setUserProfile(null);

@@ -15,6 +15,7 @@ import {
   Check,
   Target,
   BrainCircuit,
+  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { GoalProgress } from '@/components/goal-progress';
@@ -26,10 +27,7 @@ import { placeholderImages } from '@/lib/placeholder-images';
 import { recalculateLives } from '@/lib/lives';
 import { LivesIndicator } from '@/components/lives-indicator';
 import { cn } from '@/lib/utils';
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { UserProfile } from '@/docs/backend-types';
 
@@ -173,7 +171,12 @@ const StatsDashboard = ({
           label="Prácticas Totales"
           isLoading={isLoading}
         />
-        <StatCard icon={Flame} value={`${streak} Días`} label="Constancia" isLoading={isLoading} />
+        <StatCard
+          icon={Flame}
+          value={`${streak} Días`}
+          label="Constancia"
+          isLoading={isLoading}
+        />
       </div>
     </section>
   );
@@ -189,7 +192,7 @@ export default function ProfilePage() {
   const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(
     new Date()
   );
-  
+
   const [stats, setStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -201,6 +204,25 @@ export default function ProfilePage() {
           if (res.ok) {
             const data = await res.json();
             setUserProfile(data);
+          } else if (res.status === 404) {
+            // If user not found in DB, create them
+            const postRes = await fetch('/api/users', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                firebaseUid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+              }),
+            });
+            if (postRes.ok) {
+              const newUserProfile = await postRes.json();
+              setUserProfile(newUserProfile);
+            } else {
+               console.error("Failed to create user profile");
+               setUserProfile(null);
+            }
           } else {
             console.error("Failed to fetch user profile");
             setUserProfile(null);
@@ -213,7 +235,6 @@ export default function ProfilePage() {
       fetchUserProfile();
     }
   }, [user]);
-
 
   useEffect(() => {
     if (userProfile) {
@@ -416,34 +437,37 @@ export default function ProfilePage() {
         </nav>
 
         {/* Stats Dashboard */}
-        <StatsDashboard stats={stats} streak={streak} isLoading={statsLoading} />
+        <StatsDashboard
+          stats={stats}
+          streak={streak}
+          isLoading={statsLoading}
+        />
 
         {/* Course Progress Card */}
         <Card>
-            <CardContent className="p-4 md:p-5">
-                 <h2
-                    id="course-progress-title"
-                    className="mb-2 text-sm font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                    Progreso General
-                </h2>
-                <div>
-                <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Avance Total</span>
-                    <span>{overallProgress}%</span>
-                </div>
-                </div>
-                 {overallProgress === 0 && (
-                <p
-                    className="mt-3 text-center text-sm text-muted-foreground"
-                    aria-live="polite"
-                >
-                    ¡Completa tu primera lección para ver tu progreso!
-                </p>
-                )}
-            </CardContent>
+          <CardContent className="p-4 md:p-5">
+            <h2
+              id="course-progress-title"
+              className="mb-2 text-sm font-bold uppercase tracking-wider text-muted-foreground"
+            >
+              Progreso General
+            </h2>
+            <div>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Avance Total</span>
+                <span>{overallProgress}%</span>
+              </div>
+            </div>
+            {overallProgress === 0 && (
+              <p
+                className="mt-3 text-center text-sm text-muted-foreground"
+                aria-live="polite"
+              >
+                ¡Completa tu primera lección para ver tu progreso!
+              </p>
+            )}
+          </CardContent>
         </Card>
-
 
         {/* Goals and Achievements */}
         <section aria-labelledby="goals-title" className="space-y-4">
