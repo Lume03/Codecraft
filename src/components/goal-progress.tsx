@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import { Progress } from './ui/progress';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/context/language-provider';
 
 interface GoalProgressProps {
   icon: LucideIcon;
@@ -15,6 +16,7 @@ export const GoalProgress = ({
   currentValue,
   targetValue,
 }: GoalProgressProps) => {
+  const { t } = useTranslation();
   const progress = Math.min((currentValue / targetValue) * 100, 100);
   const isCompleted = progress >= 100;
 
@@ -32,7 +34,7 @@ export const GoalProgress = ({
       <div className="w-full flex-1">
         <p className="text-sm font-semibold">{title}</p>
         <p className="text-xs text-muted-foreground">
-          Racha actual: {currentValue} / {targetValue} días
+          {t('current_streak_status', { current: currentValue, target: targetValue })}
         </p>
         <Progress
           value={progress}

@@ -128,40 +128,41 @@ const StatsDashboard = ({
   streak: number;
   isLoading: boolean;
 }) => {
+  const { t } = useTranslation();
   return (
     <section aria-labelledby="stats-dashboard-title">
       <h2
         id="stats-dashboard-title"
         className="text-sm font-bold uppercase tracking-wider text-muted-foreground"
       >
-        Estadísticas
+        {t('statistics_title')}
       </h2>
       <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard
           icon={BarChart}
           value={`${Math.round(stats?.averageScore ?? 0)}%`}
-          label="Puntaje Promedio"
+          label={t('average_score_label')}
           isLoading={isLoading}
           iconClassName="text-blue-500"
         />
         <StatCard
           icon={Check}
           value={stats?.completedSections ?? 0}
-          label="Temas Dominados"
+          label={t('completed_sections_label')}
           isLoading={isLoading}
           iconClassName="text-green-500"
         />
         <StatCard
           icon={BrainCircuit}
           value={stats?.totalAttempts ?? 0}
-          label="Prácticas Totales"
+          label={t('total_attempts_label')}
           isLoading={isLoading}
           iconClassName="text-primary"
         />
         <StatCard
           icon={Flame}
-          value={`${streak} Días`}
-          label="Constancia"
+          value={t('days_streak', { count: streak })}
+          label={t('consistency_label')}
           isLoading={isLoading}
           iconClassName={streak > 0 ? "text-orange-500" : "text-muted-foreground"}
         />
@@ -257,17 +258,17 @@ export default function ProfilePage() {
 
   const goals = [
     {
-      title: 'Practica 3 días seguidos',
+      title: t('streak_goal_3'),
       target: 3,
       icon: Flame,
     },
     {
-      title: 'Practica 7 días seguidos',
+      title: t('streak_goal_7'),
       target: 7,
       icon: Flame,
     },
     {
-      title: 'Practica 10 días seguidos',
+      title: t('streak_goal_10'),
       target: 10,
       icon: Flame,
     },
@@ -337,7 +338,7 @@ export default function ProfilePage() {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" asChild>
-                <Link href="/settings" aria-label="Ir a la página de ajustes">
+                <Link href="/settings" aria-label={t('settings')}>
                     <Settings className="h-5 w-5" />
                 </Link>
             </Button>
@@ -357,7 +358,7 @@ export default function ProfilePage() {
           <Avatar className="h-20 w-20 border-2 border-primary">
             <AvatarImage
               src={avatarSrc}
-              alt="Avatar del perfil de usuario"
+              alt={t('profile_desc')}
             />
             <AvatarFallback>
               {userProfile?.displayName?.charAt(0) ??
@@ -375,7 +376,7 @@ export default function ProfilePage() {
                 size="icon"
                 className="h-7 w-7"
                 asChild
-                aria-label="Editar perfil"
+                aria-label={t('edit_profile')}
               >
                 <Link href="/profile/edit">
                   <Edit className="h-4 w-4" />
@@ -389,16 +390,16 @@ export default function ProfilePage() {
               <div
                 className="inline-flex items-center text-sm font-semibold"
                 role="status"
-                aria-label={`Nivel ${level}`}
+                aria-label={t('level', { level })}
               >
-                Nivel {level}
+                {t('level', { level })}
               </div>
               <div
                 className="inline-flex items-center text-sm font-semibold"
                 role="status"
-                aria-label={`${achievements.length} logros`}
+                aria-label={t('achievements_count', { count: achievements.length })}
               >
-                {achievements.length} Logros
+                {t('achievements_count', { count: achievements.length })}
               </div>
             </div>
           </div>
@@ -406,18 +407,18 @@ export default function ProfilePage() {
 
         {/* Quick Actions */}
         <nav
-          aria-label="Acciones rápidas"
+          aria-label={t('quick_actions')}
           className="flex items-center gap-2"
         >
           <QuickActionChip
             icon={theme === 'dark' ? Moon : Sun}
-            label="Tema"
+            label={t('theme')}
             onClick={toggleTheme}
           />
           <Dialog>
              <DialogTrigger asChild>
                 <div>
-                   <QuickActionChip icon={Languages} label="Idioma" />
+                   <QuickActionChip icon={Languages} label={t('language')} />
                 </div>
             </DialogTrigger>
             <DialogContent>
@@ -453,7 +454,7 @@ export default function ProfilePage() {
           </Dialog>
           <QuickActionChip
             icon={Bell}
-            label="Notificaciones"
+            label={t('notifications')}
             href="/settings"
           />
         </nav>
@@ -472,11 +473,11 @@ export default function ProfilePage() {
               id="course-progress-title"
               className="mb-2 text-sm font-bold uppercase tracking-wider text-muted-foreground"
             >
-              Progreso General
+              {t('overall_progress_title')}
             </h2>
             <div>
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Avance Total</span>
+                <span>{t('total_progress_label')}</span>
                 <span>{overallProgress}%</span>
               </div>
             </div>
@@ -485,7 +486,7 @@ export default function ProfilePage() {
                 className="mt-3 text-center text-sm text-muted-foreground"
                 aria-live="polite"
               >
-                ¡Completa tu primera lección para ver tu progreso!
+                {t('complete_first_lesson_prompt')}
               </p>
             )}
           </CardContent>
@@ -497,7 +498,7 @@ export default function ProfilePage() {
             id="goals-title"
             className="text-sm font-bold uppercase tracking-wider text-muted-foreground"
           >
-            Metas y Logros
+            {t('goals_achievements_title')}
           </h2>
           <div className="space-y-3 rounded-2xl border bg-card p-2">
             {goals.map((goal) => (
@@ -518,11 +519,9 @@ export default function ProfilePage() {
               {achievements.length > 3 && (
                 <div
                   className="flex h-8 items-center justify-center rounded-full border border-dashed border-border bg-secondary px-3 text-xs font-semibold text-muted-foreground"
-                  aria-label={`${
-                    achievements.length - 3
-                  } logros más`}
+                  aria-label={t('more_achievements', { count: achievements.length - 3 })}
                 >
-                  +{achievements.length - 3} más
+                  {t('more_achievements', { count: achievements.length - 3 })}
                 </div>
               )}
             </div>
@@ -530,7 +529,7 @@ export default function ProfilePage() {
               variant="outline"
               className="h-11 w-full justify-center rounded-full border-border hover:bg-secondary md:h-12"
             >
-              Ver todos los logros
+              {t('view_all_achievements')}
             </Button>
           </div>
         </section>
