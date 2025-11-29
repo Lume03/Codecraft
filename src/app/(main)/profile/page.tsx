@@ -10,10 +10,8 @@ import {
   Languages,
   Bell,
   Trophy,
-  CodeXml,
   BarChart,
   Check,
-  Target,
   BrainCircuit,
   Settings,
 } from 'lucide-react';
@@ -81,14 +79,14 @@ const QuickActionChip = ({
       role="button"
       tabIndex={0}
       aria-label={label}
-      className="group flex h-9 flex-col items-center justify-center gap-1 rounded-2xl border bg-secondary/60 px-4 pt-1 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      className="group flex h-16 w-full flex-col items-center justify-center gap-1 rounded-2xl border bg-secondary/60 p-2 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onClick?.();
       }}
     >
-      <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-      <span className="text-[10px] font-semibold text-muted-foreground">
+      <Icon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+      <span className="text-xs font-semibold text-muted-foreground">
         {label}
       </span>
     </div>
@@ -105,32 +103,35 @@ const QuickActionChip = ({
   return content;
 };
 
+
 const StatCard = ({
   icon: Icon,
   value,
   label,
   isLoading,
+  iconClassName,
 }: {
   icon: React.ElementType;
   value: string | number;
   label: string;
   isLoading: boolean;
+  iconClassName?: string;
 }) => {
   if (isLoading) {
     return (
-      <Card className="flex flex-col items-center justify-center p-4 text-center">
+      <Card className="flex flex-col items-center justify-center p-3 text-center">
         <Skeleton className="mb-2 h-6 w-6 rounded-full" />
-        <Skeleton className="mb-1 h-7 w-12" />
-        <Skeleton className="h-4 w-20" />
+        <Skeleton className="mb-1 h-6 w-10" />
+        <Skeleton className="h-4 w-16" />
       </Card>
     );
   }
 
   return (
-    <Card className="flex flex-col items-center justify-center p-4 text-center">
-      <Icon className="mb-2 h-6 w-6 text-primary" />
-      <p className="text-2xl font-bold">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+    <Card className="flex flex-col items-center justify-center p-3 text-center">
+      <Icon className={cn("mb-2 h-6 w-6 text-primary", iconClassName)} />
+      <p className="text-xl font-bold">{value}</p>
+      <p className="text-[11px] text-muted-foreground">{label}</p>
     </Card>
   );
 };
@@ -158,24 +159,28 @@ const StatsDashboard = ({
           value={`${Math.round(stats?.averageScore ?? 0)}%`}
           label="Puntaje Promedio"
           isLoading={isLoading}
+          iconClassName="text-blue-500"
         />
         <StatCard
           icon={Check}
           value={stats?.completedSections ?? 0}
           label="Temas Dominados"
           isLoading={isLoading}
+          iconClassName="text-green-500"
         />
         <StatCard
           icon={BrainCircuit}
           value={stats?.totalAttempts ?? 0}
           label="Prácticas Totales"
           isLoading={isLoading}
+          iconClassName="text-primary"
         />
         <StatCard
           icon={Flame}
           value={`${streak} Días`}
           label="Constancia"
           isLoading={isLoading}
+          iconClassName={streak > 0 ? "text-orange-500" : "text-muted-foreground"}
         />
       </div>
     </section>
@@ -331,8 +336,6 @@ export default function ProfilePage() {
             className="flex items-center gap-2 font-bold"
             aria-label="Ir a la página principal de RavenCode"
           >
-            <CodeXml className="h-7 w-7 text-primary" />
-            <span className="text-xl">RavenCode</span>
           </Link>
           <div className="flex items-center gap-2">
             <StatChip
@@ -345,16 +348,6 @@ export default function ProfilePage() {
               lives={currentLives}
               lastLifeUpdate={lastLifeUpdate}
             />
-            <Button
-              variant="ghost"
-              size="icon"
-              asChild
-              aria-label="Abrir ajustes"
-            >
-              <Link href="/settings">
-                <Settings className="h-5 w-5" />
-              </Link>
-            </Button>
           </div>
         </div>
       </header>
