@@ -51,39 +51,27 @@ interface UserStats {
 const QuickActionChip = ({
   icon: Icon,
   label,
-  href,
   onClick,
 }: {
   icon: React.ElementType;
   label: string;
-  href?: string;
   onClick?: () => void;
 }) => {
-  const content = (
+  return (
     <div
       role="button"
-      tabIndex={0}
+      tabIndex={onClick ? 0 : -1}
       aria-label={label}
-      className="group inline-flex h-10 items-center justify-center gap-2 rounded-full border bg-secondary/60 px-4 text-sm font-semibold text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      className="group inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-full border bg-secondary/60 px-4 text-sm font-semibold text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       onClick={onClick}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onClick?.();
+        if (onClick && (e.key === 'Enter' || e.key === ' ')) onClick();
       }}
     >
       <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-      <span>{label}</span>
+      <span className="text-xs">{label}</span>
     </div>
   );
-
-  if (href) {
-    return (
-      <Link href={href} aria-label={label}>
-        {content}
-      </Link>
-    );
-  }
-
-  return content;
 };
 
 
@@ -102,19 +90,25 @@ const StatCard = ({
 }) => {
   if (isLoading) {
     return (
-      <Card className="flex flex-col items-center justify-center p-3 text-center">
-        <Skeleton className="mb-2 h-6 w-6 rounded-full" />
-        <Skeleton className="mb-1 h-6 w-10" />
-        <Skeleton className="h-4 w-16" />
+       <Card className="flex items-center gap-3 p-4">
+        <Skeleton className="h-8 w-8 rounded-lg" />
+        <div className="space-y-1">
+          <Skeleton className="h-6 w-12" />
+          <Skeleton className="h-4 w-20" />
+        </div>
       </Card>
     );
   }
 
   return (
-    <Card className="flex flex-col items-center justify-center p-3 text-center">
-      <Icon className={cn("mb-2 h-6 w-6 text-primary", iconClassName)} />
-      <p className="text-xl font-bold">{value}</p>
-      <p className="text-[11px] text-muted-foreground">{label}</p>
+     <Card className="flex items-center gap-3 p-4">
+      <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", iconClassName)}>
+        <Icon className="h-5 w-5 text-white" />
+      </div>
+      <div>
+        <p className="text-lg font-bold">{value}</p>
+        <p className="text-[12px] text-muted-foreground">{label}</p>
+      </div>
     </Card>
   );
 };
@@ -143,28 +137,28 @@ const StatsDashboard = ({
           value={`${Math.round(stats?.averageScore ?? 0)}%`}
           label={t('average_score_label')}
           isLoading={isLoading}
-          iconClassName="text-blue-500"
+          iconClassName="bg-blue-500"
         />
         <StatCard
           icon={Check}
           value={stats?.completedSections ?? 0}
           label={t('completed_sections_label')}
           isLoading={isLoading}
-          iconClassName="text-green-500"
+          iconClassName="bg-green-500"
         />
         <StatCard
           icon={BrainCircuit}
           value={stats?.totalAttempts ?? 0}
           label={t('total_attempts_label')}
           isLoading={isLoading}
-          iconClassName="text-primary"
+          iconClassName="bg-primary"
         />
         <StatCard
           icon={Flame}
           value={t('days_streak', { count: streak })}
           label={t('consistency_label')}
           isLoading={isLoading}
-          iconClassName={streak > 0 ? "text-orange-500" : "text-muted-foreground"}
+          iconClassName={cn(streak > 0 ? "bg-orange-500" : "bg-muted-foreground")}
         />
       </div>
     </section>
@@ -329,10 +323,7 @@ export default function ProfilePage() {
   return (
     <div className="flex flex-col">
       <header className="sticky top-0 z-20 flex h-14 items-center border-b border-border bg-background/80 px-4 backdrop-blur-sm md:h-16 md:px-6">
-        <div className="mx-auto flex w-full max-w-[420px] items-center justify-between md:max-w-[720px] xl:max-w-[960px]">
-          <div className="flex items-center gap-2">
-            {/* Placeholder for left side if needed */}
-          </div>
+        <div className="mx-auto flex w-full max-w-[420px] items-center justify-end md:max-w-[720px] xl:max-w-[960px]">
           <div className="flex items-center gap-2">
              <LivesIndicator
               lives={currentLives}
@@ -453,11 +444,12 @@ export default function ProfilePage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <QuickActionChip
-            icon={Bell}
-            label={t('notifications')}
-            href="/settings"
-          />
+          <Button variant="ghost" asChild className="h-9 rounded-full px-4">
+            <Link href="/settings">
+              <Bell className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span className="text-xs font-semibold">{t('notifications')}</span>
+            </Link>
+          </Button>
         </nav>
 
         {/* Stats Dashboard */}
