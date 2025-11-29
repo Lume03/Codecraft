@@ -4,26 +4,35 @@
 
 @layer base {
   :root {
-    --background: 216 33% 6%; /* #0C0F14 */
-    --foreground: 0 0% 92%; /* #EAEAEA */
-    --card: 214 17% 12%; /* #181D24 */
+    --background: 216 33% 6%;
+    /* #0C0F14 */
+    --foreground: 0 0% 92%;
+    /* #EAEAEA */
+    --card: 214 17% 12%;
+    /* #181D24 */
     --card-foreground: 0 0% 92%;
     --popover: 216 33% 6%;
     --popover-foreground: 0 0% 92%;
-    --primary: 198 100% 70%; /* #66D3FF */
+    --primary: 198 100% 70%;
+    /* #66D3FF */
     --primary-foreground: 216 33% 6%;
-    --secondary: 216 25% 9%; /* #12161C */
+    --secondary: 216 25% 9%;
+    /* #12161C */
     --secondary-foreground: 0 0% 92%;
     --muted: 216 25% 9%;
-    --muted-foreground: 215 9% 66%; /* #A1A7B0 */
-    --accent: 198 100% 70%; /* Use primary for accent */
+    --muted-foreground: 215 9% 66%;
+    /* #A1A7B0 */
+    --accent: 198 100% 70%;
+    /* Use primary for accent */
     --accent-foreground: 216 33% 6%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
-    --border: 216 13% 19%; /* #2A3038 */
+    --border: 216 13% 19%;
+    /* #2A3038 */
     --input: 216 13% 19%;
     --ring: 198 100% 70%;
-    --success: 158 64% 52%; /* #34D399 */
+    --success: 158 64% 52%;
+    /* #34D399 */
     --radius: 1.5rem;
     --chart-1: 198 100% 70%;
     --chart-2: 259 81% 75%;
@@ -60,6 +69,7 @@
   * {
     border-color: hsl(var(--border));
   }
+
   body {
     @apply bg-background text-foreground;
     min-height: 100vh;
@@ -68,27 +78,29 @@
 }
 
 @layer components {
+
   /* Clase para contenedores de Markdown */
   .markdown {
     @apply prose max-w-none;
   }
-  
+
   .dark .markdown {
-      @apply prose-invert;
+    @apply prose-invert;
   }
 
   /* Ajustes mínimos para bloques de código renderizados por Shiki */
-  .markdown pre, .prose pre {
+  .markdown pre,
+  .prose pre {
     @apply shadow-sm my-4;
   }
-  
+
   .markdown pre code[class*="language-"],
   .prose pre code[class*="language-"] {
     @apply bg-transparent p-0;
   }
-  
+
   .prose-sm pre {
-      @apply my-2 text-xs;
+    @apply my-2 text-xs;
   }
 }
 
@@ -96,7 +108,14 @@
   .btn-gamified {
     @apply border-b-4 active:border-b-0 active:translate-y-1 transition-all;
   }
+
   .card-gamified {
     @apply border-2 border-b-[6px] border-border hover:-translate-y-1 hover:border-primary/50 transition-transform duration-200;
+  }
+
+  /* Utilidades para ajuste de texto correcto en burbujas de chat */
+  .overflow-wrap-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 }

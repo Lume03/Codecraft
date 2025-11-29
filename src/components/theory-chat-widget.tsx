@@ -29,56 +29,58 @@ interface TheoryChatWidgetProps {
 const MarkdownBubble = ({ content }: { content: string }) => (
   <ReactMarkdown
     remarkPlugins={[remarkGfm]}
-    rehypePlugins={[rehypePrism]} // Activamos el plugin aquí
+    rehypePlugins={[rehypePrism]}
     components={{
-      // Párrafos
+      // Párrafos con ajuste de palabra correcto
       p: ({ node, ...props }) => (
-        <p className="mb-2 last:mb-0 leading-snug break-words" {...props} />
+        <p className="mb-2 last:mb-0 leading-relaxed break-words overflow-wrap-anywhere" {...props} />
       ),
+
       // Listas
       ul: ({ node, ...props }) => <ul className="my-2 pl-4 list-disc space-y-1" {...props} />,
       ol: ({ node, ...props }) => <ol className="my-2 pl-4 list-decimal space-y-1" {...props} />,
-      li: ({ node, ...props }) => <li className="pl-1" {...props} />,
-      
+      li: ({ node, ...props }) => <li className="pl-1 break-words" {...props} />,
+
       // Negritas
       strong: ({ node, ...props }) => <strong className="font-bold text-inherit" {...props} />,
-      
-      // Bloques de código (PRE)
+
+      // Bloques de código con scroll horizontal
       pre: ({ node, ...props }) => (
         <div className="my-2 w-full overflow-hidden rounded-lg border border-white/10 shadow-sm">
-          {/* Quitamos bg-zinc-900 y text-zinc-100 para que el tema CSS de Prism actúe */}
-          <div className="overflow-x-auto">
-            <pre 
-              {...props} 
-              // Forzamos el background del tema VS Code para asegurar consistencia y tamaño de fuente
-              className="p-3 text-xs font-mono !bg-[#1e1e1e] !m-0" 
+          <div className="overflow-x-auto max-w-full">
+            <pre
+              {...props}
+              className="p-3 text-xs font-mono !bg-[#1e1e1e] !m-0 w-full"
             />
           </div>
         </div>
       ),
 
       // Código inline vs bloque
-      code: ({ node, className, ...props }) => {
-        // Detectamos si es inline verificando si hay saltos de línea o si no tiene clase de lenguaje
+      code: ({ node, className, children, ...props }) => {
         const match = /language-(\w+)/.exec(className || '');
         const isInline = !match;
 
         if (isInline) {
-          // Estilo para código inline (ej: `variable`)
+          // Código inline con ajuste correcto
           return (
-            <code 
-              className="px-1.5 py-0.5 rounded bg-black/20 dark:bg-white/10 font-mono text-xs text-primary font-semibold break-all" 
-              {...props} 
-            />
+            <code
+              className="px-1.5 py-0.5 rounded bg-black/20 dark:bg-white/10 font-mono text-xs text-primary font-semibold break-words inline-block max-w-full"
+              {...props}
+            >
+              {children}
+            </code>
           );
         }
 
-        // Estilo para bloque de código (deja que Prism ponga los colores)
+        // Bloque de código con scroll
         return (
-          <code 
-            className={cn("font-mono text-xs", className)} 
-            {...props} 
-          />
+          <code
+            className={cn("font-mono text-xs block", className)}
+            {...props}
+          >
+            {children}
+          </code>
         );
       },
     }}
@@ -246,8 +248,8 @@ export function TheoryChatWidget({
                       msg.role === 'user'
                         ? 'bg-primary text-primary-foreground rounded-br-none'
                         : msg.isError
-                        ? 'bg-destructive/20 border border-destructive/50 text-destructive-foreground rounded-bl-none'
-                        : 'bg-card border text-card-foreground rounded-bl-none'
+                          ? 'bg-destructive/20 border border-destructive/50 text-destructive-foreground rounded-bl-none'
+                          : 'bg-card border text-card-foreground rounded-bl-none'
                     )}
                   >
                     {msg.role === 'model' ? (
