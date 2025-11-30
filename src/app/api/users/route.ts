@@ -15,11 +15,16 @@ export async function POST(request: Request) {
     const usersCollection = db.collection<UserProfile>('users');
 
     // Prepare update fields, excluding firebaseUid from $set
-    const { firebaseUid, ...updateData } = userData;
+    const { firebaseUid, reminderTime, ...updateData } = userData;
     const update: { $set: Partial<UserProfile>, $setOnInsert?: Partial<UserProfile> } = {
         $set: updateData
     };
     
+    // If reminderTime is explicitly provided, add it to the $set operator.
+    if (reminderTime) {
+      update.$set.reminderTime = reminderTime;
+    }
+
     // Set initial values only on creation
     update.$setOnInsert = {
         firebaseUid: userData.firebaseUid,
@@ -32,7 +37,7 @@ export async function POST(request: Request) {
         lastStreakUpdate: null,
         progress: {},
         reminders: true, // Default reminders to true
-        reminderTime: "21:00", // Default reminder time
+        reminderTime: "21:00", // Default reminder time ONLY on insert
     };
     
     // Use upsert to create or update the user document based on firebaseUid
