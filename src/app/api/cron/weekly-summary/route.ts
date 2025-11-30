@@ -7,6 +7,7 @@ import clientPromise from '@/lib/mongodb';
 import { subDays } from 'date-fns';
 import { render } from '@react-email/render';
 import { WeeklySummaryEmail } from '@/components/email/weekly-summary-email';
+import { Resend } from 'resend';
 
 // This function can be called by a cron job service (e.g., Vercel Cron Jobs, typically once a week)
 // Example cron schedule for Vercel: "0 22 * * 0" (Every Sunday at 10 PM UTC)
@@ -19,6 +20,8 @@ export async function GET(request: Request) {
   ) {
     return new Response('Unauthorized', { status: 401 });
   }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
     const now = new Date();
@@ -85,16 +88,13 @@ export async function GET(request: Request) {
           />
         );
         
-        // 4. Send the email (TODO: Integrate your email service here)
-        // Example using a hypothetical sendEmail function
-        /*
-         await sendEmail({
-           to: user.email,
+        // 4. Send the email using Resend
+        await resend.emails.send({
+           from: 'RavenCode <onboarding@resend.dev>', // Puedes cambiar esto por un dominio verificado
+           to: [user.email],
            subject: `🚀 Tu resumen semanal de RavenCode`,
            html: emailHtml,
-         });
-        */
-        console.log(`[Cron Weekly] Generated email for ${user.email}, HTML length: ${emailHtml.length}`);
+        });
         
         emailsSent++;
 
