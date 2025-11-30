@@ -1,5 +1,4 @@
 import { SidebarNav } from '@/components/sidebar-nav';
-import { FooterNav } from '@/components/footer-nav';
 import { Suspense } from 'react';
 import { SidebarNavSkeleton } from '@/components/sidebar-nav-skeleton';
 
@@ -19,15 +18,8 @@ export default function MainLayout({
 
       {/* Contenido Principal */}
       <main className="flex flex-1 flex-col md:pl-60" role="main">
-        <div className="flex-1 pb-28 md:pb-0">
-            {children}
-        </div>
+        {children}
       </main>
-
-      {/* FooterNav existente (solo visible en móvil) */}
-      <div className="md:hidden">
-        <FooterNav />
-      </div>
     </div>
   );
 }

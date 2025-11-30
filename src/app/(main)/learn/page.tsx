@@ -11,6 +11,7 @@ import { LivesIndicator } from '@/components/lives-indicator';
 import { cn } from '@/lib/utils';
 import type { UserProfile } from '@/docs/backend-types';
 import { useTranslation } from '@/context/language-provider';
+import { FooterNav } from '@/components/footer-nav';
 
 interface CourseWithProgress extends Course {
   progress: number;
@@ -142,43 +143,50 @@ export default function LearnPage() {
   const streakMessage = streak > 0 ? t('streak_on_fire', {days: streak}) : t('great_day_to_learn');
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-8 p-4 md:p-8">
-      <Header
-        title={welcomeMessage}
-        subtitle={streakMessage}
-        action={
-          <div className="flex items-center gap-2">
-            <StatChip
-              icon={Flame}
-              value={streak}
-              label={t('days_streak_label', { count: streak })}
-              isFlame
-            />
-            <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
+    <>
+      <div className="flex-1 pb-28 md:pb-0">
+        <div className="mx-auto w-full max-w-5xl space-y-8 p-4 md:p-8">
+          <Header
+            title={welcomeMessage}
+            subtitle={streakMessage}
+            action={
+              <div className="flex items-center gap-2">
+                <StatChip
+                  icon={Flame}
+                  value={streak}
+                  label={t('days_streak_label', { count: streak })}
+                  isFlame
+                />
+                <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
+              </div>
+            }
+          />
+          <div>
+            <h2 className="mb-4 text-2xl font-bold text-foreground">{t('courses')}</h2>
+            {loading && <p aria-live="polite">{t('loading_courses')}</p>}
+            {!loading && courses.length === 0 && (
+              <div className="text-center text-muted-foreground" aria-live="polite">
+                <p>{t('no_courses_available')}</p>
+                <p>
+                  {t('go_to_admin_panel_pre')}{' '}
+                  <Link href="/admin" className="text-primary underline">
+                    {t('admin_panel_link')}
+                  </Link>{' '}
+                  {t('go_to_admin_panel_post')}
+                </p>
+              </div>
+            )}
+            <div className="grid grid-cols-1 gap-4">
+                {courses.map((course) => (
+                  <CourseCard key={course.id} course={course} />
+                ))}
+            </div>
           </div>
-        }
-      />
-      <div>
-        <h2 className="mb-4 text-2xl font-bold text-foreground">{t('courses')}</h2>
-        {loading && <p aria-live="polite">{t('loading_courses')}</p>}
-        {!loading && courses.length === 0 && (
-          <div className="text-center text-muted-foreground" aria-live="polite">
-            <p>{t('no_courses_available')}</p>
-            <p>
-              {t('go_to_admin_panel_pre')}{' '}
-              <Link href="/admin" className="text-primary underline">
-                {t('admin_panel_link')}
-              </Link>{' '}
-              {t('go_to_admin_panel_post')}
-            </p>
-          </div>
-        )}
-         <div className="grid grid-cols-1 gap-4">
-            {courses.map((course) => (
-              <CourseCard key={course.id} course={course} />
-            ))}
         </div>
       </div>
-    </div>
+      <div className="md:hidden">
+        <FooterNav />
+      </div>
+    </>
   );
 }

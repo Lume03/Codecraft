@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import type { UserProfile } from '@/docs/backend-types';
 import { useTranslation } from '@/context/language-provider';
+import { FooterNav } from '@/components/footer-nav';
 
 const StatChip = ({
   icon: Icon,
@@ -169,66 +170,71 @@ export default function PracticePage() {
     }, [user]);
 
   return (
-    <div>
-      <Header
-        title={t('practice')}
-        action={
-            <div className="flex items-center gap-2">
-                <StatChip
-                  icon={Flame}
-                  value={streak}
-                  label={t('days_streak_label', { count: streak })}
-                  isFlame
-                />
-                <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
+    <>
+      <div className="flex-1 pb-28 md:pb-0">
+        <Header
+          title={t('practice')}
+          action={
+              <div className="flex items-center gap-2">
+                  <StatChip
+                    icon={Flame}
+                    value={streak}
+                    label={t('days_streak_label', { count: streak })}
+                    isFlame
+                  />
+                  <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
+              </div>
+          }
+        />
+        <div className="space-y-4 p-4">
+          {/* Main Practice Card */}
+          <section aria-labelledby="practice-title" className="rounded-2xl border border-border bg-card p-4 md:p-5">
+            <div className="mb-4">
+              <h2 id="practice-title" className="text-xl font-bold">{t('choose_your_practice')}</h2>
+              <p className="text-muted-foreground">
+                {t('practice_subtitle')}
+              </p>
             </div>
-        }
-      />
-      <div className="space-y-4 p-4">
-        {/* Main Practice Card */}
-        <section aria-labelledby="practice-title" className="rounded-2xl border border-border bg-card p-4 md:p-5">
-          <div className="mb-4">
-            <h2 id="practice-title" className="text-xl font-bold">{t('choose_your_practice')}</h2>
-            <p className="text-muted-foreground">
-              {t('practice_subtitle')}
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {practiceModes.map((mode) => (
-              <PracticeTile key={mode.title} mode={mode} />
-            ))}
-          </div>
-        </section>
+            <div className="grid grid-cols-2 gap-3">
+              {practiceModes.map((mode) => (
+                <PracticeTile key={mode.title} mode={mode} />
+              ))}
+            </div>
+          </section>
 
-        {/* Recommended Challenges Card */}
-        <section aria-labelledby="recommended-title" className="rounded-2xl border border-border bg-card p-4 md:p-5">
-          <h2 id="recommended-title" className="mb-4 text-xl font-bold">{t('recommended_challenges')}</h2>
-          <div className="space-y-3">
-            {recommendedChallenges.map((challenge, index) => (
-              <Link
-                key={index}
-                href={challenge.href}
-                role="button"
-                tabIndex={0}
-                aria-label={`Iniciar desafío: ${challenge.title}`}
-                className="group flex items-center gap-4 rounded-xl border border-border bg-secondary p-4 transition-transform hover:scale-[1.02] focus-visible:scale-[1.02] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-              >
-                <challenge.icon className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
-                <div className="flex-1">
-                  <h3 className="font-semibold leading-tight">
-                    {challenge.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{challenge.meta}</p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" aria-hidden="true" />
-              </Link>
-            ))}
-          </div>
-          <button className="mt-4 flex h-12 w-full items-center justify-center rounded-full border border-border bg-transparent text-foreground transition-colors hover:bg-secondary disabled:opacity-50 disabled:pointer-events-none">
-            {t('view_practice_history')}
-          </button>
-        </section>
+          {/* Recommended Challenges Card */}
+          <section aria-labelledby="recommended-title" className="rounded-2xl border border-border bg-card p-4 md:p-5">
+            <h2 id="recommended-title" className="mb-4 text-xl font-bold">{t('recommended_challenges')}</h2>
+            <div className="space-y-3">
+              {recommendedChallenges.map((challenge, index) => (
+                <Link
+                  key={index}
+                  href={challenge.href}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Iniciar desafío: ${challenge.title}`}
+                  className="group flex items-center gap-4 rounded-xl border border-border bg-secondary p-4 transition-transform hover:scale-[1.02] focus-visible:scale-[1.02] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                >
+                  <challenge.icon className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold leading-tight">
+                      {challenge.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">{challenge.meta}</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                </Link>
+              ))}
+            </div>
+            <button className="mt-4 flex h-12 w-full items-center justify-center rounded-full border border-border bg-transparent text-foreground transition-colors hover:bg-secondary disabled:opacity-50 disabled:pointer-events-none">
+              {t('view_practice_history')}
+            </button>
+          </section>
+        </div>
       </div>
-    </div>
+      <div className="md:hidden">
+        <FooterNav />
+      </div>
+    </>
   );
 }
