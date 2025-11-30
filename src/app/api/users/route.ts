@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
 import { UserProfile } from '@/docs/backend-types';
 import { adminDb } from '@/lib/firebase-admin';
 
@@ -69,16 +68,9 @@ export async function GET(request: Request) {
     const userDoc = await adminDb.collection('users').doc(firebaseUid).get();
 
     if (!userDoc.exists) {
-      // Fallback to MongoDB for users that might not have been migrated
-        const client = await clientPromise;
-        const db = client.db('ravencode');
-        const mongoUser = await db.collection('users').findOne({ firebaseUid: firebaseUid });
-
-        if (!mongoUser) {
-            return NextResponse.json({ error: 'Usuario no encontrado en ninguna base de datos' }, { status: 404 });
-        }
-         const { _id, ...userWithoutId } = mongoUser;
-         return NextResponse.json(userWithoutId);
+        // If the user truly doesn't exist in Firestore, return 404.
+        // We no longer fall back to MongoDB to ensure data consistency.
+        return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
     return NextResponse.json(userDoc.data());
