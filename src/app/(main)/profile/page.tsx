@@ -42,6 +42,7 @@ import { useTranslation } from '@/context/language-provider';
 import { Progress } from '@/components/ui/progress';
 import type { Course, Module } from '@/lib/data';
 import { FooterNav } from '@/components/footer-nav';
+import { ProfilePageSkeleton } from '@/components/skeletons/profile-page-skeleton';
 
 interface UserStats {
   averageScore: number;
@@ -175,17 +176,13 @@ const StatsDashboard = ({
 
 export default function ProfilePage() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const user = useUser();
+  
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const { language, setLanguage, t } = useTranslation();
   const [currentLanguage, setCurrentLanguage] = useState(language);
-
-  const [currentLives, setCurrentLives] = useState(0);
-  const [lastLifeUpdate, setLastLifeUpdate] = useState<Date | null>(
-    new Date()
-  );
 
   const [stats, setStats] = useState<UserStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
@@ -195,16 +192,14 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user?.uid) {
+      setLoading(true);
       const fetchUserProfile = async () => {
         try {
           const res = await fetch(`/api/users?firebaseUid=${user.uid}`);
           if (res.ok) {
             const data = await res.json();
             setUserProfile(data);
-            setCurrentLives(data.lives ?? 0);
-            setLastLifeUpdate(data.lastLifeUpdate ? new Date(data.lastLifeUpdate) : new Date());
           } else if (res.status === 404) {
-            // If user not found in DB, create them
             const postRes = await fetch('/api/users', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -229,16 +224,21 @@ export default function ProfilePage() {
         } catch (error) {
           console.error("Error fetching user profile:", error);
           setUserProfile(null);
+        } finally {
+            setLoading(false);
         }
       };
       fetchUserProfile();
+    } else if (user === null) {
+        setLoading(false);
+        setUserProfile(null);
     }
   }, [user]);
 
   useEffect(() => {
     if (user?.uid) {
+      setStatsLoading(true);
       const fetchStats = async () => {
-        setStatsLoading(true);
         try {
           const res = await fetch(`/api/users/${user.uid}/stats`);
           if (!res.ok) throw new Error('Failed to fetch stats');
@@ -295,7 +295,6 @@ export default function ProfilePage() {
   ];
 
   useEffect(() => {
-    setMounted(true);
     setCurrentLanguage(language);
   }, [language]);
 
@@ -327,13 +326,14 @@ export default function ProfilePage() {
 
   }, [userProfile?.progress, allModules]);
 
-  if (!mounted) {
-    return null;
+  if (loading) {
+    return <ProfilePageSkeleton />;
   }
-
+  
+  const currentLives = userProfile?.lives ?? 0;
+  const lastLifeUpdate = userProfile?.lastLifeUpdate ? new Date(userProfile.lastLifeUpdate) : null;
   const userAvatar = placeholderImages.find((p) => p.id === 'user-avatar');
-  const avatarSrc =
-    userProfile?.photoURL || user?.photoURL || userAvatar?.imageUrl;
+  const avatarSrc = userProfile?.photoURL || user?.photoURL || userAvatar?.imageUrl;
     
   const languageMap = {
     es: t('language_es'),
@@ -497,7 +497,7 @@ export default function ProfilePage() {
                   </div>
                   <Progress value={overallProgress} className="h-2" aria-label={`${t('total_progress_label')}: ${overallProgress}%`} />
               </div>
-              {overallProgress === 0 && (
+              {overallProgress === 0 && !loading && (
                 <p
                   className="mt-3 text-center text-sm text-muted-foreground"
                   aria-live="polite"

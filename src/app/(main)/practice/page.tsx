@@ -18,33 +18,42 @@ import { cn } from '@/lib/utils';
 import type { UserProfile } from '@/docs/backend-types';
 import { useTranslation } from '@/context/language-provider';
 import { FooterNav } from '@/components/footer-nav';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const StatChip = ({
   icon: Icon,
   value,
   label,
   isFlame,
+  isLoading,
 }: {
   icon: React.ElementType;
   value: string | number;
   label: string;
   isFlame?: boolean;
-}) => (
-  <div
-    className="inline-flex h-8 items-center gap-2 rounded-full border border-border bg-card px-3 text-[13px] text-foreground"
-    role="status"
-    aria-label={label}
-  >
-    <Icon
-      className={cn(
-        'h-4 w-4',
-        isFlame && (Number(value) > 0 ? 'text-orange-500' : 'text-muted-foreground')
-      )}
-      aria-hidden="true"
-    />
-    <span>{value}</span>
-  </div>
-);
+  isLoading?: boolean;
+}) => {
+  if (isLoading) {
+    return <Skeleton className="h-8 w-20 rounded-full" />;
+  }
+
+  return (
+    <div
+      className="inline-flex h-8 items-center gap-2 rounded-full border border-border bg-card px-3 text-[13px] text-foreground"
+      role="status"
+      aria-label={label}
+    >
+      <Icon
+        className={cn(
+          'h-4 w-4',
+          isFlame && (Number(value) > 0 ? 'text-orange-500' : 'text-muted-foreground')
+        )}
+        aria-hidden="true"
+      />
+      <span>{value}</span>
+    </div>
+  );
+};
 
 
 const PracticeTile = ({
@@ -80,6 +89,7 @@ const PracticeTile = ({
 export default function PracticePage() {
     const user = useUser();
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [loading, setLoading] = useState(true);
     const { t } = useTranslation();
 
     const practiceModes = [
@@ -125,12 +135,9 @@ export default function PracticePage() {
       },
     ];
 
-    const currentLives = userProfile?.lives ?? 0;
-    const lastLifeUpdate = userProfile?.lastLifeUpdate ? new Date(userProfile.lastLifeUpdate) : new Date();
-    const streak = userProfile?.streak ?? 0;
-
     useEffect(() => {
         if (user?.uid) {
+            setLoading(true);
             const fetchUserProfile = async () => {
                 try {
                 const res = await fetch(`/api/users?firebaseUid=${user.uid}`);
@@ -138,7 +145,6 @@ export default function PracticePage() {
                     const data = await res.json();
                     setUserProfile(data);
                 } else if (res.status === 404) {
-                    // If user not found in DB, create them
                     const postRes = await fetch('/api/users', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
@@ -163,11 +169,21 @@ export default function PracticePage() {
                 } catch (error) {
                 console.error("Error fetching user profile:", error);
                 setUserProfile(null);
+                } finally {
+                    setLoading(false);
                 }
             };
             fetchUserProfile();
+        } else if (user === null) {
+            // User is not logged in or auth state is clear
+            setLoading(false);
+            setUserProfile(null);
         }
     }, [user]);
+
+    const currentLives = userProfile?.lives ?? 0;
+    const lastLifeUpdate = userProfile?.lastLifeUpdate ? new Date(userProfile.lastLifeUpdate) : new Date();
+    const streak = userProfile?.streak ?? 0;
 
   return (
     <>
@@ -181,8 +197,13 @@ export default function PracticePage() {
                     value={streak}
                     label={t('days_streak_label', { count: streak })}
                     isFlame
+                    isLoading={loading}
                   />
-                  <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
+                  {loading ? (
+                    <Skeleton className="h-8 w-16 rounded-full" />
+                  ) : (
+                    <LivesIndicator lives={currentLives} lastLifeUpdate={lastLifeUpdate} />
+                  )}
               </div>
           }
         />
