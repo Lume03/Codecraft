@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     
     const client = await clientPromise;
     const db = client.db('ravencode');
-    const usersCollection = db.collection<UserProfile>('users');
+    const usersCollection = db.collection('users');
 
     const existingUser = await usersCollection.findOne({ firebaseUid: userData.firebaseUid });
 

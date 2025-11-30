@@ -76,21 +76,37 @@ export default function AuthPage() {
     }
   }, [auth])
 
-  const upsertUserDocument = async (user: User, isNewUser = false) => {
-    const mongoData = {
-        firebaseUid: user.uid,
-        displayName: user.displayName || fullname,
-        email: user.email,
-        photoURL: user.photoURL,
-        username: fullname.replace(/\s+/g, '.').toLowerCase() || user.email?.split('@')[0],
-    };
-
+ const upsertUserDocument = async (user: User) => {
     try {
-        await fetch('/api/users', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(mongoData),
-        });
+      // Primero, verificamos si el usuario ya existe en nuestra BD
+      const existingUserRes = await fetch(`/api/users?firebaseUid=${user.uid}`);
+      let userExists = existingUserRes.ok;
+      let existingUserData = userExists ? await existingUserRes.json() : null;
+
+      // Preparamos los datos básicos a enviar
+      const mongoData: any = {
+          firebaseUid: user.uid,
+          email: user.email,
+          displayName: user.displayName || fullname || 'Nuevo Usuario',
+          username: fullname.replace(/\s+/g, '.').toLowerCase() || user.email?.split('@')[0],
+      };
+
+      // Lógica para guardar la foto solo si es necesario
+      if (user.photoURL) {
+          // Si el usuario existe y no tiene foto en la BD, la añadimos.
+          // O si el usuario es nuevo, la añadimos también.
+          if ((userExists && !existingUserData.photoURL) || !userExists) {
+              mongoData.photoURL = user.photoURL;
+          }
+      }
+
+      await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mongoData),
+      });
+
+      return { isNewUser: !userExists };
 
     } catch (error) {
       console.error("Failed to create/update user document in MongoDB:", error);
@@ -99,6 +115,8 @@ export default function AuthPage() {
         title: t('account_error'),
         description: t('account_error_desc'),
       });
+      // Retornar un estado que no cause problemas
+      return { isNewUser: false };
     }
   }
 
@@ -106,14 +124,19 @@ export default function AuthPage() {
   const handleAuthAction = async () => {
     if (!auth) return;
     try {
+      let userCredential;
       if (isLogin) {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        await upsertUserDocument(userCredential.user); 
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+        await upsertUserDocument(userCredential.user);
         router.push('/learn');
       } else {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await upsertUserDocument(userCredential.user, true);
-        router.push('/profile/setup');
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const { isNewUser } = await upsertUserDocument(userCredential.user);
+        if (isNewUser) {
+           router.push('/profile/setup');
+        } else {
+           router.push('/learn');
+        }
       }
     } catch (error: any) {
       toast({
@@ -129,12 +152,9 @@ export default function AuthPage() {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      const additionalInfo = getAdditionalUserInfo(result);
+      const { isNewUser } = await upsertUserDocument(result.user);
       
-      const isNew = additionalInfo?.isNewUser ?? false;
-      await upsertUserDocument(result.user, isNew);
-      
-      if (isNew) {
+      if (isNewUser) {
         router.push('/profile/setup');
       } else {
         router.push('/learn');
