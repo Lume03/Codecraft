@@ -309,9 +309,9 @@ export default function SettingsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {['00', '15', '30', '45'].map((min) => (
-                        <SelectItem key={min} value={min}>
-                          {min}
+                      {Array.from({ length: 60 }).map((_, i) => (
+                        <SelectItem key={i} value={String(i).padStart(2, '0')}>
+                          {String(i).padStart(2, '0')}
                         </SelectItem>
                       ))}
                     </SelectContent>
