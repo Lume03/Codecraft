@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { adminDb, adminMessaging } from '@/lib/firebase-admin';
 import type { UserProfile } from '@/docs/backend-types';
 
-// This function can be called by a cron job service (e.g., Vercel Cron Jobs)
+// This function can be called by a cron job service (e.g., Vercel Cron Jobs, typically every 1-5 minutes)
 export async function GET(request: Request) {
   // Optional: Add a secret to prevent unauthorized access
   const authHeader = request.headers.get('authorization');
@@ -12,51 +12,67 @@ export async function GET(request: Request) {
 
   try {
     const now = new Date();
-    // Get current UTC time in 'HH:MM' format. This is the baseline.
-    const currentUtcTime = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')}`;
+    const currentUtcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+    
+    console.log(`[Cron Job] Running at UTC: ${now.toUTCString()}`);
 
-    console.log(`[Cron Job] Running. Current UTC time: ${currentUtcTime}`);
-
+    // Fetch all users who have reminders enabled and have a token
     const usersSnapshot = await adminDb
       .collection('users')
       .where('reminders', '==', true)
       .where('fcmToken', '!=', null)
-      .where('reminderTime', '==', currentUtcTime) // Directly compare with the user's stored UTC preference
       .get();
 
     if (usersSnapshot.empty) {
-      console.log('[Cron Job] No users to notify at this time.');
-      return NextResponse.json({ success: true, message: 'No users to notify.' });
+      console.log('[Cron Job] No users with reminders enabled found.');
+      return NextResponse.json({ success: true, message: 'No users with reminders enabled.' });
     }
 
-    const tokens: string[] = [];
+    const tokensToSend: string[] = [];
+    
     usersSnapshot.forEach(doc => {
       const user = doc.data() as UserProfile;
-      if (user.fcmToken) {
-        tokens.push(user.fcmToken);
+      if (user.fcmToken && user.reminderTime) {
+        const [reminderHours, reminderMinutes] = user.reminderTime.split(':').map(Number);
+        const reminderTotalMinutes = reminderHours * 60 + reminderMinutes;
+        
+        // Check if the reminder time was in the last 5 minutes
+        const diff = currentUtcMinutes - reminderTotalMinutes;
+
+        // diff >= 0: The time has passed today.
+        // diff < 5: It passed within the last 5 minutes.
+        // This handles cron jobs running at, e.g., 22:00, 22:01, 22:04 for a 22:00 reminder.
+        if (diff >= 0 && diff < 5) {
+           tokensToSend.push(user.fcmToken);
+           console.log(`[Cron Job] User ${doc.id} matched. Reminder time: ${user.reminderTime} UTC.`);
+        }
       }
     });
-    
-    console.log(`[Cron Job] Found ${tokens.length} users to notify.`);
 
-    if (tokens.length > 0) {
+    console.log(`[Cron Job] Found ${tokensToSend.length} users to notify.`);
+
+    if (tokensToSend.length > 0) {
       const message = {
         notification: {
           title: '🔥 ¡Es hora de practicar en RavenCode!',
           body: 'No pierdas tu racha. ¡Una lección rápida puede hacer la diferencia!',
         },
-        tokens: tokens,
+        tokens: tokensToSend,
       };
 
       const response = await adminMessaging.sendEachForMulticast(message);
       console.log(`[Cron Job] Successfully sent ${response.successCount} messages.`);
       if (response.failureCount > 0) {
           console.warn(`[Cron Job] Failed to send ${response.failureCount} messages.`);
-          // Optional: Handle failed tokens (e.g., remove from DB)
+          response.responses.forEach((resp, idx) => {
+            if (!resp.success) {
+              console.error(`  - Token ${idx}: ${resp.error}`);
+            }
+          });
       }
     }
 
-    return NextResponse.json({ success: true, sent: tokens.length });
+    return NextResponse.json({ success: true, sent: tokensToSend.length });
   } catch (error) {
     console.error('[Cron Job] Error sending notifications:', error);
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
