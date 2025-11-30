@@ -22,7 +22,8 @@ export async function POST(request: Request) {
       
       const result = await usersCollection.updateOne(
         { firebaseUid: userData.firebaseUid },
-        { $set: updateData }
+        { $set: updateData },
+        { upsert: false } // Do not create a new doc if it doesn't exist
       );
       
       const updatedUser = await usersCollection.findOne({ firebaseUid: userData.firebaseUid });
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
         lastStreakUpdate: undefined, // Explicitly undefined
         progress: {},
         reminders: userData.reminders ?? true,
+        emailNotifications: userData.emailNotifications ?? true,
         reminderTime: userData.reminderTime || "21:00", // Use provided or default
         fcmToken: userData.fcmToken,
       };

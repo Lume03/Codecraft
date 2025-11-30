@@ -47,6 +47,10 @@
                     "type": "boolean",
                     "description": "Whether the user has learning reminders enabled."
                 },
+                "emailNotifications": {
+                    "type": "boolean",
+                    "description": "Whether the user wants to receive weekly email summaries."
+                },
                 "reminderTime": {
                     "type": "string",
                     "description": "The user's preferred time for learning reminders (e.g., '19:00')."
@@ -165,6 +169,20 @@
                     "description": "The title of the page within the lesson."
                 }
             }
+        },
+        "PracticeHistory": {
+            "title": "Practice History",
+            "description": "A record of a single practice attempt by a user.",
+            "type": "object",
+            "properties": {
+                "firebaseUid": {"type": "string"},
+                "courseId": {"type": "string"},
+                "lessonId": {"type": "string"},
+                "score": {"type": "number"},
+                "maxScore": {"type": "number"},
+                "approved": {"type": "boolean"},
+                "createdAt": {"type": "string", "format": "date-time"}
+            }
         }
     },
     "auth": {
@@ -200,6 +218,12 @@
                 "$ref": "#/entities/TheoryPage"
             },
             "description": "Sub-collection for individual pages within a theory lesson."
+        },
+        "/practiceHistory": {
+            "schema": {
+                "$ref": "#/entities/PracticeHistory"
+            },
+            "description": "Collection to store results from every practice attempt."
         }
     }
 }

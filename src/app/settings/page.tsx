@@ -92,7 +92,7 @@ export default function SettingsPage() {
             }
             
             setPushNotifications(!!data.fcmToken && data.reminders === true);
-            setEmailNotifications(data.reminders ?? false);
+            setEmailNotifications(data.emailNotifications ?? false);
 
         }
         } catch (error) {
@@ -151,6 +151,33 @@ export default function SettingsPage() {
         fetchUserProfile(); // Refresh profile to get latest state
     }
   };
+  
+  const handleEmailNotificationsChange = async (checked: boolean) => {
+     if (user) {
+        try {
+            await fetch('/api/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    firebaseUid: user.uid,
+                    email: user.email,
+                    emailNotifications: checked,
+                }),
+            });
+            setEmailNotifications(checked);
+            toast({ 
+                title: 'Ajustes guardados', 
+                description: `Resumenes por correo ${checked ? 'activados' : 'desactivados'}.`
+            });
+        } catch (error) {
+             toast({ 
+                variant: 'destructive',
+                title: 'Error', 
+                description: 'No se pudo guardar el ajuste.'
+            });
+        }
+    }
+  }
 
   const handleLanguageSave = () => {
     setLanguage(currentLanguage as 'es' | 'en');
@@ -485,7 +512,7 @@ const requestNotificationPermission = async (checked: boolean) => {
             icon={Mail}
             title={t('email_notifications')}
             subtitle={t('email_notifications_desc')}
-            trailing={{ type: 'toggle', checked: emailNotifications, onCheckedChange: setEmailNotifications }}
+            trailing={{ type: 'toggle', checked: emailNotifications, onCheckedChange: handleEmailNotificationsChange }}
           />
         </SettingsSection>
 
