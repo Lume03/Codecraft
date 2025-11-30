@@ -69,9 +69,19 @@ export default function SettingsPage() {
     setMounted(true);
     setIsDarkTheme(theme === 'dark');
     setCurrentLanguage(language);
+    
     // Check notification permission only on the client
     if (typeof window !== 'undefined' && 'Notification' in window) {
       setPushNotifications(Notification.permission === 'granted');
+    }
+
+    // Load reminder time from localStorage
+    const savedTime = localStorage.getItem('reminderTime');
+    if (savedTime && savedTime.includes(':')) {
+        const [hour, minute] = savedTime.split(':');
+        setReminderTime(savedTime);
+        setTempHour(hour);
+        setTempMinute(minute);
     }
   }, [theme, language]);
 
@@ -88,7 +98,9 @@ export default function SettingsPage() {
   };
 
   const handleSaveReminder = () => {
-    setReminderTime(`${tempHour}:${tempMinute}`);
+    const newTime = `${tempHour}:${tempMinute}`;
+    setReminderTime(newTime);
+    localStorage.setItem('reminderTime', newTime);
   };
 
   const handleLanguageSave = () => {
