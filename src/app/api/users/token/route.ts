@@ -13,19 +13,21 @@ export async function POST(request: Request) {
     const client = await clientPromise;
     const db = client.db('ravencode');
 
+    // If token is being set, enable reminders. If token is being removed, disable them.
+    const remindersEnabled = token !== null;
+
     await db.collection('users').updateOne(
       { firebaseUid: firebaseUid },
       { 
         $set: {
           fcmToken: token, // This will set the token or set it to null
-          // If token is null, also disable reminders as a good practice
-          ...(token === null && { reminders: false }),
+          reminders: remindersEnabled, // Set reminders flag based on token presence
         }
       },
       { upsert: false } // Do not create a user if they don't exist
     );
     
-    const message = token ? 'Token de notificación actualizado' : 'Suscripción de notificaciones eliminada';
+    const message = token ? 'Token de notificación actualizado y recordatorios activados' : 'Suscripción de notificaciones eliminada y recordatorios desactivados';
     return NextResponse.json({ message }, { status: 200 });
 
   } catch (e) {

@@ -27,9 +27,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogClose,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -60,7 +60,7 @@ export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(false);
   
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [reminderTime, setReminderTime] = useState('21:00'); // This will now be UTC
+  const [reminderTime, setReminderTime] = useState('21:00');
   const [tempHour, setTempHour] = useState('21');
   const [tempMinute, setTempMinute] = useState('00');
   const [currentLanguage, setCurrentLanguage] = useState(language);
@@ -68,44 +68,41 @@ export default function SettingsPage() {
   const auth = useAuth();
   const router = useRouter();
   const user = useUser();
+  
+  const fetchUserProfile = async () => {
+    if (user?.uid) {
+        try {
+        const res = await fetch(`/api/users?firebaseUid=${user.uid}`);
+        if (res.ok) {
+            const data: UserProfile = await res.json();
+            setUserProfile(data);
+            
+            if (data.reminderTime) {
+              const [utcHours, utcMinutes] = data.reminderTime.split(':').map(Number);
+              const utcDate = new Date();
+              utcDate.setUTCHours(utcHours, utcMinutes, 0, 0);
+              
+              const localHours = utcDate.getHours().toString().padStart(2, '0');
+              const localMinutes = utcDate.getMinutes().toString().padStart(2, '0');
+              
+              setReminderTime(`${localHours}:${localMinutes}`);
+              setTempHour(localHours);
+              setTempMinute(localMinutes);
+            }
+            
+            setPushNotifications(!!data.fcmToken && data.reminders === true);
+            setEmailNotifications(data.reminders ?? false);
+
+        }
+        } catch (error) {
+        console.error("Error fetching user profile:", error);
+        }
+    }
+  };
 
   useEffect(() => {
-    if (user?.uid) {
-        const fetchUserProfile = async () => {
-            try {
-            const res = await fetch(`/api/users?firebaseUid=${user.uid}`);
-            if (res.ok) {
-                const data: UserProfile = await res.json();
-                setUserProfile(data);
-                
-                // Convert stored UTC time to local time for display
-                if (data.reminderTime) {
-                  const [utcHours, utcMinutes] = data.reminderTime.split(':').map(Number);
-                  const utcDate = new Date();
-                  utcDate.setUTCHours(utcHours, utcMinutes, 0, 0);
-                  
-                  const localHours = utcDate.getHours().toString().padStart(2, '0');
-                  const localMinutes = utcDate.getMinutes().toString().padStart(2, '0');
-                  
-                  setReminderTime(`${localHours}:${localMinutes}`); // Display local time
-                  setTempHour(localHours);
-                  setTempMinute(localMinutes);
-                } else {
-                  // Default to 21:00 local time
-                  setReminderTime('21:00');
-                  setTempHour('21');
-                  setTempMinute('00');
-                }
-                
-                setPushNotifications(!!data.fcmToken);
-
-            }
-            } catch (error) {
-            console.error("Error fetching user profile:", error);
-            }
-        };
-        fetchUserProfile();
-    }
+    fetchUserProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
@@ -129,7 +126,6 @@ export default function SettingsPage() {
   const handleSaveReminder = async () => {
     const localTime = `${tempHour}:${tempMinute}`;
 
-    // Convert local time to UTC for saving
     const localDate = new Date();
     const [localHours, localMinutes] = localTime.split(':').map(Number);
     localDate.setHours(localHours, localMinutes, 0, 0);
@@ -145,11 +141,13 @@ export default function SettingsPage() {
             body: JSON.stringify({
                 firebaseUid: user.uid,
                 email: user.email,
-                reminderTime: utcTime, // Save UTC time
+                reminderTime: utcTime,
+                reminders: true, // Also ensure reminders are enabled
             }),
         });
-        setReminderTime(localTime); // Update display with local time
+        setReminderTime(localTime);
         toast({ title: "Recordatorio guardado", description: `Tu recordatorio se ha establecido a las ${localTime}` });
+        fetchUserProfile(); // Refresh profile to get latest state
     }
   };
 
@@ -163,13 +161,12 @@ export default function SettingsPage() {
         return;
     }
     
-    // When toggling off
     if (!checked) {
         try {
           await fetch('/api/users/token', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ firebaseUid: user.uid, token: null }), // Send null to remove token
+              body: JSON.stringify({ firebaseUid: user.uid, token: null }),
           });
           setPushNotifications(false);
           toast({ title: 'Desactivado', description: 'Ya no recibirás notificaciones push.' });
@@ -180,7 +177,6 @@ export default function SettingsPage() {
         return;
     }
 
-    // When toggling on
     if (!messaging) {
       toast({ variant: 'destructive', title: 'Error', description: 'El servicio de mensajería no está disponible.' });
       return;
@@ -193,7 +189,6 @@ export default function SettingsPage() {
         const currentToken = await getToken(messaging, { vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY });
         
         if (currentToken) {
-          // Send token to your server
           await fetch('/api/users/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -220,7 +215,7 @@ export default function SettingsPage() {
   };
   
   if (!mounted) {
-    return null; // or a loading spinner
+    return null;
   }
 
   const languageMap = {
@@ -256,6 +251,7 @@ export default function SettingsPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{t('font_size_select')}</DialogTitle>
+                 <DialogDescription>Ajusta el tamaño del texto para una mejor experiencia de lectura.</DialogDescription>
               </DialogHeader>
               <div className="py-4">
                 <RadioGroup defaultValue="md" className="space-y-2">
@@ -290,6 +286,7 @@ export default function SettingsPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{t('select_language')}</DialogTitle>
+                <DialogDescription>Elige tu idioma de preferencia para la interfaz.</DialogDescription>
               </DialogHeader>
               <div className="py-4">
                 <RadioGroup value={currentLanguage} onValueChange={(val) => setCurrentLanguage(val as 'es' | 'en' | 'pt' | 'zh')} className="space-y-2">
@@ -348,6 +345,7 @@ export default function SettingsPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{t('configure_reminder')}</DialogTitle>
+                 <DialogDescription>Elige la hora local a la que quieres recibir tu recordatorio diario.</DialogDescription>
               </DialogHeader>
               <div className="grid grid-cols-2 gap-4 py-4">
                 <div className="space-y-2">
