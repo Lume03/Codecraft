@@ -252,7 +252,7 @@ function NewTheoryForm({
                     handlePageChange(index, 'title', e.target.value)
                   }
                 />
-                 <Label htmlFor={`page-content-${index}`} className="sr-only">Contenido de la Página {index + 1}</Label>
+                <Label htmlFor={`page-content-${index}`} className="sr-only">Contenido de la Página {index + 1}</Label>
                 <Textarea
                   id={`page-content-${index}`}
                   placeholder="Contenido en Markdown..."
@@ -424,16 +424,16 @@ function EditPageDialog({
               <Button variant="destructive">Eliminar Página</Button>
             </DialogTrigger>
             <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>¿Estás seguro?</DialogTitle>
-                    <DialogDescription>
-                        Esta acción no se puede deshacer. Se eliminará la página permanentemente.
-                    </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                    <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
-                    <DialogClose asChild><Button variant="destructive" onClick={handleDelete}>Sí, eliminar</Button></DialogClose>
-                </DialogFooter>
+              <DialogHeader>
+                <DialogTitle>¿Estás seguro?</DialogTitle>
+                <DialogDescription>
+                  Esta acción no se puede deshacer. Se eliminará la página permanentemente.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
+                <DialogClose asChild><Button variant="destructive" onClick={handleDelete}>Sí, eliminar</Button></DialogClose>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
@@ -466,7 +466,7 @@ function EditModuleDialog({
       if (!res.ok) throw new Error('Failed to update module');
       toast({ title: 'Lección actualizada' });
       onModuleUpdated();
-    } catch (error) => {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -505,20 +505,20 @@ function EditModuleDialog({
             <Button onClick={handleUpdate}>Guardar Cambios</Button>
           </DialogClose>
           <Dialog>
-             <DialogTrigger asChild>
-                <Button variant="destructive">Eliminar Lección</Button>
+            <DialogTrigger asChild>
+              <Button variant="destructive">Eliminar Lección</Button>
             </DialogTrigger>
-             <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>¿Estás seguro?</DialogTitle>
-                    <DialogDescription>
-                        Se eliminará la lección y todas sus páginas. Esta acción no se puede deshacer.
-                    </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                    <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
-                    <DialogClose asChild><Button variant="destructive" onClick={handleDelete}>Sí, eliminar</Button></DialogClose>
-                </DialogFooter>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>¿Estás seguro?</DialogTitle>
+                <DialogDescription>
+                  Se eliminará la lección y todas sus páginas. Esta acción no se puede deshacer.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
+                <DialogClose asChild><Button variant="destructive" onClick={handleDelete}>Sí, eliminar</Button></DialogClose>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
@@ -534,89 +534,89 @@ function EditModuleDialog({
 }
 
 function EditCourseDialog({ course, onCourseUpdated, onCourseDeleted }: { course: Course; onCourseUpdated: () => void; onCourseDeleted: () => void; }) {
-    const [title, setTitle] = useState(course.title);
-    const [description, setDescription] = useState(course.description);
-    const [imageId, setImageId] = useState(course.imageId);
-    const { toast } = useToast();
+  const [title, setTitle] = useState(course.title);
+  const [description, setDescription] = useState(course.description);
+  const [imageId, setImageId] = useState(course.imageId);
+  const { toast } = useToast();
 
-    const handleUpdate = async () => {
-        try {
-            const res = await fetch(`/api/courses/${course.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description, imageId }),
-            });
-            if (!res.ok) throw new Error('Failed to update course');
-            toast({ title: 'Curso actualizado' });
-            onCourseUpdated();
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
-        }
-    };
+  const handleUpdate = async () => {
+    try {
+      const res = await fetch(`/api/courses/${course.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description, imageId }),
+      });
+      if (!res.ok) throw new Error('Failed to update course');
+      toast({ title: 'Curso actualizado' });
+      onCourseUpdated();
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
+    }
+  };
 
-    const handleDelete = async () => {
-        try {
-            const res = await fetch(`/api/courses/${course.id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Failed to delete course');
-            toast({ title: 'Curso eliminado' });
-            onCourseDeleted();
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
-        }
-    };
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/courses/${course.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete course');
+      toast({ title: 'Curso eliminado' });
+      onCourseDeleted();
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
+    }
+  };
 
-    return (
-         <DialogContent className="max-w-xl">
-            <DialogHeader>
-                <DialogTitle>Gestionar Curso: {course.title}</DialogTitle>
-            </DialogHeader>
-            <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="edit-course-title">Título del Curso</Label>
-                    <Input id="edit-course-title" value={title} onChange={(e) => setTitle(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="edit-course-desc">Descripción</Label>
-                    <Textarea id="edit-course-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="edit-course-image">Imagen del Curso</Label>
-                    <Select value={imageId} onValueChange={setImageId}>
-                        <SelectTrigger id="edit-course-image"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                        {placeholderImages.map((img) => (
-                            <SelectItem key={img.id} value={img.id}>
-                            {img.description}
-                            </SelectItem>
-                        ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="flex justify-between pt-4">
-                    <DialogClose asChild>
-                        <Button onClick={handleUpdate}>Guardar Cambios</Button>
-                    </DialogClose>
-                     <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="destructive">Eliminar Curso</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>¿Estás seguro de que quieres eliminar este curso?</DialogTitle>
-                                <DialogDescription>
-                                    Esta acción no se puede deshacer. Se eliminará permanentemente el curso y todas sus lecciones y páginas asociadas.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                                <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
-                                <DialogClose asChild><Button variant="destructive" onClick={handleDelete}>Sí, eliminar curso</Button></DialogClose>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-                </div>
-            </div>
-        </DialogContent>
-    )
+  return (
+    <DialogContent className="max-w-xl">
+      <DialogHeader>
+        <DialogTitle>Gestionar Curso: {course.title}</DialogTitle>
+      </DialogHeader>
+      <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="edit-course-title">Título del Curso</Label>
+          <Input id="edit-course-title" value={title} onChange={(e) => setTitle(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="edit-course-desc">Descripción</Label>
+          <Textarea id="edit-course-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="edit-course-image">Imagen del Curso</Label>
+          <Select value={imageId} onValueChange={setImageId}>
+            <SelectTrigger id="edit-course-image"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {placeholderImages.map((img) => (
+                <SelectItem key={img.id} value={img.id}>
+                  {img.description}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex justify-between pt-4">
+          <DialogClose asChild>
+            <Button onClick={handleUpdate}>Guardar Cambios</Button>
+          </DialogClose>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="destructive">Eliminar Curso</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>¿Estás seguro de que quieres eliminar este curso?</DialogTitle>
+                <DialogDescription>
+                  Esta acción no se puede deshacer. Se eliminará permanentemente el curso y todas sus lecciones y páginas asociadas.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
+                <DialogClose asChild><Button variant="destructive" onClick={handleDelete}>Sí, eliminar curso</Button></DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+    </DialogContent>
+  )
 }
 
 // --- COMPONENTES DE LISTA ---
@@ -636,13 +636,13 @@ function PageList({ theoryId, onRefresh }: { theoryId: string; onRefresh: () => 
         setLoading(true);
         const res = await fetch(`/api/theories?id=${theoryId}`);
         if (!res.ok) {
-            // If the theory was deleted (e.g., by deleting the parent module),
-            // the API returns 404. We can gracefully handle this.
-            if (res.status === 404) {
-                setPages([]);
-            } else {
-                throw new Error('Failed to fetch pages');
-            }
+          // If the theory was deleted (e.g., by deleting the parent module),
+          // the API returns 404. We can gracefully handle this.
+          if (res.status === 404) {
+            setPages([]);
+          } else {
+            throw new Error('Failed to fetch pages');
+          }
         } else {
           const data = await res.json();
           setPages(data.pages);
@@ -745,29 +745,29 @@ function ModuleList({
         {modules.map((module) => (
           <AccordionItem key={module.id} value={module.id}>
             <div className="flex w-full items-center justify-between rounded-lg pr-2 hover:bg-secondary/20">
-                <AccordionTrigger className="flex-1 px-4 py-2 text-left font-medium hover:no-underline">
-                    {module.title}
-                </AccordionTrigger>
-                <Dialog onOpenChange={(open) => !open && onRefresh()}>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="mr-2"
-                      onClick={(e) => e.stopPropagation()}
-                      aria-label={`Editar lección ${module.title}`}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <EditModuleDialog
-                    module={module}
-                    onModuleUpdated={onRefresh}
-                    onModuleDeleted={onRefresh}
-                    onRefresh={onRefresh}
-                  />
-                </Dialog>
-              </div>
+              <AccordionTrigger className="flex-1 px-4 py-2 text-left font-medium hover:no-underline">
+                {module.title}
+              </AccordionTrigger>
+              <Dialog onOpenChange={(open) => !open && onRefresh()}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="mr-2"
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label={`Editar lección ${module.title}`}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <EditModuleDialog
+                  module={module}
+                  onModuleUpdated={onRefresh}
+                  onModuleDeleted={onRefresh}
+                  onRefresh={onRefresh}
+                />
+              </Dialog>
+            </div>
             <AccordionContent>
               <PageList theoryId={module.contentId} onRefresh={onRefresh} />
             </AccordionContent>
@@ -799,19 +799,19 @@ function CourseManager({
         <Accordion type="single" collapsible className="w-full">
           {courses.map((course) => (
             <AccordionItem key={course.id} value={course.id}>
-                <div className="flex w-full items-center justify-between rounded-lg pr-2 hover:bg-secondary/20">
-                    <AccordionTrigger className="flex-1 px-4 py-3 text-left hover:no-underline">
-                        {course.title}
-                    </AccordionTrigger>
-                    <Dialog onOpenChange={(open) => !open && onRefresh()}>
-                        <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} aria-label={`Gestionar curso ${course.title}`}>
-                                <Settings className="h-4 w-4" />
-                            </Button>
-                        </DialogTrigger>
-                        <EditCourseDialog course={course} onCourseUpdated={onRefresh} onCourseDeleted={onRefresh} />
-                    </Dialog>
-                </div>
+              <div className="flex w-full items-center justify-between rounded-lg pr-2 hover:bg-secondary/20">
+                <AccordionTrigger className="flex-1 px-4 py-3 text-left hover:no-underline">
+                  {course.title}
+                </AccordionTrigger>
+                <Dialog onOpenChange={(open) => !open && onRefresh()}>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} aria-label={`Gestionar curso ${course.title}`}>
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <EditCourseDialog course={course} onCourseUpdated={onRefresh} onCourseDeleted={onRefresh} />
+                </Dialog>
+              </div>
               <AccordionContent>
                 <div className="space-y-4 p-2">
                   <ModuleList courseId={course.id} onRefresh={onRefresh} />

@@ -23,8 +23,8 @@ export async function GET(request: Request) {
 
   const resendApiKey = process.env.RESEND_API_KEY;
   if (!resendApiKey) {
-      console.error("[Cron Weekly] Resend API key is not configured.");
-      return NextResponse.json({ success: false, error: "Resend API key is missing." }, { status: 500 });
+    console.error("[Cron Weekly] Resend API key is not configured.");
+    return NextResponse.json({ success: false, error: "Resend API key is missing." }, { status: 500 });
   }
   const resend = new Resend(resendApiKey);
 
@@ -84,7 +84,7 @@ export async function GET(request: Request) {
         const lessonsCompleted = weeklyHistory.filter((h) => h.approved).length;
 
         // 3. Generate email HTML using a React component
-        const emailHtml = render(
+        const emailHtml = await render(
           <WeeklySummaryEmail
             username={user.displayName}
             averageScore={averageScore}
@@ -92,15 +92,15 @@ export async function GET(request: Request) {
             totalPractices={totalPractices}
           />
         );
-        
+
         // 4. Send the email using Resend
         await resend.emails.send({
-           from: 'RavenCode <onboarding@resend.dev>', // Puedes cambiar esto por un dominio verificado
-           to: [user.email],
-           subject: `🚀 Tu resumen semanal de RavenCode`,
-           html: emailHtml,
+          from: 'RavenCode <onboarding@resend.dev>', // Puedes cambiar esto por un dominio verificado
+          to: [user.email],
+          subject: `🚀 Tu resumen semanal de RavenCode`,
+          html: emailHtml,
         });
-        
+
         emailsSent++;
 
       } catch (error) {
@@ -108,7 +108,7 @@ export async function GET(request: Request) {
         errors.push(user.firebaseUid);
       }
     }
-    
+
     console.log(`[Cron Weekly] Job finished. Sent ${emailsSent} emails. Failed for ${errors.length} users.`);
 
     return NextResponse.json({
@@ -116,7 +116,7 @@ export async function GET(request: Request) {
       sent: emailsSent,
       failed_uids: errors,
     });
-    
+
   } catch (error) {
     console.error('[Cron Weekly] Unhandled error:', error);
     return NextResponse.json(
