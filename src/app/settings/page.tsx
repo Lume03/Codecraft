@@ -117,6 +117,22 @@ export default function SettingsPage() {
     setIsDarkTheme(checked);
   };
   
+  const handleDidacticModeChange = (checked: boolean) => {
+    setDidacticMode(checked);
+    toast({
+      title: 'Modo didáctico ' + (checked ? 'activado' : 'desactivado'),
+      description: checked ? 'Las explicaciones serán más detalladas.' : 'Se usarán explicaciones estándar.',
+    });
+  };
+
+  const handleDailyChallengeChange = (checked: boolean) => {
+    setDailyChallenge(checked);
+    toast({
+      title: 'Reto diario ' + (checked ? 'activado' : 'desactivado'),
+      description: checked ? 'Recibirás un nuevo desafío cada día.' : 'Los retos diarios están pausados.',
+    });
+  };
+
   const handleLogout = async () => {
     if (auth) {
       await signOut(auth);
@@ -435,13 +451,13 @@ const requestNotificationPermission = async (checked: boolean) => {
             icon={Sparkles}
             title={t('didactic_mode')}
             subtitle={t('didactic_mode_desc')}
-            trailing={{ type: 'toggle', checked: didacticMode, onCheckedChange: setDidacticMode }}
+            trailing={{ type: 'toggle', checked: didacticMode, onCheckedChange: handleDidacticModeChange }}
           />
           <SettingsRow
             icon={BookOpen}
             title={t('daily_challenge')}
             subtitle={t('daily_challenge_desc')}
-            trailing={{ type: 'toggle', checked: dailyChallenge, onCheckedChange: setDailyChallenge }}
+            trailing={{ type: 'toggle', checked: dailyChallenge, onCheckedChange: handleDailyChallengeChange }}
           />
           <Dialog>
             <DialogTrigger asChild>
