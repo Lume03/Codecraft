@@ -115,7 +115,7 @@ export default function CourseDetailPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <Header title={course.title} showBackButton backButtonHref="/learn" />
 
-      <main className="flex-1 space-y-6 p-4 pb-28 md:p-6">
+      <main className="flex-1 space-y-6 p-4 pb-40 md:p-6">
         {/* Main Course Info Card */}
         <section aria-labelledby="course-title" className="rounded-2xl border bg-card p-5">
           <div className="flex items-start gap-4">
