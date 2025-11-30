@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import { UserProfile } from '@/docs/backend-types';
 
 export async function POST(request: Request) {
   try {
-    const userData = await request.json();
+    const userData: Partial<UserProfile> & { firebaseUid: string; email: string } = await request.json();
 
     if (!userData.firebaseUid || !userData.email) {
       return NextResponse.json({ error: 'Faltan firebaseUid o email' }, { status: 400 });
@@ -11,36 +12,41 @@ export async function POST(request: Request) {
 
     const client = await clientPromise;
     const db = client.db('ravencode');
+    const usersCollection = db.collection<UserProfile>('users');
 
+    // Prepare update fields, excluding firebaseUid from $set
+    const { firebaseUid, ...updateData } = userData;
+    const update: { $set: Partial<UserProfile>, $setOnInsert?: Partial<UserProfile> } = {
+        $set: updateData
+    };
+    
+    // Set initial values only on creation
+    update.$setOnInsert = {
+        firebaseUid: userData.firebaseUid,
+        createdAt: new Date(),
+        level: 1,
+        streak: 0,
+        achievements: [],
+        lives: 5,
+        lastLifeUpdate: new Date(),
+        lastStreakUpdate: null,
+        progress: {},
+        reminders: true, // Default reminders to true
+    };
+    
     // Use upsert to create or update the user document based on firebaseUid
-    const result = await db.collection('users').updateOne(
+    const result = await usersCollection.updateOne(
       { firebaseUid: userData.firebaseUid },
-      { 
-        $set: {
-          displayName: userData.displayName,
-          email: userData.email,
-          photoURL: userData.photoURL,
-          username: userData.username,
-        },
-        $setOnInsert: { 
-          firebaseUid: userData.firebaseUid,
-          createdAt: new Date(),
-          level: 1,
-          streak: 0,
-          achievements: [],
-          lives: 5,
-          lastLifeUpdate: new Date(),
-          lastStreakUpdate: null,
-          progress: {},
-        }
-      },
+      update,
       { upsert: true }
     );
 
+    const updatedUser = await usersCollection.findOne({ firebaseUid: userData.firebaseUid });
+
     if (result.upsertedId) {
-      return NextResponse.json({ message: 'Usuario creado en MongoDB', userId: result.upsertedId }, { status: 201 });
+      return NextResponse.json(updatedUser, { status: 201 });
     } else {
-      return NextResponse.json({ message: 'Usuario actualizado en MongoDB' }, { status: 200 });
+      return NextResponse.json(updatedUser, { status: 200 });
     }
 
   } catch (e) {

@@ -44,6 +44,7 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/context/language-provider';
 import { useToast } from '@/hooks/use-toast';
 import { getToken } from 'firebase/messaging';
+import type { UserProfile } from '@/docs/backend-types';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -56,6 +57,8 @@ export default function SettingsPage() {
   const [dailyChallenge, setDailyChallenge] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(false);
+  
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [reminderTime, setReminderTime] = useState('19:00');
   const [tempHour, setTempHour] = useState('19');
   const [tempMinute, setTempMinute] = useState('00');
@@ -66,6 +69,26 @@ export default function SettingsPage() {
   const user = useUser();
 
   useEffect(() => {
+    if (user?.uid) {
+        const fetchUserProfile = async () => {
+            try {
+            const res = await fetch(`/api/users?firebaseUid=${user.uid}`);
+            if (res.ok) {
+                const data = await res.json();
+                setUserProfile(data);
+                setReminderTime(data.reminderTime || '19:00');
+                setTempHour((data.reminderTime || '19:00').split(':')[0]);
+                setTempMinute((data.reminderTime || '19:00').split(':')[1]);
+            }
+            } catch (error) {
+            console.error("Error fetching user profile:", error);
+            }
+        };
+        fetchUserProfile();
+    }
+  }, [user]);
+
+  useEffect(() => {
     setMounted(true);
     setIsDarkTheme(theme === 'dark');
     setCurrentLanguage(language);
@@ -73,15 +96,6 @@ export default function SettingsPage() {
     // Check notification permission only on the client
     if (typeof window !== 'undefined' && 'Notification' in window) {
       setPushNotifications(Notification.permission === 'granted');
-    }
-
-    // Load reminder time from localStorage
-    const savedTime = localStorage.getItem('reminderTime');
-    if (savedTime && savedTime.includes(':')) {
-        const [hour, minute] = savedTime.split(':');
-        setReminderTime(savedTime);
-        setTempHour(hour);
-        setTempMinute(minute);
     }
   }, [theme, language]);
 
@@ -97,10 +111,22 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSaveReminder = () => {
+  const handleSaveReminder = async () => {
     const newTime = `${tempHour}:${tempMinute}`;
     setReminderTime(newTime);
-    localStorage.setItem('reminderTime', newTime);
+    
+    if (user) {
+         await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                firebaseUid: user.uid,
+                email: user.email,
+                reminderTime: newTime,
+            }),
+        });
+        toast({ title: "Recordatorio guardado", description: `Tu recordatorio se ha establecido a las ${newTime}` });
+    }
   };
 
   const handleLanguageSave = () => {
@@ -108,18 +134,23 @@ export default function SettingsPage() {
   };
 
   const requestNotificationPermission = async (checked: boolean) => {
+    if (!user) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Debes iniciar sesión para activar las notificaciones.' });
+        return;
+    }
+    
     if (!checked) {
-        // Here you might want to add logic to disable notifications
         setPushNotifications(false);
+        await fetch('/api/users/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ firebaseUid: user.uid, token: null }), // Remove token
+        });
         return;
     }
 
-    if (!messaging || !user) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'El servicio de mensajería no está disponible.',
-      });
+    if (!messaging) {
+      toast({ variant: 'destructive', title: 'Error', description: 'El servicio de mensajería no está disponible.' });
       return;
     }
 
@@ -143,28 +174,16 @@ export default function SettingsPage() {
           });
         } else {
           setPushNotifications(false);
-          toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'No se pudo obtener el token de notificación. Inténtalo de nuevo.',
-          });
+          toast({ variant: 'destructive', title: 'Error', description: 'No se pudo obtener el token de notificación. Inténtalo de nuevo.' });
         }
       } else {
         setPushNotifications(false);
-        toast({
-          variant: 'destructive',
-          title: 'Permiso denegado',
-          description: 'No se han activado las notificaciones.',
-        });
+        toast({ variant: 'destructive', title: 'Permiso denegado', description: 'No se han activado las notificaciones.' });
       }
     } catch (error) {
       console.error('Error getting notification permission:', error);
       setPushNotifications(false);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Ocurrió un error al solicitar el permiso de notificación.',
-      });
+      toast({ variant: 'destructive', title: 'Error', description: 'Ocurrió un error al solicitar el permiso de notificación.' });
     }
   };
   

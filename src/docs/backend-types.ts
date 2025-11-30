@@ -69,6 +69,8 @@ export interface UserProfile {
      * Firebase Cloud Messaging token for push notifications.
      */
     fcmToken?: string;
+    createdAt?: Date;
+    reminderTime?: string;
 }
 export interface Course {
     title?: string;

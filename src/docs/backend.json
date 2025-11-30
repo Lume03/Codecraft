@@ -78,6 +78,10 @@
                             }
                         }
                     }
+                },
+                "fcmToken": {
+                    "type": "string",
+                    "description": "Firebase Cloud Messaging token for push notifications."
                 }
             },
             "required": ["displayName", "email", "firebaseUid"]
