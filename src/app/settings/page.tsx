@@ -156,65 +156,149 @@ export default function SettingsPage() {
     setLanguage(currentLanguage as 'es' | 'en');
   };
 
-  const requestNotificationPermission = async (checked: boolean) => {
-    if (!user) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Debes iniciar sesión para activar las notificaciones.' });
-        return;
-    }
+const requestNotificationPermission = async (checked: boolean) => {
+  console.log('🚀 requestNotificationPermission llamado con checked:', checked);
+  
+  if (!user) {
+    console.error('❌ No hay usuario autenticado');
+    toast({ 
+      variant: 'destructive', 
+      title: 'Error', 
+      description: 'Debes iniciar sesión para activar las notificaciones.' 
+    });
+    return;
+  }
+  console.log('✅ Usuario autenticado:', user.uid);
+  
+  let tokenPayload = null;
+  
+  if (checked) {
+    console.log('📝 Intentando activar notificaciones...');
     
-    let tokenPayload = null;
-    
-    if (checked) {
-        if (!messaging) {
-            toast({ variant: 'destructive', title: 'Error', description: 'El servicio de mensajería no está disponible.' });
-            return;
-        }
-
-        try {
-            const permission = await Notification.requestPermission();
-            
-            if (permission === 'granted') {
-                const currentToken = await getToken(messaging, { vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY });
-                
-                if (currentToken) {
-                    tokenPayload = currentToken;
-                    toast({ title: '¡Suscrito!', description: 'Recibirás notificaciones push.' });
-                } else {
-                    toast({ variant: 'destructive', title: 'Error', description: 'No se pudo obtener el token de notificación. Inténtalo de nuevo.' });
-                    return; // Stop execution
-                }
-            } else {
-                toast({ variant: 'destructive', title: 'Permiso denegado', description: 'No se han activado las notificaciones.' });
-                return; // Stop execution
-            }
-        } catch (error) {
-            console.error('Error getting notification permission:', error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Ocurrió un error al solicitar el permiso de notificación.' });
-            return; // Stop execution
-        }
-    } else {
-        tokenPayload = null;
-        toast({ title: 'Desactivado', description: 'Ya no recibirás notificaciones push.' });
+    if (!messaging) {
+      console.error('❌ El objeto messaging es null');
+      toast({ 
+        variant: 'destructive', 
+        title: 'Error', 
+        description: 'El servicio de mensajería no está disponible.' 
+      });
+      return;
     }
+    console.log('✅ Messaging está disponible');
 
-    // API call to update the backend
     try {
-        await fetch('/api/users/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              firebaseUid: user.uid, 
-              token: tokenPayload
-            }),
+      // 1. Solicitar permiso
+      console.log('🔔 Solicitando permiso de notificaciones...');
+      console.log('📊 Estado actual del permiso ANTES:', Notification.permission);
+      
+      const permission = await Notification.requestPermission();
+      
+      console.log('✅ Permiso obtenido:', permission);
+      console.log('📊 Estado actual del permiso DESPUÉS:', Notification.permission);
+      
+      if (permission !== 'granted') {
+        console.error('❌ Permiso NO otorgado. Estado:', permission);
+        toast({ 
+          variant: 'destructive', 
+          title: 'Permiso denegado', 
+          description: 'No se han activado las notificaciones. Por favor, permite las notificaciones en la configuración de tu navegador.' 
         });
-        // The fetchUserProfile() will be called from onOpenChange, 
-        // but we can update the local state optimistically.
-        setPushNotifications(checked);
+        return;
+      }
+      console.log('✅ Permiso GRANTED confirmado');
+
+      // 2. Obtener token FCM
+      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+      console.log('🔑 Verificando VAPID Key...');
+      console.log('🔑 VAPID Key presente:', !!vapidKey);
+      console.log('🔑 VAPID Key (primeros 20 caracteres):', vapidKey?.substring(0, 20));
+      
+      if (!vapidKey) {
+        console.error('❌ VAPID Key NO está definida en las variables de entorno');
+        throw new Error('VAPID Key no configurada. Agrega NEXT_PUBLIC_FIREBASE_VAPID_KEY a .env.local');
+      }
+
+      console.log('🎫 Intentando obtener token FCM...');
+      console.log('🎫 Parámetros:', { messaging, vapidKey: vapidKey.substring(0, 20) + '...' });
+      
+      const currentToken = await getToken(messaging, { vapidKey });
+      
+      console.log('🎫 Resultado de getToken:', currentToken ? 'Token obtenido' : 'Sin token');
+      console.log('🎫 Token (primeros 50 caracteres):', currentToken?.substring(0, 50));
+      
+      if (currentToken) {
+        tokenPayload = currentToken;
+        console.log('✅ Token FCM guardado en tokenPayload');
+        toast({ 
+          title: '¡Suscrito!', 
+          description: 'Recibirás notificaciones push.' 
+        });
+      } else {
+        console.error('❌ No se pudo obtener el token FCM');
+        console.error('❌ Posibles causas:');
+        console.error('   1. Service Worker no está activo');
+        console.error('   2. VAPID Key incorrecta');
+        console.error('   3. Configuración de Firebase incorrecta');
+        throw new Error('No se pudo obtener el token. Verifica que el Service Worker esté registrado y la VAPID Key sea correcta.');
+      }
     } catch (error) {
-        console.error('Failed to update token/reminders:', error);
-        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo actualizar la configuración en el servidor.' });
+      console.error('❌ ERROR COMPLETO:', error);
+      console.error('❌ Tipo de error:', error instanceof Error ? error.constructor.name : typeof error);
+      console.error('❌ Mensaje:', error instanceof Error ? error.message : String(error));
+      console.error('❌ Stack:', error instanceof Error ? error.stack : 'N/A');
+      
+      toast({ 
+        variant: 'destructive', 
+        title: 'Error', 
+        description: error instanceof Error ? error.message : 'Ocurrió un error al solicitar el permiso de notificación.' 
+      });
+      return;
     }
-  };
+  } else {
+    console.log('📴 Desactivando notificaciones...');
+    tokenPayload = null;
+    toast({ 
+      title: 'Desactivado', 
+      description: 'Ya no recibirás notificaciones push.' 
+    });
+  }
+
+  // 3. Guardar en el backend
+  try {
+    console.log('💾 Guardando token en el backend...');
+    console.log('💾 Payload:', { firebaseUid: user.uid, token: tokenPayload ? 'presente' : 'null' });
+    
+    const response = await fetch('/api/users/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        firebaseUid: user.uid, 
+        token: tokenPayload
+      }),
+    });
+    
+    console.log('💾 Respuesta del servidor:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('❌ Error del servidor:', errorData);
+      throw new Error(errorData.error || 'Error al guardar el token');
+    }
+    
+    const result = await response.json();
+    console.log('✅ Resultado del servidor:', result);
+    console.log('✅ Token guardado exitosamente en MongoDB');
+    
+    setPushNotifications(checked);
+  } catch (error) {
+    console.error('❌ Error al guardar token en el backend:', error);
+    toast({ 
+      variant: 'destructive', 
+      title: 'Error', 
+      description: 'No se pudo actualizar la configuración en el servidor.' 
+    });
+  }
+};
   
   if (!mounted) {
     return null;
