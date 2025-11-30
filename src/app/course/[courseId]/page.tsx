@@ -115,7 +115,7 @@ export default function CourseDetailPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <Header title={course.title} showBackButton backButtonHref="/learn" />
 
-      <main className="flex-1 space-y-6 p-4 pb-24 md:p-6 md:pb-8">
+      <main className="flex-1 space-y-6 p-4 pb-24 md:p-6">
         {/* Main Course Info Card */}
         <section aria-labelledby="course-title" className="rounded-2xl border bg-card p-5">
           <div className="flex items-start gap-4">
@@ -248,7 +248,7 @@ export default function CourseDetailPage() {
         </section>
 
         {nextLesson && (
-        <nav aria-label="Navegación de lección" className="md:hidden fixed inset-x-0 bottom-0 z-10 border-t bg-background/80 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm">
+        <nav aria-label="Navegación de lección" className="fixed inset-x-0 bottom-0 z-10 border-t bg-background/80 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm md:hidden">
           <Button
             size="lg"
             className="w-full"
@@ -269,11 +269,12 @@ export default function CourseDetailPage() {
       </main>
 
        {nextLesson && (
-         <footer className="hidden md:block sticky bottom-0 z-10 border-t bg-background/95 p-4 backdrop-blur-sm">
-            <div className="mx-auto flex max-w-7xl items-center justify-end">
+         <footer className="sticky bottom-0 z-10 border-t bg-background/95 p-4 backdrop-blur-sm hidden md:block">
+            <div className="mx-auto flex max-w-2xl items-center justify-center">
                 <Button
                     size="lg"
                     asChild
+                    className="w-full"
                     style={{
                       borderRadius: '9999px',
                       boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
