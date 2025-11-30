@@ -21,7 +21,12 @@ export async function GET(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (!resendApiKey) {
+      console.error("[Cron Weekly] Resend API key is not configured.");
+      return NextResponse.json({ success: false, error: "Resend API key is missing." }, { status: 500 });
+  }
+  const resend = new Resend(resendApiKey);
 
   try {
     const now = new Date();
@@ -51,7 +56,7 @@ export async function GET(request: Request) {
     // 2. For each user, calculate their weekly stats
     for (const doc of usersSnapshot.docs) {
       const user = doc.data() as UserProfile;
-      if (!user.email) continue;
+      if (!user.email || !user.displayName) continue;
 
       try {
         const weeklyHistory = await practiceHistoryCollection
