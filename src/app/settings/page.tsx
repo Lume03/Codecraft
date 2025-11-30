@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { SettingsSection } from '@/components/settings/settings-section';
 import { SettingsRow } from '@/components/settings/settings-row';
-import { useAuth, messaging } from '@/firebase';
+import { useAuth, useUser, messaging } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import {
@@ -54,7 +54,7 @@ export default function SettingsPage() {
 
   const [didacticMode, setDidacticMode] = useState(false);
   const [dailyChallenge, setDailyChallenge] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(Notification.permission === 'granted');
+  const [pushNotifications, setPushNotifications] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(false);
   const [reminderTime, setReminderTime] = useState('19:00');
   const [tempHour, setTempHour] = useState('19');
@@ -69,7 +69,10 @@ export default function SettingsPage() {
     setMounted(true);
     setIsDarkTheme(theme === 'dark');
     setCurrentLanguage(language);
-    setPushNotifications(Notification.permission === 'granted');
+    // Check notification permission only on the client
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      setPushNotifications(Notification.permission === 'granted');
+    }
   }, [theme, language]);
 
   const handleThemeChange = (checked: boolean) => {
