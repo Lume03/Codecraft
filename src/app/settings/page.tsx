@@ -47,6 +47,13 @@ import { useToast } from '@/hooks/use-toast';
 import { getToken } from 'firebase/messaging';
 import type { UserProfile } from '@/docs/backend-types';
 import { messaging } from '@/firebase';
+import esTranslations from '@/locales/es.json';
+import enTranslations from '@/locales/en.json';
+
+const translations = {
+  es: esTranslations,
+  en: enTranslations,
+};
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -176,7 +183,7 @@ export default function SettingsPage() {
   const handleEmailNotificationsChange = async (checked: boolean) => {
      if (user) {
         try {
-            await fetch('/api/users', {
+            const response = await fetch('/api/users', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -185,6 +192,7 @@ export default function SettingsPage() {
                     emailNotifications: checked,
                 }),
             });
+             if (!response.ok) throw new Error('Server error');
             setEmailNotifications(checked);
             toast({ 
                 title: 'Ajustes guardados', 
@@ -201,10 +209,17 @@ export default function SettingsPage() {
   }
 
   const handleLanguageSave = () => {
-    setLanguage(currentLanguage as 'es' | 'en');
-     toast({
-      title: t('language_changed_title'),
-      description: t('language_changed_desc', { lang: languageMap[currentLanguage as keyof typeof languageMap] }),
+    const newLang = currentLanguage as 'es' | 'en';
+    setLanguage(newLang);
+  
+    // Use a temporary translator function for the toast
+    const tempT = (key: keyof typeof esTranslations) => {
+      return translations[newLang][key] || key;
+    };
+  
+    toast({
+      title: tempT('language_changed_title'),
+      description: tempT('language_changed_desc').replace('{{lang}}', tempT(newLang === 'es' ? 'language_es' : 'language_en')),
     });
   };
 
@@ -547,7 +562,7 @@ const requestNotificationPermission = async (checked: boolean) => {
             title={t('profile')}
             subtitle={t('profile_desc')}
             trailing={{ type: 'chevron' }}
-            href="/profile"
+            href="/profile/edit"
           />
           <SettingsRow
             icon={ShieldCheck}
