@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { UserProfile } from '@/docs/backend-types';
+import { adminDb } from '@/lib/firebase-admin';
 
 export async function POST(request: Request) {
   try {
@@ -10,23 +11,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Faltan firebaseUid o email' }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db('ravencode');
-    const usersCollection = db.collection<UserProfile>('users');
+    const userRef = adminDb.collection('users').doc(userData.firebaseUid);
+    const userDoc = await userRef.get();
 
-    const existingUser = await usersCollection.findOne({ firebaseUid: userData.firebaseUid });
-
-    if (existingUser) {
+    if (userDoc.exists) {
       // --- Lógica de Actualización ---
-      const { _id, createdAt, firebaseUid, ...updateData } = userData as any;
-      
-      const result = await usersCollection.updateOne(
-        { firebaseUid: userData.firebaseUid },
-        { $set: updateData },
-        { upsert: false } // Do not create a new doc if it doesn't exist
-      );
-      
-      const updatedUser = await usersCollection.findOne({ firebaseUid: userData.firebaseUid });
+      const { firebaseUid, ...updateData } = userData;
+      await userRef.update(updateData);
+      const updatedUser = (await userRef.get()).data();
       return NextResponse.json(updatedUser, { status: 200 });
 
     } else {
@@ -35,7 +27,7 @@ export async function POST(request: Request) {
         firebaseUid: userData.firebaseUid,
         email: userData.email,
         displayName: userData.displayName || 'Nuevo Usuario',
-        username: userData.username,
+        username: userData.username || userData.email.split('@')[0],
         photoURL: userData.photoURL,
         createdAt: new Date(),
         level: 1,
@@ -51,19 +43,15 @@ export async function POST(request: Request) {
         fcmToken: userData.fcmToken,
       };
 
-      const result = await usersCollection.insertOne(newUser);
+      await userRef.set(newUser);
       
-      // MongoDB no devuelve el documento insertado directamente, así que lo devolvemos nosotros
-      const { ...insertedUser } = newUser;
-      return NextResponse.json(insertedUser, { status: 201 });
+      // Devolvemos el objeto que acabamos de crear
+      return NextResponse.json(newUser, { status: 201 });
     }
 
   } catch (e: any) {
     console.error('Error in /api/users:', e);
-    // Devuelve un error más detallado si es posible
-    const errorMessage = e.code === 11000 
-      ? 'Error de duplicado. El usuario ya podría existir.' 
-      : `Error al procesar la solicitud del usuario: ${e.message}`;
+    const errorMessage = `Error al procesar la solicitud del usuario: ${e.message}`;
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
@@ -78,18 +66,22 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Falta el parámetro firebaseUid' }, { status: 400 });
     }
     
-    const client = await clientPromise;
-    const db = client.db('ravencode');
-    
-    const user = await db.collection('users').findOne({ firebaseUid: firebaseUid });
+    const userDoc = await adminDb.collection('users').doc(firebaseUid).get();
 
-    if (!user) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+    if (!userDoc.exists) {
+      // Fallback to MongoDB for users that might not have been migrated
+        const client = await clientPromise;
+        const db = client.db('ravencode');
+        const mongoUser = await db.collection('users').findOne({ firebaseUid: firebaseUid });
+
+        if (!mongoUser) {
+            return NextResponse.json({ error: 'Usuario no encontrado en ninguna base de datos' }, { status: 404 });
+        }
+         const { _id, ...userWithoutId } = mongoUser;
+         return NextResponse.json(userWithoutId);
     }
 
-    const { _id, ...userWithoutId } = user;
-
-    return NextResponse.json(userWithoutId);
+    return NextResponse.json(userDoc.data());
 
   } catch (e) {
     console.error('Error in GET /api/users:', e);
