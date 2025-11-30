@@ -65,6 +65,10 @@ export interface UserProfile {
             unlockedLessons?: string[];
         };
     };
+    /**
+     * Firebase Cloud Messaging token for push notifications.
+     */
+    fcmToken?: string;
 }
 export interface Course {
     title?: string;

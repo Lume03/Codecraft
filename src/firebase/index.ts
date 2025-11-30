@@ -1,9 +1,10 @@
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getMessaging, type Messaging } from 'firebase/messaging';
 import { firebaseConfig } from './config';
 
-// Inicialización idempotente y robusta de Firebase
+// Robust, idempotent Firebase initialization
 let firebaseApp: FirebaseApp;
 if (!getApps().length) {
   firebaseApp = initializeApp(firebaseConfig);
@@ -11,13 +12,20 @@ if (!getApps().length) {
   firebaseApp = getApp();
 }
 
-// Obtener servicios directamente de la app inicializada
+// Get services directly from the initialized app
 const auth: Auth = getAuth(firebaseApp);
 const firestore: Firestore = getFirestore(firebaseApp);
+let messaging: Messaging | null = null;
 
-export { firebaseApp, auth, firestore };
+// Initialize messaging only on the client side
+if (typeof window !== 'undefined') {
+  messaging = getMessaging(firebaseApp);
+}
 
-// Exportar hooks y providers necesarios
+
+export { firebaseApp, auth, firestore, messaging };
+
+// Export necessary hooks and providers
 export * from './client-provider';
 export * from './auth/use-user';
 export * from './firestore/use-collection';

@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { SettingsSection } from '@/components/settings/settings-section';
 import { SettingsRow } from '@/components/settings/settings-row';
-import { useAuth } from '@/firebase';
+import { useAuth, messaging } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import {
@@ -42,16 +42,19 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/context/language-provider';
+import { useToast } from '@/hooks/use-toast';
+import { getToken } from 'firebase/messaging';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { language, setLanguage, t } = useTranslation();
+  const { toast } = useToast();
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const [didacticMode, setDidacticMode] = useState(false);
   const [dailyChallenge, setDailyChallenge] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(true);
+  const [pushNotifications, setPushNotifications] = useState(Notification.permission === 'granted');
   const [emailNotifications, setEmailNotifications] = useState(false);
   const [reminderTime, setReminderTime] = useState('19:00');
   const [tempHour, setTempHour] = useState('19');
@@ -60,11 +63,13 @@ export default function SettingsPage() {
 
   const auth = useAuth();
   const router = useRouter();
+  const user = useUser();
 
   useEffect(() => {
     setMounted(true);
     setIsDarkTheme(theme === 'dark');
     setCurrentLanguage(language);
+    setPushNotifications(Notification.permission === 'granted');
   }, [theme, language]);
 
   const handleThemeChange = (checked: boolean) => {
@@ -85,6 +90,67 @@ export default function SettingsPage() {
 
   const handleLanguageSave = () => {
     setLanguage(currentLanguage as 'es' | 'en');
+  };
+
+  const requestNotificationPermission = async (checked: boolean) => {
+    if (!checked) {
+        // Here you might want to add logic to disable notifications
+        setPushNotifications(false);
+        return;
+    }
+
+    if (!messaging || !user) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'El servicio de mensajería no está disponible.',
+      });
+      return;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      
+      if (permission === 'granted') {
+        const currentToken = await getToken(messaging, { vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY });
+        
+        if (currentToken) {
+          // Send token to your server
+          await fetch('/api/users/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ firebaseUid: user.uid, token: currentToken }),
+          });
+          setPushNotifications(true);
+           toast({
+            title: '¡Suscrito!',
+            description: 'Recibirás notificaciones push.',
+          });
+        } else {
+          setPushNotifications(false);
+          toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'No se pudo obtener el token de notificación. Inténtalo de nuevo.',
+          });
+        }
+      } else {
+        setPushNotifications(false);
+        toast({
+          variant: 'destructive',
+          title: 'Permiso denegado',
+          description: 'No se han activado las notificaciones.',
+        });
+      }
+    } catch (error) {
+      console.error('Error getting notification permission:', error);
+      setPushNotifications(false);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Ocurrió un error al solicitar el permiso de notificación.',
+      });
+    }
   };
   
   if (!mounted) {
@@ -263,7 +329,7 @@ export default function SettingsPage() {
             icon={Bell}
             title={t('push_notifications')}
             subtitle={t('push_notifications_desc')}
-            trailing={{ type: 'toggle', checked: pushNotifications, onCheckedChange: setPushNotifications }}
+            trailing={{ type: 'toggle', checked: pushNotifications, onCheckedChange: requestNotificationPermission }}
           />
           <SettingsRow
             icon={Mail}

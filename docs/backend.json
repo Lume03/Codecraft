@@ -31,6 +31,11 @@
                     "type": "number",
                     "description": "The user's current practice streak."
                 },
+                "lastStreakUpdate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "The last time the user's practice streak was updated."
+                },
                 "achievements": {
                     "type": "array",
                     "items": {
@@ -54,6 +59,29 @@
                 "firebaseUid": {
                     "type": "string",
                     "description": "The user's unique ID from Firebase Authentication."
+                },
+                "progress": {
+                    "type": "object",
+                    "description": "Object containing user's progress in courses.",
+                    "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                            "completedLessons": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "description": "Array of completed lesson IDs."
+                            },
+                             "unlockedLessons": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "description": "Array of unlocked lesson IDs."
+                            }
+                        }
+                    }
+                },
+                "fcmToken": {
+                    "type": "string",
+                    "description": "Firebase Cloud Messaging token for push notifications."
                 }
             },
             "required": ["displayName", "email", "firebaseUid"]
