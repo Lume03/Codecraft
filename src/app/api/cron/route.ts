@@ -12,22 +12,16 @@ export async function GET(request: Request) {
 
   try {
     const now = new Date();
-    // Get current time in 'HH:MM' format, adjusted for UTC
-    // We store user preferences in their local time, but the server runs in UTC.
-    // This is a simplification. A robust solution needs user-specific timezones.
-    // For now, we assume server and user are in roughly similar timezones or the user
-    // sets the time understanding it might be based on a fixed zone.
-    const hours = now.getUTCHours().toString().padStart(2, '0');
-    const minutes = now.getUTCMinutes().toString().padStart(2, '0');
-    const currentTime = `${hours}:${minutes}`;
+    // Get current UTC time in 'HH:MM' format. This is the baseline.
+    const currentUtcTime = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')}`;
 
-    console.log(`[Cron Job] Running at UTC time: ${currentTime}`);
+    console.log(`[Cron Job] Running. Current UTC time: ${currentUtcTime}`);
 
     const usersSnapshot = await adminDb
       .collection('users')
       .where('reminders', '==', true)
       .where('fcmToken', '!=', null)
-      .where('reminderTime', '==', currentTime)
+      .where('reminderTime', '==', currentUtcTime) // Directly compare with the user's stored UTC preference
       .get();
 
     if (usersSnapshot.empty) {

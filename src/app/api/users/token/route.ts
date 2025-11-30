@@ -5,8 +5,9 @@ export async function POST(request: Request) {
   try {
     const { firebaseUid, token } = await request.json();
 
-    if (!firebaseUid || !token) {
-      return NextResponse.json({ error: 'Faltan firebaseUid o token' }, { status: 400 });
+    // Allow token to be null to handle unsubscription
+    if (!firebaseUid) {
+      return NextResponse.json({ error: 'Falta firebaseUid' }, { status: 400 });
     }
 
     const client = await clientPromise;
@@ -16,15 +17,16 @@ export async function POST(request: Request) {
       { firebaseUid: firebaseUid },
       { 
         $set: {
-          fcmToken: token,
-          // You might also want to set a flag indicating notifications are enabled
-          reminders: true,
+          fcmToken: token, // This will set the token or set it to null
+          // If token is null, also disable reminders as a good practice
+          ...(token === null && { reminders: false }),
         }
       },
       { upsert: false } // Do not create a user if they don't exist
     );
-
-    return NextResponse.json({ message: 'Token de notificación actualizado' }, { status: 200 });
+    
+    const message = token ? 'Token de notificación actualizado' : 'Suscripción de notificaciones eliminada';
+    return NextResponse.json({ message }, { status: 200 });
 
   } catch (e) {
     console.error('Error in /api/users/token:', e);

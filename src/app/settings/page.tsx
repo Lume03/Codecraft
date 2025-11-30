@@ -60,8 +60,8 @@ export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(false);
   
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [reminderTime, setReminderTime] = useState('19:00');
-  const [tempHour, setTempHour] = useState('19');
+  const [reminderTime, setReminderTime] = useState('21:00'); // This will now be UTC
+  const [tempHour, setTempHour] = useState('21');
   const [tempMinute, setTempMinute] = useState('00');
   const [currentLanguage, setCurrentLanguage] = useState(language);
 
@@ -75,11 +75,30 @@ export default function SettingsPage() {
             try {
             const res = await fetch(`/api/users?firebaseUid=${user.uid}`);
             if (res.ok) {
-                const data = await res.json();
+                const data: UserProfile = await res.json();
                 setUserProfile(data);
-                setReminderTime(data.reminderTime || '19:00');
-                setTempHour((data.reminderTime || '19:00').split(':')[0]);
-                setTempMinute((data.reminderTime || '19:00').split(':')[1]);
+                
+                // Convert stored UTC time to local time for display
+                if (data.reminderTime) {
+                  const [utcHours, utcMinutes] = data.reminderTime.split(':').map(Number);
+                  const utcDate = new Date();
+                  utcDate.setUTCHours(utcHours, utcMinutes, 0, 0);
+                  
+                  const localHours = utcDate.getHours().toString().padStart(2, '0');
+                  const localMinutes = utcDate.getMinutes().toString().padStart(2, '0');
+                  
+                  setReminderTime(`${localHours}:${localMinutes}`); // Display local time
+                  setTempHour(localHours);
+                  setTempMinute(localMinutes);
+                } else {
+                  // Default to 21:00 local time
+                  setReminderTime('21:00');
+                  setTempHour('21');
+                  setTempMinute('00');
+                }
+                
+                setPushNotifications(!!data.fcmToken);
+
             }
             } catch (error) {
             console.error("Error fetching user profile:", error);
@@ -93,11 +112,6 @@ export default function SettingsPage() {
     setMounted(true);
     setIsDarkTheme(theme === 'dark');
     setCurrentLanguage(language);
-    
-    // Check notification permission only on the client
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      setPushNotifications(Notification.permission === 'granted');
-    }
   }, [theme, language]);
 
   const handleThemeChange = (checked: boolean) => {
@@ -113,8 +127,16 @@ export default function SettingsPage() {
   };
 
   const handleSaveReminder = async () => {
-    const newTime = `${tempHour}:${tempMinute}`;
-    setReminderTime(newTime);
+    const localTime = `${tempHour}:${tempMinute}`;
+
+    // Convert local time to UTC for saving
+    const localDate = new Date();
+    const [localHours, localMinutes] = localTime.split(':').map(Number);
+    localDate.setHours(localHours, localMinutes, 0, 0);
+    
+    const utcHours = localDate.getUTCHours().toString().padStart(2, '0');
+    const utcMinutes = localDate.getUTCMinutes().toString().padStart(2, '0');
+    const utcTime = `${utcHours}:${utcMinutes}`;
     
     if (user) {
          await fetch('/api/users', {
@@ -123,10 +145,11 @@ export default function SettingsPage() {
             body: JSON.stringify({
                 firebaseUid: user.uid,
                 email: user.email,
-                reminderTime: newTime,
+                reminderTime: utcTime, // Save UTC time
             }),
         });
-        toast({ title: "Recordatorio guardado", description: `Tu recordatorio se ha establecido a las ${newTime}` });
+        setReminderTime(localTime); // Update display with local time
+        toast({ title: "Recordatorio guardado", description: `Tu recordatorio se ha establecido a las ${localTime}` });
     }
   };
 
@@ -140,16 +163,24 @@ export default function SettingsPage() {
         return;
     }
     
+    // When toggling off
     if (!checked) {
-        setPushNotifications(false);
-        await fetch('/api/users/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ firebaseUid: user.uid, token: null }), // Remove token
-        });
+        try {
+          await fetch('/api/users/token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ firebaseUid: user.uid, token: null }), // Send null to remove token
+          });
+          setPushNotifications(false);
+          toast({ title: 'Desactivado', description: 'Ya no recibirás notificaciones push.' });
+        } catch (error) {
+           console.error('Failed to unsubscribe:', error);
+           toast({ variant: 'destructive', title: 'Error', description: 'No se pudo desactivar la suscripción.' });
+        }
         return;
     }
 
+    // When toggling on
     if (!messaging) {
       toast({ variant: 'destructive', title: 'Error', description: 'El servicio de mensajería no está disponible.' });
       return;
