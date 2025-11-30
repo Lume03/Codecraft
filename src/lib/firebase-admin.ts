@@ -1,10 +1,11 @@
 import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
-import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getMessaging, Messaging } from 'firebase-admin/messaging';
+
+// This file is now only for services that MUST use the Admin SDK, like FCM.
+// User data management will be handled via MongoDB.
 
 const apps = getApps();
 let app: App;
-let adminDb: Firestore;
 let adminMessaging: Messaging;
 
 if (!apps.length) {
@@ -27,18 +28,16 @@ if (!apps.length) {
         privateKey,
       }),
     });
-    console.log('Firebase Admin SDK initialized successfully.');
+    console.log('Firebase Admin SDK initialized successfully for Messaging.');
   } catch (error: any) {
     console.error('Firebase Admin SDK initialization error:', error.message);
-    // In a production environment, you might want the app to fail to start if Firebase doesn't.
-    // Throwing the error will stop the process.
     throw error;
   }
 } else {
   app = apps[0];
 }
 
-adminDb = getFirestore(app);
 adminMessaging = getMessaging(app);
 
-export { adminDb, adminMessaging };
+// We no longer export adminDb as Firestore is not the source of truth for user profiles.
+export { adminMessaging };

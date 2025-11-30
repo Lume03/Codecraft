@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { UserProfile } from '@/docs/backend-types';
-import { adminDb } from '@/lib/firebase-admin';
+import type { UserProfile } from '@/docs/backend-types';
+import clientPromise from '@/lib/mongodb';
+import { recalculateLives } from '@/lib/lives';
 
 export async function POST(request: Request) {
   try {
@@ -9,22 +10,27 @@ export async function POST(request: Request) {
     if (!userData.firebaseUid || !userData.email) {
       return NextResponse.json({ error: 'Faltan firebaseUid o email' }, { status: 400 });
     }
+    
+    const client = await clientPromise;
+    const db = client.db('ravencode');
+    const usersCollection = db.collection<UserProfile>('users');
 
-    const userRef = adminDb.collection('users').doc(userData.firebaseUid);
-    const userDoc = await userRef.get();
+    const existingUser = await usersCollection.findOne({ firebaseUid: userData.firebaseUid });
 
-    if (userDoc.exists) {
+    if (existingUser) {
       // --- Lógica de Actualización ---
-      // Filtramos cualquier campo `undefined` para no sobreescribir datos existentes con `undefined`
       const { firebaseUid, ...updateData } = userData;
       const cleanUpdateData = Object.fromEntries(
         Object.entries(updateData).filter(([, v]) => v !== undefined)
       );
 
       if (Object.keys(cleanUpdateData).length > 0) {
-        await userRef.update(cleanUpdateData);
+        await usersCollection.updateOne(
+            { firebaseUid: userData.firebaseUid },
+            { $set: cleanUpdateData }
+        );
       }
-      const updatedUser = (await userRef.get()).data();
+      const updatedUser = await usersCollection.findOne({ firebaseUid: userData.firebaseUid });
       return NextResponse.json(updatedUser, { status: 200 });
 
     } else {
@@ -46,12 +52,11 @@ export async function POST(request: Request) {
         reminderTime: userData.reminderTime || "21:00", // Default a 9 PM UTC
         progress: {},
         fcmToken: userData.fcmToken || null,
-        lastStreakUpdate: null, // explícitamente nulo al crear
+        lastStreakUpdate: null, 
       };
 
-      await userRef.set(newUser);
+      await usersCollection.insertOne(newUser);
       
-      // Devolvemos el objeto que acabamos de crear
       return NextResponse.json(newUser, { status: 201 });
     }
 
@@ -72,15 +77,21 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Falta el parámetro firebaseUid' }, { status: 400 });
     }
     
-    const userDoc = await adminDb.collection('users').doc(firebaseUid).get();
+    const client = await clientPromise;
+    const db = client.db('ravencode');
+    const usersCollection = db.collection<UserProfile>('users');
 
-    if (!userDoc.exists) {
-        // Si el usuario no existe en Firestore, retornamos 404.
-        // Esta es la única fuente de verdad para el perfil.
-        return NextResponse.json({ error: 'Usuario no encontrado en Firestore' }, { status: 404 });
+    const user = await usersCollection.findOne({ firebaseUid });
+
+    if (!user) {
+        return NextResponse.json({ error: 'Usuario no encontrado en MongoDB' }, { status: 404 });
     }
 
-    return NextResponse.json(userDoc.data());
+    // Recalculate lives on every fetch to keep them updated
+    const { lives, lastLifeUpdate } = recalculateLives(user);
+    const userWithRecalculatedLives = { ...user, lives, lastLifeUpdate: lastLifeUpdate.toISOString() };
+
+    return NextResponse.json(userWithRecalculatedLives);
 
   } catch (e) {
     console.error('Error in GET /api/users:', e);

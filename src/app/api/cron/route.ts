@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { adminDb, adminMessaging } from '@/lib/firebase-admin';
 import type { UserProfile } from '@/docs/backend-types';
+import clientPromise from '@/lib/mongodb';
+import { adminMessaging } from '@/lib/firebase-admin';
 
 // This function can be called by a cron job service (e.g., Vercel Cron Jobs, typically every 1-5 minutes)
 export async function GET(request: Request) {
@@ -15,23 +16,25 @@ export async function GET(request: Request) {
     const currentUtcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
     
     console.log(`[Cron Job] Running at UTC: ${now.toUTCString()}`);
+    
+    const client = await clientPromise;
+    const db = client.db('ravencode');
 
-    // Fetch all users who have reminders enabled and have a token
-    const usersSnapshot = await adminDb
-      .collection('users')
-      .where('reminders', '==', true)
-      .where('fcmToken', '!=', null)
-      .get();
+    // Fetch all users who have reminders enabled and have a token from MongoDB
+    const usersCursor = db
+      .collection<UserProfile>('users')
+      .find({ reminders: true, fcmToken: { $ne: null, $exists: true } });
+      
+    const users = await usersCursor.toArray();
 
-    if (usersSnapshot.empty) {
+    if (users.length === 0) {
       console.log('[Cron Job] No users with reminders enabled found.');
       return NextResponse.json({ success: true, message: 'No users with reminders enabled.' });
     }
 
     const tokensToSend: string[] = [];
     
-    usersSnapshot.forEach(doc => {
-      const user = doc.data() as UserProfile;
+    users.forEach(user => {
       if (user.fcmToken && user.reminderTime) {
         const [reminderHours, reminderMinutes] = user.reminderTime.split(':').map(Number);
         const reminderTotalMinutes = reminderHours * 60 + reminderMinutes;
@@ -39,12 +42,9 @@ export async function GET(request: Request) {
         // Check if the reminder time was in the last 5 minutes
         const diff = currentUtcMinutes - reminderTotalMinutes;
 
-        // diff >= 0: The time has passed today.
-        // diff < 5: It passed within the last 5 minutes.
-        // This handles cron jobs running at, e.g., 22:00, 22:01, 22:04 for a 22:00 reminder.
         if (diff >= 0 && diff < 5) {
            tokensToSend.push(user.fcmToken);
-           console.log(`[Cron Job] User ${doc.id} matched. Reminder time: ${user.reminderTime} UTC.`);
+           console.log(`[Cron Job] User ${user.firebaseUid} matched. Reminder time: ${user.reminderTime} UTC.`);
         }
       }
     });
