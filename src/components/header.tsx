@@ -83,7 +83,7 @@ export function Header({
           {title}
         </h1>
         {subtitle && (
-          <p className="mt-1 truncate text-base text-muted-foreground">
+          <p className="mt-1 whitespace-normal text-base text-muted-foreground md:truncate">
             {subtitle}
           </p>
         )}
