@@ -163,7 +163,6 @@ export default function SettingsPage() {
     }
     
     let tokenPayload = null;
-    let remindersPayload = false;
     
     if (checked) {
         if (!messaging) {
@@ -179,27 +178,21 @@ export default function SettingsPage() {
                 
                 if (currentToken) {
                     tokenPayload = currentToken;
-                    remindersPayload = true;
                     toast({ title: '¡Suscrito!', description: 'Recibirás notificaciones push.' });
                 } else {
                     toast({ variant: 'destructive', title: 'Error', description: 'No se pudo obtener el token de notificación. Inténtalo de nuevo.' });
-                    setPushNotifications(false); // Revert UI
-                    return;
+                    return; // Stop execution
                 }
             } else {
                 toast({ variant: 'destructive', title: 'Permiso denegado', description: 'No se han activado las notificaciones.' });
-                setPushNotifications(false); // Revert UI
-                return;
+                return; // Stop execution
             }
         } catch (error) {
             console.error('Error getting notification permission:', error);
             toast({ variant: 'destructive', title: 'Error', description: 'Ocurrió un error al solicitar el permiso de notificación.' });
-            setPushNotifications(false); // Revert UI
-            return;
+            return; // Stop execution
         }
     } else {
-        // If unchecking, set token to null and reminders to false.
-        remindersPayload = false;
         tokenPayload = null;
         toast({ title: 'Desactivado', description: 'Ya no recibirás notificaciones push.' });
     }
@@ -214,13 +207,12 @@ export default function SettingsPage() {
               token: tokenPayload
             }),
         });
-        // Update local state after successful API call
-        setPushNotifications(remindersPayload);
+        // The fetchUserProfile() will be called from onOpenChange, 
+        // but we can update the local state optimistically.
+        setPushNotifications(checked);
     } catch (error) {
         console.error('Failed to update token/reminders:', error);
         toast({ variant: 'destructive', title: 'Error', description: 'No se pudo actualizar la configuración en el servidor.' });
-        // Revert UI to previous state on failure
-        setPushNotifications(!remindersPayload);
     }
   };
   
