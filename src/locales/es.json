@@ -167,5 +167,17 @@
     "complete_first_lesson_prompt": "¡Completa tu primera lección para ver tu progreso!",
     "goals_achievements_title": "METAS Y LOGROS",
     "view_all_achievements": "Ver todos los logros",
-    "days": "Días"
+    "days": "Días",
+    "didactic_mode_title": "Modo Didáctico {{state}}",
+    "didactic_mode_on": "Activado",
+    "didactic_mode_off": "Desactivado",
+    "didactic_mode_desc_on": "Las explicaciones serán más detalladas.",
+    "didactic_mode_desc_off": "Se usarán explicaciones estándar.",
+    "daily_challenge_title": "Reto Diario {{state}}",
+    "daily_challenge_desc_on": "Recibirás un nuevo desafío cada día.",
+    "daily_challenge_desc_off": "Los retos diarios están en pausa.",
+    "theme_changed_title": "Tema Cambiado",
+    "theme_changed_desc": "El tema se ha cambiado a {{theme}}.",
+    "language_changed_title": "Idioma Cambiado",
+    "language_changed_desc": "El idioma se ha establecido a {{lang}}."
 }

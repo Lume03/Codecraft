@@ -113,23 +113,28 @@ export default function SettingsPage() {
   }, [theme, language]);
 
   const handleThemeChange = (checked: boolean) => {
-    setTheme(checked ? 'dark' : 'light');
+    const newTheme = checked ? 'dark' : 'light';
+    setTheme(newTheme);
     setIsDarkTheme(checked);
+    toast({
+      title: t('theme_changed_title'),
+      description: t('theme_changed_desc', { theme: newTheme === 'dark' ? t('quick_actions_theme_dark') : t('quick_actions_theme_light') }),
+    });
   };
   
   const handleDidacticModeChange = (checked: boolean) => {
     setDidacticMode(checked);
     toast({
-      title: 'Modo didáctico ' + (checked ? 'activado' : 'desactivado'),
-      description: checked ? 'Las explicaciones serán más detalladas.' : 'Se usarán explicaciones estándar.',
+      title: t('didactic_mode_title', { state: checked ? t('didactic_mode_on') : t('didactic_mode_off') }),
+      description: checked ? t('didactic_mode_desc_on') : t('didactic_mode_desc_off'),
     });
   };
 
   const handleDailyChallengeChange = (checked: boolean) => {
     setDailyChallenge(checked);
-    toast({
-      title: 'Reto diario ' + (checked ? 'activado' : 'desactivado'),
-      description: checked ? 'Recibirás un nuevo desafío cada día.' : 'Los retos diarios están pausados.',
+     toast({
+      title: t('daily_challenge_title', { state: checked ? t('didactic_mode_on') : t('didactic_mode_off') }),
+      description: checked ? t('daily_challenge_desc_on') : t('daily_challenge_desc_off'),
     });
   };
 
@@ -197,6 +202,10 @@ export default function SettingsPage() {
 
   const handleLanguageSave = () => {
     setLanguage(currentLanguage as 'es' | 'en');
+     toast({
+      title: t('language_changed_title'),
+      description: t('language_changed_desc', { lang: languageMap[currentLanguage as keyof typeof languageMap] }),
+    });
   };
 
 const requestNotificationPermission = async (checked: boolean) => {

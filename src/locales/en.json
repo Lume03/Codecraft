@@ -167,5 +167,17 @@
     "complete_first_lesson_prompt": "Complete your first lesson to see your progress!",
     "goals_achievements_title": "GOALS & ACHIEVEMENTS",
     "view_all_achievements": "View all achievements",
-    "days": "Days"
+    "days": "Days",
+    "didactic_mode_title": "Didactic Mode {{state}}",
+    "didactic_mode_on": "On",
+    "didactic_mode_off": "Off",
+    "didactic_mode_desc_on": "Explanations will be more detailed.",
+    "didactic_mode_desc_off": "Standard explanations will be used.",
+    "daily_challenge_title": "Daily Challenge {{state}}",
+    "daily_challenge_desc_on": "You will receive a new challenge every day.",
+    "daily_challenge_desc_off": "Daily challenges are paused.",
+    "theme_changed_title": "Theme Changed",
+    "theme_changed_desc": "The theme has been changed to {{theme}}.",
+    "language_changed_title": "Language Changed",
+    "language_changed_desc": "The language has been set to {{lang}}."
 }
