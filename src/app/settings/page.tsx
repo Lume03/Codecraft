@@ -30,6 +30,7 @@ import {
   DialogFooter,
   DialogClose,
   DialogDescription,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -161,56 +162,65 @@ export default function SettingsPage() {
         return;
     }
     
-    if (!checked) {
-        try {
-          await fetch('/api/users/token', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ firebaseUid: user.uid, token: null }),
-          });
-          setPushNotifications(false);
-          toast({ title: 'Desactivado', description: 'Ya no recibirás notificaciones push.' });
-        } catch (error) {
-           console.error('Failed to unsubscribe:', error);
-           toast({ variant: 'destructive', title: 'Error', description: 'No se pudo desactivar la suscripción.' });
+    let tokenPayload = null;
+    let remindersPayload = false;
+    
+    if (checked) {
+        if (!messaging) {
+            toast({ variant: 'destructive', title: 'Error', description: 'El servicio de mensajería no está disponible.' });
+            return;
         }
-        return;
+
+        try {
+            const permission = await Notification.requestPermission();
+            
+            if (permission === 'granted') {
+                const currentToken = await getToken(messaging, { vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY });
+                
+                if (currentToken) {
+                    tokenPayload = currentToken;
+                    remindersPayload = true;
+                    toast({ title: '¡Suscrito!', description: 'Recibirás notificaciones push.' });
+                } else {
+                    toast({ variant: 'destructive', title: 'Error', description: 'No se pudo obtener el token de notificación. Inténtalo de nuevo.' });
+                    setPushNotifications(false); // Revert UI
+                    return;
+                }
+            } else {
+                toast({ variant: 'destructive', title: 'Permiso denegado', description: 'No se han activado las notificaciones.' });
+                setPushNotifications(false); // Revert UI
+                return;
+            }
+        } catch (error) {
+            console.error('Error getting notification permission:', error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Ocurrió un error al solicitar el permiso de notificación.' });
+            setPushNotifications(false); // Revert UI
+            return;
+        }
+    } else {
+        // If unchecking, set token to null and reminders to false.
+        remindersPayload = false;
+        tokenPayload = null;
+        toast({ title: 'Desactivado', description: 'Ya no recibirás notificaciones push.' });
     }
 
-    if (!messaging) {
-      toast({ variant: 'destructive', title: 'Error', description: 'El servicio de mensajería no está disponible.' });
-      return;
-    }
-
+    // API call to update the backend
     try {
-      const permission = await Notification.requestPermission();
-      
-      if (permission === 'granted') {
-        const currentToken = await getToken(messaging, { vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY });
-        
-        if (currentToken) {
-          await fetch('/api/users/token', {
+        await fetch('/api/users/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ firebaseUid: user.uid, token: currentToken }),
-          });
-          setPushNotifications(true);
-           toast({
-            title: '¡Suscrito!',
-            description: 'Recibirás notificaciones push.',
-          });
-        } else {
-          setPushNotifications(false);
-          toast({ variant: 'destructive', title: 'Error', description: 'No se pudo obtener el token de notificación. Inténtalo de nuevo.' });
-        }
-      } else {
-        setPushNotifications(false);
-        toast({ variant: 'destructive', title: 'Permiso denegado', description: 'No se han activado las notificaciones.' });
-      }
+            body: JSON.stringify({ 
+              firebaseUid: user.uid, 
+              token: tokenPayload
+            }),
+        });
+        // Update local state after successful API call
+        setPushNotifications(remindersPayload);
     } catch (error) {
-      console.error('Error getting notification permission:', error);
-      setPushNotifications(false);
-      toast({ variant: 'destructive', title: 'Error', description: 'Ocurrió un error al solicitar el permiso de notificación.' });
+        console.error('Failed to update token/reminders:', error);
+        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo actualizar la configuración en el servidor.' });
+        // Revert UI to previous state on failure
+        setPushNotifications(!remindersPayload);
     }
   };
   
