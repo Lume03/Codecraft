@@ -32,6 +32,7 @@ export async function POST(request: Request) {
         lastStreakUpdate: null,
         progress: {},
         reminders: true, // Default reminders to true
+        reminderTime: "21:00", // Default reminder time
     };
     
     // Use upsert to create or update the user document based on firebaseUid

@@ -47,6 +47,10 @@
                     "type": "boolean",
                     "description": "Whether the user has learning reminders enabled."
                 },
+                "reminderTime": {
+                    "type": "string",
+                    "description": "The user's preferred time for learning reminders (e.g., '19:00')."
+                },
                 "lives": {
                     "type": "number",
                     "description": "Number of lives the user has."

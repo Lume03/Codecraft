@@ -39,6 +39,10 @@ export interface UserProfile {
      */
     reminders?: boolean;
     /**
+     * The user's preferred time for learning reminders (e.g., '19:00').
+     */
+    reminderTime?: string;
+    /**
      * Number of lives the user has.
      */
     lives?: number;
@@ -70,7 +74,6 @@ export interface UserProfile {
      */
     fcmToken?: string;
     createdAt?: Date;
-    reminderTime?: string;
 }
 export interface Course {
     title?: string;

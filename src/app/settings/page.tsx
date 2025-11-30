@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { SettingsSection } from '@/components/settings/settings-section';
 import { SettingsRow } from '@/components/settings/settings-row';
-import { useAuth, useUser, messaging } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import {
@@ -45,6 +45,7 @@ import { useTranslation } from '@/context/language-provider';
 import { useToast } from '@/hooks/use-toast';
 import { getToken } from 'firebase/messaging';
 import type { UserProfile } from '@/docs/backend-types';
+import { messaging } from '@/firebase';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
