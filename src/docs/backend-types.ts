@@ -29,7 +29,7 @@ export interface UserProfile {
     /**
      * The last time the user's practice streak was updated.
      */
-    lastStreakUpdate?: string;
+    lastStreakUpdate?: string | null;
     /**
      * List of achievements unlocked by the user.
      */
@@ -38,6 +38,10 @@ export interface UserProfile {
      * Whether the user has learning reminders enabled.
      */
     reminders?: boolean;
+    /**
+     * Whether the user wants to receive weekly email summaries.
+     */
+    emailNotifications?: boolean;
     /**
      * The user's preferred time for learning reminders (e.g., '19:00').
      */
@@ -72,7 +76,7 @@ export interface UserProfile {
     /**
      * Firebase Cloud Messaging token for push notifications.
      */
-    fcmToken?: string;
+    fcmToken?: string | null;
     createdAt?: Date;
 }
 export interface Course {

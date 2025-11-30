@@ -15,8 +15,15 @@ export async function POST(request: Request) {
 
     if (userDoc.exists) {
       // --- Lógica de Actualización ---
+      // Filtramos cualquier campo `undefined` para no sobreescribir datos existentes con `undefined`
       const { firebaseUid, ...updateData } = userData;
-      await userRef.update(updateData);
+      const cleanUpdateData = Object.fromEntries(
+        Object.entries(updateData).filter(([, v]) => v !== undefined)
+      );
+
+      if (Object.keys(cleanUpdateData).length > 0) {
+        await userRef.update(cleanUpdateData);
+      }
       const updatedUser = (await userRef.get()).data();
       return NextResponse.json(updatedUser, { status: 200 });
 
@@ -27,19 +34,19 @@ export async function POST(request: Request) {
         email: userData.email,
         displayName: userData.displayName || 'Nuevo Usuario',
         username: userData.username || userData.email.split('@')[0],
-        photoURL: userData.photoURL,
+        photoURL: userData.photoURL || '',
         createdAt: new Date(),
         level: 1,
         streak: 0,
         achievements: [],
         lives: 5,
         lastLifeUpdate: new Date().toISOString(),
-        lastStreakUpdate: undefined, // Explicitly undefined
-        progress: {},
         reminders: userData.reminders ?? true,
         emailNotifications: userData.emailNotifications ?? true,
-        reminderTime: userData.reminderTime || "21:00", // Use provided or default
-        fcmToken: userData.fcmToken,
+        reminderTime: userData.reminderTime || "21:00", // Default a 9 PM UTC
+        progress: {},
+        fcmToken: userData.fcmToken || null,
+        lastStreakUpdate: null, // explícitamente nulo al crear
       };
 
       await userRef.set(newUser);
@@ -68,9 +75,9 @@ export async function GET(request: Request) {
     const userDoc = await adminDb.collection('users').doc(firebaseUid).get();
 
     if (!userDoc.exists) {
-        // If the user truly doesn't exist in Firestore, return 404.
-        // We no longer fall back to MongoDB to ensure data consistency.
-        return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+        // Si el usuario no existe en Firestore, retornamos 404.
+        // Esta es la única fuente de verdad para el perfil.
+        return NextResponse.json({ error: 'Usuario no encontrado en Firestore' }, { status: 404 });
     }
 
     return NextResponse.json(userDoc.data());
