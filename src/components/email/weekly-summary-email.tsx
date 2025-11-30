@@ -16,9 +16,10 @@ import * as React from 'react';
 
 interface WeeklySummaryEmailProps {
   username?: string;
+  streak?: number;
+  averageScore?: number;
   totalPractices?: number;
   lessonsCompleted?: number;
-  averageScore?: number;
 }
 
 const baseUrl = process.env.VERCEL_URL
@@ -26,25 +27,31 @@ const baseUrl = process.env.VERCEL_URL
   : 'http://localhost:9002';
 
 const StatCard = ({
+  icon,
   value,
   label,
+  valueColor = 'text-white',
 }: {
+  icon: string;
   value: string | number;
   label: string;
+  valueColor?: string;
 }) => (
-  <div className="rounded-lg bg-gray-100 p-4 text-center">
-    <Text className="m-0 text-3xl font-bold text-gray-800">{value}</Text>
-    <Text className="m-0 mt-1 text-sm text-gray-500">{label}</Text>
+  <div className="w-[48%] rounded-lg bg-[#2A2A2A] p-4 text-center">
+    <Text className="m-0 text-3xl">{icon}</Text>
+    <Text className={`m-0 mt-2 text-2xl font-bold ${valueColor}`}>{value}</Text>
+    <Text className="m-0 mt-1 text-xs text-[#888888]">{label}</Text>
   </div>
 );
 
 export const WeeklySummaryEmail = ({
   username = 'Estudiante',
+  streak = 0,
+  averageScore = 0,
   totalPractices = 0,
   lessonsCompleted = 0,
-  averageScore = 0,
 }: WeeklySummaryEmailProps) => {
-  const previewText = `¡Mira tu increíble progreso esta semana, ${username}!`;
+  const previewText = `¡Imparable, ${username}! Mira tu progreso de esta semana en RavenCode.`;
 
   return (
     <Html>
@@ -55,49 +62,85 @@ export const WeeklySummaryEmail = ({
           theme: {
             extend: {
               colors: {
-                primary: '#66D3FF', // Matching your app's primary color
+                primary: '#66D3FF',
+                darkBg: '#121212',
+                cardBg: '#1E1E1E',
+                statCardBg: '#2A2A2A',
+                orange: '#FF9F43',
+                green: '#2ECC71',
+                yellow: '#F1C40F',
+                lightText: '#B0B0B0',
+                mutedText: '#888888',
               },
             },
           },
         }}
       >
-        <Body className="mx-auto my-auto bg-white px-2 font-sans">
-          <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
-            <Section className="mt-[32px] text-center">
-              {/* Using a placeholder for the logo */}
-              <Text className="text-2xl font-bold text-black">RavenCode</Text>
+        <Body className="mx-auto my-auto bg-darkBg px-2 font-sans">
+          <Container className="mx-auto my-[40px] w-full max-w-[480px]">
+            
+            <Section className="text-center">
+              <Text className="text-2xl font-bold text-white">RavenCode</Text>
+              <Text className="text-sm text-lightText">Resumen Semanal</Text>
             </Section>
-            <Section>
-              <Text className="text-[16px] leading-[24px] text-black">
-                ¡Hola, <strong>{username}</strong>!
-              </Text>
-              <Text className="text-[14px] leading-[24px] text-black">
-                Aquí tienes un resumen de tu increíble progreso de aprendizaje en
-                RavenCode durante la última semana. ¡Sigue así, lo estás haciendo
-                genial!
+
+            <Section className="rounded-xl bg-cardBg p-8">
+              <Section className="text-center">
+                <Text className="text-2xl font-bold text-white">
+                  ¡Imparable, {username}!
+                </Text>
+                <Text className="text-base text-lightText">
+                  Esta semana has estado on fire. Aquí tienes tus resultados:
+                </Text>
+              </Section>
+
+              <Section className="mt-6 flex flex-wrap justify-between">
+                <StatCard
+                  icon="🔥"
+                  value={`${streak} Días`}
+                  label="Racha Actual"
+                  valueColor="text-orange"
+                />
+                <StatCard
+                  icon="🎯"
+                  value={`${averageScore}%`}
+                  label="Precisión Global"
+                  valueColor="text-green"
+                />
+              </Section>
+
+               <Section className="mt-3 flex flex-wrap justify-between">
+                <StatCard
+                  icon="📝"
+                  value={totalPractices}
+                  label="Ejercicios"
+                  valueColor="text-white"
+                />
+                <StatCard
+                  icon="🏅"
+                  value={lessonsCompleted}
+                  label="Secciones Dominadas"
+                  valueColor="text-yellow"
+                />
+              </Section>
+              
+              <Section className="mt-8 text-center">
+                <Button
+                  className="rounded-full bg-primary px-10 py-4 text-center text-base font-bold text-black no-underline"
+                  href={`${baseUrl}/learn`}
+                >
+                  Continuar mi Racha
+                </Button>
+              </Section>
+            </Section>
+
+            <Section className="mt-6 text-center">
+              <Text className="text-xs text-mutedText">
+                Recibes este correo porque tienes activados los resúmenes
+                semanales.
               </Text>
             </Section>
 
-            <Section className="mt-[24px]">
-              <div className="grid grid-cols-3 gap-3">
-                <StatCard value={totalPractices} label="Prácticas" />
-                <StatCard value={lessonsCompleted} label="Lecciones" />
-                <StatCard value={`${averageScore}%`} label="Puntaje" />
-              </div>
-            </Section>
-
-            <Section className="mb-[32px] mt-[32px] text-center">
-              <Button
-                className="rounded-full bg-primary px-5 py-3 text-center text-[14px] font-semibold text-black no-underline"
-                href={`${baseUrl}/learn`}
-              >
-                Continuar Aprendiendo
-              </Button>
-            </Section>
-            <Hr className="mx-0 my-[26px] w-full border border-solid border-[#eaeaea]" />
-            <Text className="text-[12px] leading-[24px] text-[#666666]">
-              Recibes este correo porque tienes activadas las notificaciones de resumen semanal en tu cuenta de RavenCode.
-            </Text>
           </Container>
         </Body>
       </Tailwind>

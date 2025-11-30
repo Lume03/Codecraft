@@ -86,6 +86,7 @@ export async function GET(request: Request) {
         const emailHtml = render(
           <WeeklySummaryEmail
             username={user.displayName}
+            streak={user.streak}
             averageScore={averageScore}
             lessonsCompleted={lessonsCompleted}
             totalPractices={totalPractices}
