@@ -78,7 +78,7 @@ export default function AuthPage() {
 
  const upsertUserDocument = async (user: User) => {
     try {
-      // Primero, verificamos si el usuario ya existe en nuestra BD
+      // Primero, verificamos si el usuario ya existe en nuestra BD de MongoDB
       const existingUserRes = await fetch(`/api/users?firebaseUid=${user.uid}`);
       let userExists = existingUserRes.ok;
       let existingUserData = userExists ? await existingUserRes.json() : null;
@@ -127,7 +127,7 @@ export default function AuthPage() {
       let userCredential;
       if (isLogin) {
         userCredential = await signInWithEmailAndPassword(auth, email, password);
-        await upsertUserDocument(userCredential.user);
+        // NO llamar a upsertUserDocument aquí para evitar sobrescribir los datos
         router.push('/learn');
       } else {
         userCredential = await createUserWithEmailAndPassword(auth, email, password);
