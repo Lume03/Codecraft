@@ -14,6 +14,7 @@ import type { Course, Module } from '@/lib/data';
 import { useUser } from '@/firebase';
 import { useTranslation } from '@/context/language-provider';
 import type { UserProfile } from '@/docs/backend-types';
+import { CourseDetailSkeleton } from '@/components/skeletons/course-detail-skeleton';
 
 export default function CourseDetailPage() {
   const params = useParams();
@@ -102,7 +103,7 @@ export default function CourseDetailPage() {
   const currentLessonIndex = nextLesson ? modules.findIndex(m => m.id === nextLesson.id) : -1;
 
   if (loading) {
-    return <div aria-live="polite">{t('loading')}</div>;
+    return <CourseDetailSkeleton />;
   }
 
   if (!course) {
@@ -246,30 +247,10 @@ export default function CourseDetailPage() {
             })}
           </div>
         </section>
-
-        {nextLesson && (
-        <nav aria-label="Navegación de lección" className="fixed inset-x-0 bottom-0 z-10 border-t bg-background/80 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm md:hidden">
-          <Button
-            size="lg"
-            className="w-full"
-            asChild
-            style={{
-              borderRadius: '9999px',
-              boxShadow: '0 0 20px 0 hsl(var(--primary) / 0.5)',
-            }}
-          >
-            <Link
-              href={`/course/${courseId}/theory/${nextLesson.contentId}?lessonId=${nextLesson.id}`}
-            >
-              {t('start_lesson', { number: currentLessonIndex + 1 })}
-            </Link>
-          </Button>
-        </nav>
-        )}
       </main>
 
        {nextLesson && (
-         <footer className="sticky bottom-0 z-10 border-t bg-background/95 p-4 backdrop-blur-sm hidden md:block">
+         <footer className="sticky bottom-0 z-10 p-4 backdrop-blur-sm md:block">
             <div className="mx-auto w-full">
                 <Button
                     size="lg"

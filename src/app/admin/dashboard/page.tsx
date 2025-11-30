@@ -42,6 +42,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { useTranslation } from '@/context/language-provider';
+import { ListSkeleton } from '@/components/skeletons/list-skeleton';
 
 // --- FORMULARIOS Y DIÁLOGOS DE CREACIÓN ---
 
@@ -656,12 +657,8 @@ function PageList({ theoryId, onRefresh }: { theoryId: string; onRefresh: () => 
     fetchPages();
   }, [theoryId, onRefresh]);
 
-  if (loading)
-    return (
-      <p className="px-4 py-2 text-sm text-muted-foreground" aria-live="polite">
-        Cargando páginas...
-      </p>
-    );
+  if (loading) return <ListSkeleton count={3} itemHeight="h-12" />;
+
 
   return (
     <div className="space-y-2">
@@ -732,7 +729,7 @@ function ModuleList({
     fetchModules();
   }, [courseId, onRefresh]);
 
-  if (loading) return <p aria-live="polite">Cargando lecciones...</p>;
+  if (loading) return <ListSkeleton count={4} itemHeight="h-14" />;
 
   return (
     <div className="space-y-2">
@@ -890,7 +887,19 @@ export default function AdminDashboard() {
         <NewCourseForm onCourseAdded={handleRefresh} />
 
         {loading ? (
-          <p aria-live="polite">{t('loading_courses')}</p>
+           <Card>
+            <CardHeader>
+                <CardTitle>
+                    <ListSkeleton count={1} itemHeight="h-8" />
+                </CardTitle>
+                <CardDescription>
+                     <ListSkeleton count={1} itemHeight="h-4" />
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ListSkeleton count={3} itemHeight="h-16" />
+            </CardContent>
+           </Card>
         ) : (
           <CourseManager courses={courses} onRefresh={handleRefresh} />
         )}

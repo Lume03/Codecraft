@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import type { UserProfile } from '@/docs/backend-types';
 import { useTranslation } from '@/context/language-provider';
 import { FooterNav } from '@/components/footer-nav';
+import { CourseCardSkeleton } from '@/components/skeletons/course-card-skeleton';
 
 interface CourseWithProgress extends Course {
   progress: number;
@@ -163,7 +164,12 @@ export default function LearnPage() {
           />
           <div>
             <h2 className="mb-4 text-2xl font-bold text-foreground">{t('courses')}</h2>
-            {loading && <p aria-live="polite">{t('loading_courses')}</p>}
+            {loading && (
+              <div className="grid grid-cols-1 gap-4" aria-live="polite" aria-busy="true">
+                <CourseCardSkeleton />
+                <CourseCardSkeleton />
+              </div>
+            )}
             {!loading && courses.length === 0 && (
               <div className="text-center text-muted-foreground" aria-live="polite">
                 <p>{t('no_courses_available')}</p>
@@ -176,11 +182,13 @@ export default function LearnPage() {
                 </p>
               </div>
             )}
-            <div className="grid grid-cols-1 gap-4">
-                {courses.map((course) => (
-                  <CourseCard key={course.id} course={course} />
-                ))}
-            </div>
+            {!loading && (
+                <div className="grid grid-cols-1 gap-4">
+                    {courses.map((course) => (
+                    <CourseCard key={course.id} course={course} />
+                    ))}
+                </div>
+            )}
           </div>
         </div>
       </div>
