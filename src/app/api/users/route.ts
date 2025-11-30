@@ -49,6 +49,8 @@ export async function POST(request: Request) {
         lastLifeUpdate: new Date().toISOString(),
         reminders: userData.reminders ?? true,
         emailNotifications: userData.emailNotifications ?? true,
+        didacticMode: userData.didacticMode ?? false,
+        dailyChallenge: userData.dailyChallenge ?? true,
         reminderTime: userData.reminderTime || "21:00", // Default a 9 PM UTC
         progress: {},
         fcmToken: userData.fcmToken || null,

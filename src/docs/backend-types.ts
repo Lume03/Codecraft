@@ -78,6 +78,14 @@ export interface UserProfile {
      */
     fcmToken?: string | null;
     createdAt?: Date;
+    /**
+     * Whether the user has didactic mode enabled.
+     */
+    didacticMode?: boolean;
+    /**
+     * Whether the user has the daily challenge enabled.
+     */
+    dailyChallenge?: boolean;
 }
 export interface Course {
     id: string;

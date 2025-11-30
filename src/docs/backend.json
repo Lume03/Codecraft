@@ -90,6 +90,14 @@
                 "fcmToken": {
                     "type": "string",
                     "description": "Firebase Cloud Messaging token for push notifications."
+                },
+                "didacticMode": {
+                    "type": "boolean",
+                    "description": "Whether the user has didactic mode enabled."
+                },
+                "dailyChallenge": {
+                    "type": "boolean",
+                    "description": "Whether the user has the daily challenge enabled."
                 }
             },
             "required": ["displayName", "email", "firebaseUid"]

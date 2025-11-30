@@ -98,6 +98,8 @@ export default function SettingsPage() {
               setTempMinute(localMinutes);
             }
             
+            setDidacticMode(data.didacticMode ?? false);
+            setDailyChallenge(data.dailyChallenge ?? true);
             setPushNotifications(!!data.fcmToken && data.reminders === true);
             setEmailNotifications(data.emailNotifications ?? false);
 
@@ -129,20 +131,42 @@ export default function SettingsPage() {
     });
   };
   
-  const handleDidacticModeChange = (checked: boolean) => {
-    setDidacticMode(checked);
-    toast({
-      title: t('didactic_mode_title', { state: checked ? t('didactic_mode_on') : t('didactic_mode_off') }),
-      description: checked ? t('didactic_mode_desc_on') : t('didactic_mode_desc_off'),
-    });
-  };
+  const handleSettingToggle = async (setting: 'didacticMode' | 'dailyChallenge', checked: boolean) => {
+    if (user) {
+        try {
+            const response = await fetch('/api/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    firebaseUid: user.uid,
+                    email: user.email,
+                    [setting]: checked,
+                }),
+            });
+            if (!response.ok) throw new Error('Server error');
+            
+            if(setting === 'didacticMode') {
+                setDidacticMode(checked);
+                 toast({
+                    title: t('didactic_mode_title', { state: checked ? t('didactic_mode_on') : t('didactic_mode_off') }),
+                    description: checked ? t('didactic_mode_desc_on') : t('didactic_mode_desc_off'),
+                });
+            } else {
+                setDailyChallenge(checked);
+                toast({
+                    title: t('daily_challenge_title', { state: checked ? t('didactic_mode_on') : t('didactic_mode_off') }),
+                    description: checked ? t('daily_challenge_desc_on') : t('daily_challenge_desc_off'),
+                });
+            }
 
-  const handleDailyChallengeChange = (checked: boolean) => {
-    setDailyChallenge(checked);
-     toast({
-      title: t('daily_challenge_title', { state: checked ? t('didactic_mode_on') : t('didactic_mode_off') }),
-      description: checked ? t('daily_challenge_desc_on') : t('daily_challenge_desc_off'),
-    });
+        } catch (error) {
+             toast({ 
+                variant: 'destructive',
+                title: 'Error', 
+                description: 'No se pudo guardar el ajuste.'
+            });
+        }
+    }
   };
 
   const handleLogout = async () => {
@@ -381,7 +405,7 @@ const requestNotificationPermission = async (checked: boolean) => {
   return (
     <div className="flex min-h-screen flex-col">
       <Header title={t('settings')} showBackButton />
-      <main className="mx-auto w-full max-w-[420px] flex-1 space-y-4 px-4 pb-28 md:max-w-[720px] md:space-y-6 md:px-6 md:pb-32">
+      <main className="mx-auto w-full max-w-[420px] flex-1 space-y-4 px-4 pb-28 pt-4 md:max-w-[720px] md:space-y-6 md:px-6 md:pb-32">
         <SettingsSection title="General">
           <SettingsRow
             icon={isDarkTheme ? Moon : Sun}
@@ -475,13 +499,13 @@ const requestNotificationPermission = async (checked: boolean) => {
             icon={Sparkles}
             title={t('didactic_mode')}
             subtitle={t('didactic_mode_desc')}
-            trailing={{ type: 'toggle', checked: didacticMode, onCheckedChange: handleDidacticModeChange }}
+            trailing={{ type: 'toggle', checked: didacticMode, onCheckedChange: (checked) => handleSettingToggle('didacticMode', checked) }}
           />
           <SettingsRow
             icon={BookOpen}
             title={t('daily_challenge')}
             subtitle={t('daily_challenge_desc')}
-            trailing={{ type: 'toggle', checked: dailyChallenge, onCheckedChange: handleDailyChallengeChange }}
+            trailing={{ type: 'toggle', checked: dailyChallenge, onCheckedChange: (checked) => handleSettingToggle('dailyChallenge', checked) }}
           />
           <Dialog>
             <DialogTrigger asChild>

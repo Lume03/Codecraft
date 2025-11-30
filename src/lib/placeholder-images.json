@@ -23,6 +23,12 @@
       "description": "C++ course cover",
       "imageUrl": "/c.png",
       "imageHint": "C++ logo"
+    },
+    {
+      "id": "java-course",
+      "description": "Java course cover",
+      "imageUrl": "/java.png",
+      "imageHint": "Java logo"
     }
   ]
 }
