@@ -5,6 +5,7 @@ import { firebaseApp, auth, firestore } from '.';
 import { FirebaseApp } from 'firebase/app';
 import { Auth } from 'firebase/auth';
 import { Firestore } from 'firebase/firestore';
+import { FirebaseMessagingProvider } from './messaging-provider';
 
 const FirebaseContext = createContext<{
   app: FirebaseApp | null;
@@ -22,7 +23,9 @@ export const FirebaseClientProvider = ({
 
   return (
     <FirebaseContext.Provider value={services}>
-      {children}
+      <FirebaseMessagingProvider>
+        {children}
+      </FirebaseMessagingProvider>
     </FirebaseContext.Provider>
   );
 };
