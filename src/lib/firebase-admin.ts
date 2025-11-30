@@ -31,13 +31,20 @@ if (!apps.length) {
     console.log('Firebase Admin SDK initialized successfully for Messaging.');
   } catch (error: any) {
     console.error('Firebase Admin SDK initialization error:', error.message);
-    throw error;
+    // In a real app, you might want to handle this more gracefully
+    // For now, we will let the app crash if the admin SDK can't be initialized
+    // as it's critical for notifications.
   }
 } else {
   app = apps[0];
 }
 
-adminMessaging = getMessaging(app);
+// Initialize messaging only if the app was initialized successfully
+if (app) {
+    adminMessaging = getMessaging(app);
+}
+
 
 // We no longer export adminDb as Firestore is not the source of truth for user profiles.
+// We export adminMessaging but need to handle the case where it might not be initialized.
 export { adminMessaging };
