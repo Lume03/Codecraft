@@ -76,6 +76,7 @@ export interface UserProfile {
     createdAt?: Date;
 }
 export interface Course {
+    id: string;
     title?: string;
     description?: string;
     /**
@@ -91,6 +92,7 @@ export interface Course {
  * A module within a course, containing lessons.
  */
 export interface Module {
+    id: string;
     title?: string;
     type?: "theory" | "quiz";
     /**
@@ -110,12 +112,14 @@ export interface Module {
  * The content for a theory lesson, composed of pages.
  */
 export interface Theory {
+    id: string;
     title?: string;
 }
 /**
  * A single page of content within a theory lesson.
  */
 export interface TheoryPage {
+    id: string;
     /**
      * The markdown content of the page.
      */

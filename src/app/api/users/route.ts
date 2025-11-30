@@ -14,50 +14,55 @@ export async function POST(request: Request) {
     const db = client.db('ravencode');
     const usersCollection = db.collection<UserProfile>('users');
 
-    // Prepare update fields, excluding firebaseUid from $set
-    const { firebaseUid, reminderTime, ...updateData } = userData;
-    const update: { $set: Partial<UserProfile>, $setOnInsert?: Partial<UserProfile> } = {
-        $set: updateData
-    };
-    
-    // If reminderTime is explicitly provided, add it to the $set operator.
-    if (reminderTime) {
-      update.$set.reminderTime = reminderTime;
-    }
+    const existingUser = await usersCollection.findOne({ firebaseUid: userData.firebaseUid });
 
-    // Set initial values only on creation
-    update.$setOnInsert = {
+    if (existingUser) {
+      // --- Lógica de Actualización ---
+      const { _id, createdAt, firebaseUid, ...updateData } = userData as any;
+      
+      const result = await usersCollection.updateOne(
+        { firebaseUid: userData.firebaseUid },
+        { $set: updateData }
+      );
+      
+      const updatedUser = await usersCollection.findOne({ firebaseUid: userData.firebaseUid });
+      return NextResponse.json(updatedUser, { status: 200 });
+
+    } else {
+      // --- Lógica de Creación (Insert) ---
+      const newUser: UserProfile = {
         firebaseUid: userData.firebaseUid,
+        email: userData.email,
+        displayName: userData.displayName || 'Nuevo Usuario',
+        username: userData.username,
+        photoURL: userData.photoURL,
         createdAt: new Date(),
         level: 1,
         streak: 0,
         achievements: [],
         lives: 5,
-        lastLifeUpdate: new Date(),
-        lastStreakUpdate: null,
+        lastLifeUpdate: new Date().toISOString(),
+        lastStreakUpdate: undefined, // Explicitly undefined
         progress: {},
-        reminders: true, // Default reminders to true
-        reminderTime: "21:00", // Default reminder time ONLY on insert
-    };
-    
-    // Use upsert to create or update the user document based on firebaseUid
-    const result = await usersCollection.updateOne(
-      { firebaseUid: userData.firebaseUid },
-      update,
-      { upsert: true }
-    );
+        reminders: userData.reminders ?? true,
+        reminderTime: userData.reminderTime || "21:00", // Use provided or default
+        fcmToken: userData.fcmToken,
+      };
 
-    const updatedUser = await usersCollection.findOne({ firebaseUid: userData.firebaseUid });
-
-    if (result.upsertedId) {
-      return NextResponse.json(updatedUser, { status: 201 });
-    } else {
-      return NextResponse.json(updatedUser, { status: 200 });
+      const result = await usersCollection.insertOne(newUser);
+      
+      // MongoDB no devuelve el documento insertado directamente, así que lo devolvemos nosotros
+      const { ...insertedUser } = newUser;
+      return NextResponse.json(insertedUser, { status: 201 });
     }
 
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error in /api/users:', e);
-    return NextResponse.json({ error: 'Error al procesar la solicitud del usuario' }, { status: 500 });
+    // Devuelve un error más detallado si es posible
+    const errorMessage = e.code === 11000 
+      ? 'Error de duplicado. El usuario ya podría existir.' 
+      : `Error al procesar la solicitud del usuario: ${e.message}`;
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
