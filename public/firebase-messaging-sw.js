@@ -1,12 +1,9 @@
-// This file must be in the public folder.
+// DO NOT USE import, service workers do not support it.
+// Use importScripts instead.
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
-// Give the service worker access to Firebase Messaging.
-// Note that you can only use Firebase Messaging here, other Firebase products
-// are not supported in the service worker.
-import { initializeApp } from 'firebase/app';
-import { getMessaging } from 'firebase/messaging/sw';
-
-// Your web app's Firebase configuration
+// This is the config from src/firebase/config.ts
 const firebaseConfig = {
   apiKey: "AIzaSyDyzuwWnF29e3uDfAZolx00Xf4pZA-ol5w",
   authDomain: "studio-3220804462-4f87a.firebaseapp.com",
@@ -16,13 +13,22 @@ const firebaseConfig = {
   appId: "1:81912450805:web:ce5ae7e420bebd9b7affbc",
 };
 
-const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
+// Initialize the Firebase app in the service worker
+firebase.initializeApp(firebaseConfig);
 
-// If you want to handle push notifications in the background, you can add a
-// background message handler here.
-// self.addEventListener('push', (event) => {
-//   console.log('[firebase-messaging-sw.js] Received push event: ', event);
-//   const payload = event.data.json();
-//   // ... customize notification logic
-// });
+// Retrieve an instance of Firebase Messaging
+const messaging = firebase.messaging();
+
+// Optional: Set a background message handler
+messaging.onBackgroundMessage((payload) => {
+  console.log('[firebase-messaging-sw.js] Received background message ', payload);
+  // Customize notification here
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: '/gato.png'
+  };
+
+  self.registration.showNotification(notificationTitle,
+    notificationOptions);
+});
